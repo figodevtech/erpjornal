@@ -276,7 +276,7 @@
                 {
                     "id": "M2-MVP-T5",
                     "title": "Logs básicos de atividade",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como admin, quero saber quem publicou ou alterou uma matéria.",
                     "description": "Registrar eventos-chave de criação, edição e publicação.",
                     "subtasks": [
@@ -290,7 +290,7 @@
                         {
                             "id": "M2-MVP-T5-ST2",
                             "title": "Registro automático em eventos críticos",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como admin, quero ver quem publicou cada notícia.",
                             "description": "Registrar log ao criar, atualizar e publicar artigos."
                         }

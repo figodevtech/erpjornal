@@ -65,11 +65,27 @@ export async function saveArticle(formData: FormData) {
         data_publicacao: data_publicacao || existing.data_publicacao,
       }
     });
+
+    await prisma.actionLog.create({
+      data: {
+        user_id: session.user.id,
+        acao: finalStatus === "publicado" && existing.status_id !== "publicado" ? "PUBLICACAO" : "EDICAO",
+        article_id: id,
+      }
+    });
   } else {
-    await prisma.article.create({
+    const novoArtigo = await prisma.article.create({
       data: {
         ...data,
         autor_id: session.user.id,
+      }
+    });
+
+    await prisma.actionLog.create({
+      data: {
+        user_id: session.user.id,
+        acao: finalStatus === "publicado" ? "CRIACAO_E_PUBLICACAO" : "CRIACAO",
+        article_id: novoArtigo.id,
       }
     });
   }

@@ -170,7 +170,7 @@
                 {
                     "id": "M2-MVP-T1",
                     "title": "Modelagem mínima de banco de dados",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como arquiteto de sistemas, quero um modelo mínimo que já suporte publicação de notícias.",
                     "description": "Criar tabelas essenciais: Users, Roles, Articles, Categories.",
                     "subtasks": [
@@ -191,7 +191,7 @@
                         {
                             "id": "M2-MVP-T1-ST3",
                             "title": "Tabela Categories básica",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero organizar notícias por categorias políticas.",
                             "description": "Definir Categories (id, nome, slug, cor)."
                         }

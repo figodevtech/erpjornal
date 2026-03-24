@@ -41,7 +41,7 @@ model Article {
   autor_id        String
   editor_id       String?
   revisor_id      String?
-  categoria_id    String? // Relation to Category will be created in ST3
+  categoria_id    String?
   status_id       String    @default("rascunho")
   data_publicacao DateTime?
   visualizacoes   Int       @default(0)
@@ -49,7 +49,22 @@ model Article {
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 
-  autor   User  @relation("ArticleAuthor", fields: [autor_id], references: [id])
-  editor  User? @relation("ArticleEditor", fields: [editor_id], references: [id])
-  revisor User? @relation("ArticleRevisor", fields: [revisor_id], references: [id])
+  autor     User      @relation("ArticleAuthor", fields: [autor_id], references: [id])
+  editor    User?     @relation("ArticleEditor", fields: [editor_id], references: [id])
+  revisor   User?     @relation("ArticleRevisor", fields: [revisor_id], references: [id])
+  categoria Category? @relation(fields: [categoria_id], references: [id])
+}
+
+model Category {
+  id               String  @id @default(uuid())
+  nome             String
+  slug             String  @unique
+  esfera           String?
+  cor              String?
+  meta_description String?
+  parent_id        String?
+
+  parent   Category?  @relation("SubCategories", fields: [parent_id], references: [id])
+  children Category[] @relation("SubCategories")
+  articles Article[]
 }

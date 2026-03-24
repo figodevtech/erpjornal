@@ -200,14 +200,14 @@
                 {
                     "id": "M2-MVP-T2",
                     "title": "Autenticação e RBAC básicos no ERP",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como admin, quero garantir que só usuários autorizados acessem o painel.",
                     "description": "Implementar login, sessão e controle de acesso por role.",
                     "subtasks": [
                         {
                             "id": "M2-MVP-T2-ST1",
                             "title": "Login com NextAuth.js e credenciais",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como usuário, quero entrar no painel com email e senha.",
                             "description": "Configurar NextAuth.js com provider de credenciais e sessão com cookies."
                         },

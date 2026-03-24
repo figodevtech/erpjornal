@@ -276,14 +276,14 @@
                 {
                     "id": "M2-MVP-T5",
                     "title": "Logs básicos de atividade",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como admin, quero saber quem publicou ou alterou uma matéria.",
                     "description": "Registrar eventos-chave de criação, edição e publicação.",
                     "subtasks": [
                         {
                             "id": "M2-MVP-T5-ST1",
                             "title": "Tabela de logs simples",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como sistema, quero guardar ações importantes em log.",
                             "description": "Definir Logs_Atividade (id, user_id, acao, article_id, data_hora)."
                         },

@@ -26,10 +26,11 @@ model User {
   status        String   @default("ativo")
   created_at    DateTime @default(now())
 
-  cargo             Role      @relation(fields: [cargo_id], references: [id])
-  articles_authored Article[] @relation("ArticleAuthor")
-  articles_edited   Article[] @relation("ArticleEditor")
-  articles_revised  Article[] @relation("ArticleRevisor")
+  cargo             Role        @relation(fields: [cargo_id], references: [id])
+  articles_authored Article[]   @relation("ArticleAuthor")
+  articles_edited   Article[]   @relation("ArticleEditor")
+  articles_revised  Article[]   @relation("ArticleRevisor")
+  action_logs       ActionLog[]
 }
 
 model Article {
@@ -49,10 +50,11 @@ model Article {
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 
-  autor     User      @relation("ArticleAuthor", fields: [autor_id], references: [id])
-  editor    User?     @relation("ArticleEditor", fields: [editor_id], references: [id])
-  revisor   User?     @relation("ArticleRevisor", fields: [revisor_id], references: [id])
-  categoria Category? @relation(fields: [categoria_id], references: [id])
+  autor       User        @relation("ArticleAuthor", fields: [autor_id], references: [id])
+  editor      User?       @relation("ArticleEditor", fields: [editor_id], references: [id])
+  revisor     User?       @relation("ArticleRevisor", fields: [revisor_id], references: [id])
+  categoria   Category?   @relation(fields: [categoria_id], references: [id])
+  action_logs ActionLog[]
 }
 
 model Category {
@@ -67,4 +69,14 @@ model Category {
   parent   Category?  @relation("SubCategories", fields: [parent_id], references: [id])
   children Category[] @relation("SubCategories")
   articles Article[]
+}
+
+model ActionLog {
+  id         String   @id @default(uuid())
+  user_id    String
+  user       User     @relation(fields: [user_id], references: [id])
+  acao       String
+  article_id String?
+  article    Article? @relation(fields: [article_id], references: [id])
+  data_hora  DateTime @default(now())
 }

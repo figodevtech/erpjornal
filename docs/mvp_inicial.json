@@ -237,14 +237,14 @@
                         {
                             "id": "M2-MVP-T3-ST2",
                             "title": "Formulário de criação/edição de artigo",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como repórter, quero escrever e salvar matérias.",
                             "description": "Criar formulário com título, slug, resumo, corpo, categoria e status, com salvamento como rascunho ou envio para revisão."
                         },
                         {
                             "id": "M2-MVP-T3-ST3",
                             "title": "Ação de publicação e agendamento simples",
-                            "status": "pending",
+                            "status": "in_progress",
                             "user_story": "Como editor, quero publicar uma matéria ou agendar para um horário específico.",
                             "description": "Adicionar botão de publicar (status publicado, data_publicacao = agora) e campo opcional de data/hora para agendar publicação."
                         }

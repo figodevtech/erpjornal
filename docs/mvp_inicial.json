@@ -200,7 +200,7 @@
                 {
                     "id": "M2-MVP-T2",
                     "title": "Autenticação e RBAC básicos no ERP",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como admin, quero garantir que só usuários autorizados acessem o painel.",
                     "description": "Implementar login, sessão e controle de acesso por role.",
                     "subtasks": [
@@ -214,7 +214,7 @@
                         {
                             "id": "M2-MVP-T2-ST2",
                             "title": "RBAC simples (repórter, editor, admin)",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como sistema, quero restringir quem pode publicar notícias.",
                             "description": "Implementar checagens de role nos endpoints e na UI (repórter cria rascunho, editor publica, admin gerencia usuários)."
                         }

@@ -1,0 +1,448 @@
+{
+    "product": {
+        "name": "Revista Gestão - MVP Portal e ERP de Notícias Políticas",
+        "version": "0.1.0",
+        "status": "draft",
+        "overview": {
+            "summary": "MVP de um portal de notícias políticas com foco em publicação básica, workflow editorial essencial e infraestrutura segura.",
+            "goals": [
+                "Permitir publicação de notícias políticas com workflow mínimo (redator → editor → publicação).",
+                "Disponibilizar portal público com legibilidade, taxonomia política básica e SEO inicial.",
+                "Garantir segurança básica (auth, RBAC, Cloudflare/WAF) e infraestrutura escalável mínima.",
+                "Expor APIs suficientes para o portal consumir o conteúdo do ERP."
+            ]
+        }
+    },
+    "modules": [
+        {
+            "id": "M1-MVP",
+            "name": "Frontend Portal Público - MVP",
+            "description": "Versão enxuta do portal público com home, página de artigo, taxonomia básica e SEO essencial.",
+            "dependencies": [
+                "M2-MVP",
+                "M4-MVP"
+            ],
+            "tasks": [
+                {
+                    "id": "M1-MVP-T1",
+                    "title": "Layout base e navegação principal",
+                    "status": "pending",
+                    "user_story": "Como leitor, quero navegar facilmente entre a home, seções e notícias para encontrar rapidamente as matérias recentes.",
+                    "description": "Criar estrutura básica do portal em Next.js com header, footer, rotas principais e navegação simples.",
+                    "subtasks": [
+                        {
+                            "id": "M1-MVP-T1-ST1",
+                            "title": "Definir rotas principais (home, lista, artigo)",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero acessar home, listas de notícias e página de artigo sem fricção.",
+                            "description": "Configurar rotas em Next.js para home (/), lista por categoria (/categoria/[slug]) e artigo (/noticia/[slug]) com fallback padrão."
+                        },
+                        {
+                            "id": "M1-MVP-T1-ST2",
+                            "title": "Implementar header e footer básicos",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero sempre ter acesso ao menu principal e links institucionais.",
+                            "description": "Criar header com logo, navegação para seções principais e busca simples. Footer com links institucionais e de contato."
+                        },
+                        {
+                            "id": "M1-MVP-T1-ST3",
+                            "title": "Grid responsivo básico",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero conseguir ler bem o site no desktop e no celular.",
+                            "description": "Definir um grid responsivo simples usando Tailwind, com largura de coluna adequada para texto e cards."
+                        }
+                    ]
+                },
+                {
+                    "id": "M1-MVP-T2",
+                    "title": "Home com destaques e lista de notícias",
+                    "status": "pending",
+                    "user_story": "Como leitor, quero ver as principais notícias políticas logo na home para me atualizar rapidamente.",
+                    "description": "Construir home com bloco de destaques e listagem cronológica das notícias mais recentes.",
+                    "subtasks": [
+                        {
+                            "id": "M1-MVP-T2-ST1",
+                            "title": "Bloco de notícias em destaque",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero visualizar manchetes em destaque na home.",
+                            "description": "Exibir de 3 a 5 notícias marcadas como destaque, com imagem, título e resumo curto."
+                        },
+                        {
+                            "id": "M1-MVP-T2-ST2",
+                            "title": "Lista de notícias recentes",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero ver uma lista de notícias recentes ordenadas por data.",
+                            "description": "Implementar listagem paginada ou com 'carregar mais' consumindo API de artigos ordenados por data_publicacao."
+                        },
+                        {
+                            "id": "M1-MVP-T2-ST3",
+                            "title": "Indicação simples de categoria/tema",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero saber rapidamente a qual tema cada notícia pertence.",
+                            "description": "Mostrar tag de categoria/tema no card de cada notícia com cor básica configurada."
+                        }
+                    ]
+                },
+                {
+                    "id": "M1-MVP-T3",
+                    "title": "Página de artigo com legibilidade básica",
+                    "status": "pending",
+                    "user_story": "Como leitor, quero uma página de notícia clara e fácil de ler.",
+                    "description": "Criar template de artigo com tipografia confortável, corpo do texto, imagem principal e metadados essenciais.",
+                    "subtasks": [
+                        {
+                            "id": "M1-MVP-T3-ST1",
+                            "title": "Tipografia e coluna de leitura",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero texto com tamanho e espaçamento adequados.",
+                            "description": "Configurar tipografia base (fontes web-safe ou escolhida), largura máxima da coluna de texto e espaçamento entre parágrafos."
+                        },
+                        {
+                            "id": "M1-MVP-T3-ST2",
+                            "title": "Exibição de título, resumo e imagem principal",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero entender rapidamente o assunto da notícia ao abrir a página.",
+                            "description": "Exibir título, subtítulo/resumo e imagem principal, seguidos do corpo textual."
+                        },
+                        {
+                            "id": "M1-MVP-T3-ST3",
+                            "title": "Metadados básicos do artigo",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero ver data e autor para confiar no conteúdo.",
+                            "description": "Mostrar data de publicação, nome do autor e categoria principal na área superior da matéria."
+                        }
+                    ]
+                },
+                {
+                    "id": "M1-MVP-T4",
+                    "title": "Taxonomia política mínima",
+                    "status": "pending",
+                    "user_story": "Como leitor, quero navegar por categorias políticas básicas.",
+                    "description": "Implementar categorias e esferas mínimas (Executivo, Legislativo, Judiciário e alguns temas principais).",
+                    "subtasks": [
+                        {
+                            "id": "M1-MVP-T4-ST1",
+                            "title": "Páginas de categoria simples",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero ver uma página com todas as notícias de uma categoria.",
+                            "description": "Criar template de listagem por categoria, consumindo API filtrada por category_id ou slug."
+                        },
+                        {
+                            "id": "M1-MVP-T4-ST2",
+                            "title": "Filtro simples por esfera",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero filtrar notícias por esfera de poder.",
+                            "description": "Adicionar filtro básico (select ou tabs) por esfera (Executivo, Legislativo, Judiciário) na lista de notícias."
+                        }
+                    ]
+                },
+                {
+                    "id": "M1-MVP-T5",
+                    "title": "SEO on-page essencial e sitemap",
+                    "status": "pending",
+                    "user_story": "Como responsável pelo portal, quero SEO básico funcionando para que as notícias sejam encontradas no Google.",
+                    "description": "Implementar metatags básicas, titles dinâmicos e um sitemap simples.",
+                    "subtasks": [
+                        {
+                            "id": "M1-MVP-T5-ST1",
+                            "title": "Metatags básicas por página",
+                            "status": "pending",
+                            "user_story": "Como editor, quero que cada artigo tenha título e descrição configurados para SEO.",
+                            "description": "Gerar title e description com base nos campos de artigo e categoria. Configurar canonical simples."
+                        },
+                        {
+                            "id": "M1-MVP-T5-ST2",
+                            "title": "Sitemap inicial",
+                            "status": "pending",
+                            "user_story": "Como responsável por SEO, quero um sitemap das principais URLs.",
+                            "description": "Criar endpoint de sitemap.xml com URLs de artigos publicados e categorias ativas."
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "M2-MVP",
+            "name": "ERP/CMS Editorial - MVP",
+            "description": "Versão mínima do ERP editorial com CRUD de artigos, workflow simples e modelo de dados básico.",
+            "dependencies": [],
+            "tasks": [
+                {
+                    "id": "M2-MVP-T1",
+                    "title": "Modelagem mínima de banco de dados",
+                    "status": "in_progress",
+                    "user_story": "Como arquiteto de sistemas, quero um modelo mínimo que já suporte publicação de notícias.",
+                    "description": "Criar tabelas essenciais: Users, Roles, Articles, Categories.",
+                    "subtasks": [
+                        {
+                            "id": "M2-MVP-T1-ST1",
+                            "title": "Tabela Users e Roles",
+                            "status": "completed",
+                            "user_story": "Como admin, quero ter usuários com diferentes tipos de acesso.",
+                            "description": "Definir Users (id, nome, email, senha_hash, role_id, status) e Roles (repórter, editor, admin)."
+                        },
+                        {
+                            "id": "M2-MVP-T1-ST2",
+                            "title": "Tabela Articles com campos essenciais",
+                            "status": "pending",
+                            "user_story": "Como editor, quero armazenar notícias com status e datas.",
+                            "description": "Definir Articles (id, titulo, slug, resumo, corpo_texto, autor_id, editor_id, status, category_id, data_publicacao)."
+                        },
+                        {
+                            "id": "M2-MVP-T1-ST3",
+                            "title": "Tabela Categories básica",
+                            "status": "pending",
+                            "user_story": "Como editor, quero organizar notícias por categorias políticas.",
+                            "description": "Definir Categories (id, nome, slug, cor)."
+                        }
+                    ]
+                },
+                {
+                    "id": "M2-MVP-T2",
+                    "title": "Autenticação e RBAC básicos no ERP",
+                    "status": "pending",
+                    "user_story": "Como admin, quero garantir que só usuários autorizados acessem o painel.",
+                    "description": "Implementar login, sessão e controle de acesso por role.",
+                    "subtasks": [
+                        {
+                            "id": "M2-MVP-T2-ST1",
+                            "title": "Login com NextAuth.js e credenciais",
+                            "status": "pending",
+                            "user_story": "Como usuário, quero entrar no painel com email e senha.",
+                            "description": "Configurar NextAuth.js com provider de credenciais e sessão com cookies."
+                        },
+                        {
+                            "id": "M2-MVP-T2-ST2",
+                            "title": "RBAC simples (repórter, editor, admin)",
+                            "status": "pending",
+                            "user_story": "Como sistema, quero restringir quem pode publicar notícias.",
+                            "description": "Implementar checagens de role nos endpoints e na UI (repórter cria rascunho, editor publica, admin gerencia usuários)."
+                        }
+                    ]
+                },
+                {
+                    "id": "M2-MVP-T3",
+                    "title": "CRUD de artigos no ERP",
+                    "status": "pending",
+                    "user_story": "Como repórter e editor, quero criar, editar e publicar artigos.",
+                    "description": "Criar fluxo básico de cadastro e edição de notícias, com status simples.",
+                    "subtasks": [
+                        {
+                            "id": "M2-MVP-T3-ST1",
+                            "title": "Tela de lista de artigos",
+                            "status": "pending",
+                            "user_story": "Como editor, quero ver todas as matérias e seus status.",
+                            "description": "Listar artigos com filtros por status (rascunho, em revisão, publicado) e busca por título."
+                        },
+                        {
+                            "id": "M2-MVP-T3-ST2",
+                            "title": "Formulário de criação/edição de artigo",
+                            "status": "pending",
+                            "user_story": "Como repórter, quero escrever e salvar matérias.",
+                            "description": "Criar formulário com título, slug, resumo, corpo, categoria e status, com salvamento como rascunho ou envio para revisão."
+                        },
+                        {
+                            "id": "M2-MVP-T3-ST3",
+                            "title": "Ação de publicação e agendamento simples",
+                            "status": "pending",
+                            "user_story": "Como editor, quero publicar uma matéria ou agendar para um horário específico.",
+                            "description": "Adicionar botão de publicar (status publicado, data_publicacao = agora) e campo opcional de data/hora para agendar publicação."
+                        }
+                    ]
+                },
+                {
+                    "id": "M2-MVP-T4",
+                    "title": "Workflow editorial mínimo",
+                    "status": "pending",
+                    "user_story": "Como editor, quero controlar minimamente o fluxo redator → editor → publicação.",
+                    "description": "Modelar e aplicar um workflow simples com 3 estados principais.",
+                    "subtasks": [
+                        {
+                            "id": "M2-MVP-T4-ST1",
+                            "title": "Definir estados de workflow mínimos",
+                            "status": "pending",
+                            "user_story": "Como sistema, quero ter estados claros para o ciclo da notícia.",
+                            "description": "Utilizar estados: rascunho, em_revisao, publicado (arquivado opcional)."
+                        },
+                        {
+                            "id": "M2-MVP-T4-ST2",
+                            "title": "Transições de estado com regras por role",
+                            "status": "pending",
+                            "user_story": "Como editor, quero garantir que repórteres não publiquem direto.",
+                            "description": "Implementar regras: repórter cria e envia para revisão; só editor muda para publicado."
+                        }
+                    ]
+                },
+                {
+                    "id": "M2-MVP-T5",
+                    "title": "Logs básicos de atividade",
+                    "status": "pending",
+                    "user_story": "Como admin, quero saber quem publicou ou alterou uma matéria.",
+                    "description": "Registrar eventos-chave de criação, edição e publicação.",
+                    "subtasks": [
+                        {
+                            "id": "M2-MVP-T5-ST1",
+                            "title": "Tabela de logs simples",
+                            "status": "pending",
+                            "user_story": "Como sistema, quero guardar ações importantes em log.",
+                            "description": "Definir Logs_Atividade (id, user_id, acao, article_id, data_hora)."
+                        },
+                        {
+                            "id": "M2-MVP-T5-ST2",
+                            "title": "Registro automático em eventos críticos",
+                            "status": "pending",
+                            "user_story": "Como admin, quero ver quem publicou cada notícia.",
+                            "description": "Registrar log ao criar, atualizar e publicar artigos."
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "M3-MVP",
+            "name": "Infraestrutura e Segurança - MVP",
+            "description": "Infraestrutura mínima em nuvem, com segurança básica e performance adequada para o lançamento inicial.",
+            "dependencies": [],
+            "tasks": [
+                {
+                    "id": "M3-MVP-T1",
+                    "title": "Provisionamento ambiente mínimo",
+                    "status": "pending",
+                    "user_story": "Como time técnico, quero um ambiente funcional para rodar portal e ERP.",
+                    "description": "Configurar Vercel para front-end, Supabase para banco e armazenamento básico.",
+                    "subtasks": [
+                        {
+                            "id": "M3-MVP-T1-ST1",
+                            "title": "Configurar projeto no Vercel",
+                            "status": "pending",
+                            "user_story": "Como dev, quero deploy automatizado do Next.js.",
+                            "description": "Conectar repositório ao Vercel, configurar variáveis de ambiente e domínios."
+                        },
+                        {
+                            "id": "M3-MVP-T1-ST2",
+                            "title": "Provisionar Supabase/PostgreSQL",
+                            "status": "pending",
+                            "user_story": "Como dev, quero ter banco pronto para o ERP.",
+                            "description": "Criar projeto Supabase, configurar banco, usuários de acesso e backups básicos."
+                        }
+                    ]
+                },
+                {
+                    "id": "M3-MVP-T2",
+                    "title": "Segurança e Cloudflare básicos",
+                    "status": "pending",
+                    "user_story": "Como responsável de segurança, quero proteger o domínio contra ataques básicos e forçar HTTPS.",
+                    "description": "Configurar Cloudflare com DNS, HTTPS e WAF básico.",
+                    "subtasks": [
+                        {
+                            "id": "M3-MVP-T2-ST1",
+                            "title": "DNS e HTTPS via Cloudflare",
+                            "status": "pending",
+                            "user_story": "Como leitor, quero acessar o site com segurança (https).",
+                            "description": "Apontar DNS para Vercel via Cloudflare com certificados ativos."
+                        },
+                        {
+                            "id": "M3-MVP-T2-ST2",
+                            "title": "Regras básicas de WAF e rate limit",
+                            "status": "pending",
+                            "user_story": "Como responsável técnico, quero reduzir risco de ataques simples.",
+                            "description": "Habilitar proteção padrão de WAF e regras simples de rate limiting em rotas críticas do ERP."
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "M4-MVP",
+            "name": "APIs para o portal - MVP",
+            "description": "API mínima para o portal consumir artigos e categorias do ERP.",
+            "dependencies": [
+                "M2-MVP"
+            ],
+            "tasks": [
+                {
+                    "id": "M4-MVP-T1",
+                    "title": "API de listagem de artigos",
+                    "status": "pending",
+                    "user_story": "Como front-end, quero buscar lista de notícias publicadas.",
+                    "description": "Criar endpoint para listar artigos com status publicado.",
+                    "subtasks": [
+                        {
+                            "id": "M4-MVP-T1-ST1",
+                            "title": "Endpoint GET /articles",
+                            "status": "pending",
+                            "user_story": "Como portal, quero obter artigos recentes para exibir na home.",
+                            "description": "Retornar lista paginada de artigos publicados ordenados por data_publicacao."
+                        }
+                    ]
+                },
+                {
+                    "id": "M4-MVP-T2",
+                    "title": "API de detalhe de artigo",
+                    "status": "pending",
+                    "user_story": "Como portal, quero buscar uma notícia específica pelo slug.",
+                    "description": "Criar endpoint de detalhe com corpo, resumo e metadados.",
+                    "subtasks": [
+                        {
+                            "id": "M4-MVP-T2-ST1",
+                            "title": "Endpoint GET /articles/{slug}",
+                            "status": "pending",
+                            "user_story": "Como portal, quero carregar a página de notícia completa.",
+                            "description": "Retornar artigo único com título, resumo, corpo, datas e categoria."
+                        }
+                    ]
+                },
+                {
+                    "id": "M4-MVP-T3",
+                    "title": "API de categorias",
+                    "status": "pending",
+                    "user_story": "Como portal, quero listar categorias para montar o menu.",
+                    "description": "Criar endpoint para listar categorias ativas.",
+                    "subtasks": [
+                        {
+                            "id": "M4-MVP-T3-ST1",
+                            "title": "Endpoint GET /categories",
+                            "status": "pending",
+                            "user_story": "Como front-end, quero montar a navegação por categorias.",
+                            "description": "Retornar lista simples de categorias com id, nome e slug."
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "execution_order_guidance": {
+        "phases": [
+            {
+                "name": "Fase MVP 1 - Modelo de dados e ERP básico",
+                "modules": [
+                    "M2-MVP-T1",
+                    "M2-MVP-T2",
+                    "M2-MVP-T3",
+                    "M2-MVP-T4",
+                    "M2-MVP-T5"
+                ]
+            },
+            {
+                "name": "Fase MVP 2 - Infraestrutura mínima",
+                "modules": [
+                    "M3-MVP-T1",
+                    "M3-MVP-T2"
+                ]
+            },
+            {
+                "name": "Fase MVP 3 - APIs e Portal público",
+                "modules": [
+                    "M4-MVP-T1",
+                    "M4-MVP-T2",
+                    "M4-MVP-T3",
+                    "M1-MVP-T1",
+                    "M1-MVP-T2",
+                    "M1-MVP-T3",
+                    "M1-MVP-T4",
+                    "M1-MVP-T5"
+                ]
+            }
+        ]
+    }
+}

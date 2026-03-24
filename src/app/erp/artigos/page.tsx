@@ -1,0 +1,87 @@
+import { prisma } from "@/lib/prisma";
+import ArticleFilters from "./components/ArticleFilters";
+import Link from "next/link";
+
+// Next.js 15 exige aguardar a Promise de SearchParams
+interface PageProps {
+  searchParams: Promise<{ search?: string; status?: string }>;
+}
+
+export default async function ArtigosPage({ searchParams }: PageProps) {
+  const resolvedParams = await searchParams;
+  const search = resolvedParams?.search || "";
+  const status = resolvedParams?.status || "";
+
+  const whereClause: any = {};
+  if (search) {
+    whereClause.titulo = { contains: search, mode: "insensitive" };
+  }
+  if (status) {
+    whereClause.status_id = status;
+  }
+
+  const articles = await prisma.article.findMany({
+    where: whereClause,
+    orderBy: { created_at: "desc" },
+    include: { autor: true },
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Artigos</h1>
+        <Link 
+          href="/erp/artigos/novo" 
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          Escrever Matéria
+        </Link>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <ArticleFilters initialSearch={search} initialStatus={status} />
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
+              <tr>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider">Título</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider">Autor</th>
+                <th className="px-6 py-4 font-semibold uppercase tracking-wider">Data</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {articles.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-10 text-center text-slate-500 font-medium">
+                    Nenhum artigo encontrado.
+                  </td>
+                </tr>
+              ) : (
+                articles.map((art: any) => (
+                  <tr key={art.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-slate-900">{art.titulo}</td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                        ${art.status_id === 'publicado' ? 'bg-emerald-100 text-emerald-800' : ''}
+                        ${art.status_id === 'em_revisao' ? 'bg-amber-100 text-amber-800' : ''}
+                        ${art.status_id === 'rascunho' ? 'bg-slate-100 text-slate-800' : ''}
+                      `}>
+                        {art.status_id.replace("_", " ")}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-slate-600">{art.autor?.nome || '—'}</td>
+                    <td className="px-6 py-4 text-slate-600">{art.created_at.toLocaleDateString('pt-BR')}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

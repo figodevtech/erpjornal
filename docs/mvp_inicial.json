@@ -223,14 +223,14 @@
                 {
                     "id": "M2-MVP-T3",
                     "title": "CRUD de artigos no ERP",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como repórter e editor, quero criar, editar e publicar artigos.",
                     "description": "Criar fluxo básico de cadastro e edição de notícias, com status simples.",
                     "subtasks": [
                         {
                             "id": "M2-MVP-T3-ST1",
                             "title": "Tela de lista de artigos",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero ver todas as matérias e seus status.",
                             "description": "Listar artigos com filtros por status (rascunho, em revisão, publicado) e busca por título."
                         },

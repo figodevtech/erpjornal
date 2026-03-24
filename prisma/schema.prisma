@@ -26,5 +26,30 @@ model User {
   status        String   @default("ativo")
   created_at    DateTime @default(now())
 
-  cargo Role @relation(fields: [cargo_id], references: [id])
+  cargo             Role      @relation(fields: [cargo_id], references: [id])
+  articles_authored Article[] @relation("ArticleAuthor")
+  articles_edited   Article[] @relation("ArticleEditor")
+  articles_revised  Article[] @relation("ArticleRevisor")
+}
+
+model Article {
+  id              String    @id @default(uuid())
+  titulo          String
+  slug            String    @unique
+  corpo_texto     String
+  resumo          String?
+  autor_id        String
+  editor_id       String?
+  revisor_id      String?
+  categoria_id    String? // Relation to Category will be created in ST3
+  status_id       String    @default("rascunho")
+  data_publicacao DateTime?
+  visualizacoes   Int       @default(0)
+  og_image_url    String?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  autor   User  @relation("ArticleAuthor", fields: [autor_id], references: [id])
+  editor  User? @relation("ArticleEditor", fields: [editor_id], references: [id])
+  revisor User? @relation("ArticleRevisor", fields: [revisor_id], references: [id])
 }

@@ -184,7 +184,7 @@
                         {
                             "id": "M2-MVP-T1-ST2",
                             "title": "Tabela Articles com campos essenciais",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero armazenar notícias com status e datas.",
                             "description": "Definir Articles (id, titulo, slug, resumo, corpo_texto, autor_id, editor_id, status, category_id, data_publicacao)."
                         },

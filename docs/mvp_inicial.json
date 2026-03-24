@@ -223,7 +223,7 @@
                 {
                     "id": "M2-MVP-T3",
                     "title": "CRUD de artigos no ERP",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como repórter e editor, quero criar, editar e publicar artigos.",
                     "description": "Criar fluxo básico de cadastro e edição de notícias, com status simples.",
                     "subtasks": [
@@ -244,7 +244,7 @@
                         {
                             "id": "M2-MVP-T3-ST3",
                             "title": "Ação de publicação e agendamento simples",
-                            "status": "in_progress",
+                            "status": "completed",
                             "user_story": "Como editor, quero publicar uma matéria ou agendar para um horário específico.",
                             "description": "Adicionar botão de publicar (status publicado, data_publicacao = agora) e campo opcional de data/hora para agendar publicação."
                         }

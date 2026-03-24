@@ -16,6 +16,7 @@ export async function saveArticle(formData: FormData) {
   const corpo_texto = formData.get("corpo_texto") as string;
   const categoria_id = formData.get("categoria_id") as string;
   const status_id = formData.get("status_id") as string;
+  const rawDate = formData.get("data_publicacao") as string;
 
   if (!titulo || !slug || !corpo_texto) {
     throw new Error("Campos obrigatórios ausentes");
@@ -29,6 +30,14 @@ export async function saveArticle(formData: FormData) {
     finalStatus = "em_revisao";
   }
 
+  let data_publicacao = finalStatus === "publicado" ? new Date() : null;
+  if (finalStatus === "publicado" && rawDate) {
+    const parsedDate = new Date(rawDate);
+    if (!isNaN(parsedDate.getTime())) {
+      data_publicacao = parsedDate;
+    }
+  }
+
   await prisma.article.create({
     data: {
       titulo,
@@ -38,7 +47,7 @@ export async function saveArticle(formData: FormData) {
       status_id: finalStatus,
       categoria_id: categoria_id || null,
       autor_id: session.user.id,
-      data_publicacao: finalStatus === "publicado" ? new Date() : null,
+      data_publicacao,
     }
   });
 

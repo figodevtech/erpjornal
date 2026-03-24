@@ -11,6 +11,7 @@ interface Category {
 export default function ArticleForm({ categories, userRole }: { categories: Category[], userRole: string }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
+  const [statusInput, setStatusInput] = useState("rascunho");
 
   const formatSlug = (val: string) => {
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -116,20 +117,34 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
                 <label className="block text-sm font-medium text-slate-700 mb-2">Status Inicial</label>
                 <select 
                   name="status_id" 
+                  value={statusInput}
+                  onChange={(e) => setStatusInput(e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-lg shadow-sm p-3 text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
                 >
                   <option value="rascunho">Salvar como Rascunho</option>
                   <option value="em_revisao">Enviar para Revisão</option>
-                  {canPublish && <option value="publicado">Publicar Imediatamente</option>}
+                  {canPublish && <option value="publicado">Publicar</option>}
                 </select>
               </div>
+
+              {statusInput === "publicado" && canPublish && (
+                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Agendamento (Opcional)</label>
+                  <input 
+                    type="datetime-local" 
+                    name="data_publicacao" 
+                    className="w-full bg-white border border-slate-200 rounded-lg shadow-sm p-3 text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">Deixe em branco para publicar agora.</p>
+                </div>
+              )}
             </div>
 
             <div className="mt-8 pt-6 border-t border-slate-200/80">
               <button 
                 type="submit" 
                 disabled={isPending}
-                className="w-full bg-indigo-600 text-white font-semibold flex justify-center items-center px-4 py-3.5 rounded-lg shadow-md hover:bg-indigo-700 hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed transition-all focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="group w-full bg-indigo-600 text-white font-semibold flex justify-center items-center px-6 py-3.5 rounded-xl border border-transparent shadow-[0_4px_14px_0_rgb(79,70,229,0.39)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.23)] hover:-translate-y-0.5 hover:bg-indigo-500 active:scale-[0.98] disabled:opacity-70 disabled:hover:-translate-y-0 disabled:active:scale-100 disabled:cursor-not-allowed transition-all duration-200 outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 {isPending ? (
                   <span className="flex items-center gap-2">

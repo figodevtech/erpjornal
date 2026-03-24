@@ -8,14 +8,36 @@ interface Category {
   nome: string;
 }
 
-export default function ArticleForm({ categories, userRole }: { categories: Category[], userRole: string }) {
+interface InitialData {
+  id: string;
+  titulo: string;
+  slug: string;
+  resumo: string | null;
+  corpo_texto: string;
+  categoria_id: string | null;
+  status_id: string;
+  data_publicacao: Date | null;
+}
+
+interface ArticleFormProps {
+  categories: Category[];
+  userRole: string;
+  initialData?: InitialData | null;
+}
+
+export default function ArticleForm({ categories, userRole, initialData }: ArticleFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  const [statusInput, setStatusInput] = useState("rascunho");
+  // Inicia com o status do banco, ou "rascunho"
+  const [statusInput, setStatusInput] = useState(initialData?.status_id || "rascunho");
 
   const formatSlug = (val: string) => {
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
   };
+
+  const formatedDate = initialData?.data_publicacao 
+    ? new Date(initialData.data_publicacao.getTime() - initialData.data_publicacao.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+    : "";
 
   const handleAction = async (formData: FormData) => {
     setError("");
@@ -32,6 +54,9 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
 
   return (
     <form action={handleAction} className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+      {/* Campo Oculto para UPDATE Dinâmico Controlado por React API Routes */}
+      {initialData?.id && <input type="hidden" name="id" value={initialData.id} />}
+
       {error && (
         <div className="mb-6 p-4 bg-rose-50 text-rose-800 border-l-4 border-rose-500 rounded-r-lg text-sm font-medium">
           {error}
@@ -48,6 +73,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
               type="text" 
               name="titulo" 
               required 
+              defaultValue={initialData?.titulo}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" 
               placeholder="Ex: Nova reforma tem impacto positivo"
             />
@@ -61,6 +87,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
               type="text" 
               name="slug" 
               required 
+              defaultValue={initialData?.slug}
               onChange={(e) => e.target.value = formatSlug(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-600 font-mono text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" 
               placeholder="ex: nova-reforma-impacto"
@@ -74,6 +101,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
             <textarea 
               name="resumo" 
               rows={2}
+              defaultValue={initialData?.resumo || ""}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none" 
               placeholder="Breve sumário exibido abaixo do título..."
             ></textarea>
@@ -87,6 +115,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
               name="corpo_texto" 
               required
               rows={14}
+              defaultValue={initialData?.corpo_texto}
               className="w-full bg-slate-50 border border-slate-200 rounded-lg p-4 text-slate-900 font-serif leading-relaxed focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" 
               placeholder="Escreva a matéria detalhada aqui..."
             ></textarea>
@@ -104,6 +133,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
                 <label className="block text-sm font-medium text-slate-700 mb-2">Categoria</label>
                 <select 
                   name="categoria_id" 
+                  defaultValue={initialData?.categoria_id || ""}
                   className="w-full bg-white border border-slate-200 rounded-lg shadow-sm p-3 text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
                 >
                   <option value="">Selecione uma categoria...</option>
@@ -114,7 +144,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Status Inicial</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Status do Workflow</label>
                 <select 
                   name="status_id" 
                   value={statusInput}
@@ -123,7 +153,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
                 >
                   <option value="rascunho">Salvar como Rascunho</option>
                   <option value="em_revisao">Enviar para Revisão</option>
-                  {canPublish && <option value="publicado">Publicar</option>}
+                  {canPublish && <option value="publicado">Publicar Oficialmente</option>}
                 </select>
               </div>
 
@@ -133,6 +163,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
                   <input 
                     type="datetime-local" 
                     name="data_publicacao" 
+                    defaultValue={formatedDate}
                     className="w-full bg-white border border-slate-200 rounded-lg shadow-sm p-3 text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
                   />
                   <p className="text-xs text-slate-500 mt-2">Deixe em branco para publicar agora.</p>
@@ -154,7 +185,7 @@ export default function ArticleForm({ categories, userRole }: { categories: Cate
                     </svg>
                     Processando...
                   </span>
-                ) : "Salvar Artigo"}
+                ) : (initialData?.id ? "Atualizar Matéria" : "Salvar Matéria")}
               </button>
             </div>
           </div>

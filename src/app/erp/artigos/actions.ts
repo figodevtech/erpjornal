@@ -10,6 +10,7 @@ export async function saveArticle(formData: FormData) {
   const session = await getServerSession(authOptions);
   if (!session?.user) throw new Error("Não autorizado");
 
+  const id = formData.get("id") as string | null;
   const titulo = formData.get("titulo") as string;
   const slug = formData.get("slug") as string;
   const resumo = formData.get("resumo") as string;
@@ -38,18 +39,40 @@ export async function saveArticle(formData: FormData) {
     }
   }
 
-  await prisma.article.create({
-    data: {
-      titulo,
-      slug,
-      resumo,
-      corpo_texto,
-      status_id: finalStatus,
-      categoria_id: categoria_id || null,
-      autor_id: session.user.id,
-      data_publicacao,
+  const data = {
+    titulo,
+    slug,
+    resumo,
+    corpo_texto,
+    status_id: finalStatus,
+    categoria_id: categoria_id || null,
+    data_publicacao,
+  };
+
+  if (id) {
+    const existing = await prisma.article.findUnique({ where: { id } });
+    if (!existing) throw new Error("Artigo não encontrado");
+    
+    // Validando edição: Repórter não pode alterar artigo alheio
+    if (role === "reporter" && existing.autor_id !== session.user.id) {
+      throw new Error("Você não tem permissão para editar este artigo.");
     }
-  });
+    
+    await prisma.article.update({
+      where: { id },
+      data: {
+        ...data,
+        data_publicacao: data_publicacao || existing.data_publicacao,
+      }
+    });
+  } else {
+    await prisma.article.create({
+      data: {
+        ...data,
+        autor_id: session.user.id,
+      }
+    });
+  }
 
   revalidatePath("/erp/artigos");
   redirect("/erp/artigos");

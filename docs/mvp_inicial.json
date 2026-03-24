@@ -253,21 +253,21 @@
                 {
                     "id": "M2-MVP-T4",
                     "title": "Workflow editorial mínimo",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como editor, quero controlar minimamente o fluxo redator → editor → publicação.",
                     "description": "Modelar e aplicar um workflow simples com 3 estados principais.",
                     "subtasks": [
                         {
                             "id": "M2-MVP-T4-ST1",
                             "title": "Definir estados de workflow mínimos",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como sistema, quero ter estados claros para o ciclo da notícia.",
                             "description": "Utilizar estados: rascunho, em_revisao, publicado (arquivado opcional)."
                         },
                         {
                             "id": "M2-MVP-T4-ST2",
                             "title": "Transições de estado com regras por role",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero garantir que repórteres não publiquem direto.",
                             "description": "Implementar regras: repórter cria e envia para revisão; só editor muda para publicado."
                         }

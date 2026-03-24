@@ -63,7 +63,11 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
               ) : (
                 articles.map((art: any) => (
                   <tr key={art.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-900">{art.titulo}</td>
+                    <td className="px-6 py-4 font-medium text-slate-900">
+                      <Link href={`/erp/artigos/${art.id}/edit`} className="hover:text-indigo-600 hover:underline">
+                        {art.titulo}
+                      </Link>
+                    </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
                         ${art.status_id === 'publicado' ? 'bg-emerald-100 text-emerald-800' : ''}

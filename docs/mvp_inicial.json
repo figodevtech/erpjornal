@@ -307,14 +307,14 @@
                 {
                     "id": "M3-MVP-T1",
                     "title": "Provisionamento ambiente mínimo",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como time técnico, quero um ambiente funcional para rodar portal e ERP.",
                     "description": "Configurar Vercel para front-end, Supabase para banco e armazenamento básico.",
                     "subtasks": [
                         {
                             "id": "M3-MVP-T1-ST1",
                             "title": "Configurar projeto no Vercel",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como dev, quero deploy automatizado do Next.js.",
                             "description": "Conectar repositório ao Vercel, configurar variáveis de ambiente e domínios."
                         },

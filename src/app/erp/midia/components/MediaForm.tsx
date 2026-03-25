@@ -17,7 +17,7 @@ interface MediaFormProps {
     tipo_licenca?: string | null;
     fonte?: string | null;
     data_expiracao?: Date | null;
-    tags_ia?: any;
+    tags_ia?: unknown;
   };
 }
 
@@ -176,6 +176,7 @@ export default function MediaForm({ initialData }: MediaFormProps) {
               />
             </div>
           </div>
+        </div>
         {/* IA Tags (M2-PLUS-T4-ST2) */}
         <div className="md:col-span-2 pt-6 border-t border-slate-100">
           <div className="flex items-center justify-between mb-4">

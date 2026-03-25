@@ -212,21 +212,21 @@
                 {
                     "id": "M2-PLUS-T4",
                     "title": "DAM avançado (Media_Library com IA)",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como editor de mídia, quero um acervo organizado com sugestão de tags.",
                     "description": "Estender Media_Library com metadados ricos e IA para tagging.",
                     "subtasks": [
                         {
                             "id": "M2-PLUS-T4-ST1",
                             "title": "Metadados avançados de mídia",
-                            "status": "in_progress",
+                            "status": "completed",
                             "user_story": "Como editor, quero saber direitos autorais e fontes de cada mídia.",
                             "description": "Incluir direitos_autorais, tipo_licenca, fonte e data de expiração."
                         },
                         {
                             "id": "M2-PLUS-T4-ST2",
                             "title": "Sugestão de tags_ia",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero que o sistema sugira tags automaticamente.",
                             "description": "Integrar serviço de IA para sugerir tags baseado na imagem/vídeo."
                         }
@@ -235,21 +235,21 @@
                 {
                     "id": "M2-PLUS-T5",
                     "title": "CRM de fontes e contatos governamentais",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como repórter, quero organizar minhas fontes com segurança.",
                     "description": "Implementar módulo de fontes com níveis de sigilo e histórico.",
                     "subtasks": [
                         {
                             "id": "M2-PLUS-T5-ST1",
                             "title": "Tabelas Sources e Source_Notes",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como sistema, quero armazenar dados de fontes e anotações.",
                             "description": "Definir modelo de fontes e notas com vínculo a usuários e artigos."
                         },
                         {
                             "id": "M2-PLUS-T5-ST2",
                             "title": "Controle de sigilo por role",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como repórter, quero restringir quem pode ver determinada fonte.",
                             "description": "Aplicar regras de acesso por nível de sigilo e registrar acessos em log."
                         }

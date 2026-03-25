@@ -32,6 +32,8 @@ model User {
   articles_edited   Article[]   @relation("ArticleEditor")
   articles_revised  Article[]   @relation("ArticleRevisor")
   action_logs       ActionLog[]
+  fontes_criadas    Source[]    @relation("SourceCreator")
+  notas_fonte       SourceNote[] @relation("SourceNoteAuthor")
 }
 
 model Article {
@@ -63,6 +65,7 @@ model Article {
   versions    ArticleVersion[]
   fact_checks FactCheck[]
   politicos   Politician[] @relation("ArticlePoliticians")
+  fonte_notas SourceNote[]
 }
 
 model Politician {
@@ -133,16 +136,46 @@ model Media {
   tipo              String   // image, video, document
   mimetype          String?
   tamanho           Int?
-  
+
   // Metadados avançados (M2-PLUS-T4-ST1)
   direitos_autorais String?
   tipo_licenca      String?  // Ex: CC BY-SA, Pago, Livre
   fonte             String?
   data_expiracao    DateTime?
-  
+
   // IA Tags (M2-PLUS-T4-ST2)
   tags_ia           Json?    // Array de tags sugeridas por IA
-  
+
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
+}
+
+model Source {
+  id            String   @id @default(uuid())
+  nome          String
+  cargo         String?
+  organizacao   String?
+  email         String?
+  telefone      String?
+  nivel_sigilo  String   @default("publico") // publico, reservado, confidencial
+  notas         String?
+  criador_id    String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  criador     User         @relation("SourceCreator", fields: [criador_id], references: [id])
+  anotacoes   SourceNote[]
+}
+
+model SourceNote {
+  id         String   @id @default(uuid())
+  source_id  String
+  autor_id   String
+  conteudo   String
+  article_id String?
+  created_at DateTime @default(now())
+
+  source  Source   @relation(fields: [source_id], references: [id], onDelete: Cascade)
+  autor   User     @relation("SourceNoteAuthor", fields: [autor_id], references: [id])
+  article Article? @relation(fields: [article_id], references: [id])
 }

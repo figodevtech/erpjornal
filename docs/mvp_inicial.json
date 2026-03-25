@@ -86,28 +86,28 @@
                 {
                     "id": "M1-MVP-T3",
                     "title": "Página de artigo com legibilidade básica",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como leitor, quero uma página de notícia clara e fácil de ler.",
                     "description": "Criar template de artigo com tipografia confortável, corpo do texto, imagem principal e metadados essenciais.",
                     "subtasks": [
                         {
                             "id": "M1-MVP-T3-ST1",
                             "title": "Tipografia e coluna de leitura",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero texto com tamanho e espaçamento adequados.",
                             "description": "Configurar tipografia base (fontes web-safe ou escolhida), largura máxima da coluna de texto e espaçamento entre parágrafos."
                         },
                         {
                             "id": "M1-MVP-T3-ST2",
                             "title": "Exibição de título, resumo e imagem principal",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero entender rapidamente o assunto da notícia ao abrir a página.",
                             "description": "Exibir título, subtítulo/resumo e imagem principal, seguidos do corpo textual."
                         },
                         {
                             "id": "M1-MVP-T3-ST3",
                             "title": "Metadados básicos do artigo",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero ver data e autor para confiar no conteúdo.",
                             "description": "Mostrar data de publicação, nome do autor e categoria principal na área superior da matéria."
                         }

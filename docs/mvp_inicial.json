@@ -395,14 +395,14 @@
                 {
                     "id": "M4-MVP-T3",
                     "title": "API de categorias",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como portal, quero listar categorias para montar o menu.",
                     "description": "Criar endpoint para listar categorias ativas.",
                     "subtasks": [
                         {
                             "id": "M4-MVP-T3-ST1",
                             "title": "Endpoint GET /categories",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como front-end, quero montar a navegação por categorias.",
                             "description": "Retornar lista simples de categorias com id, nome e slug."
                         }

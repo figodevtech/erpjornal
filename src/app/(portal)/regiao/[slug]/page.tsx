@@ -31,12 +31,16 @@ export default async function RegionalPage({ params }: { params: { slug: string 
   const slug = resolvedParams.slug.toLowerCase();
   
   let title = "Notícias Regionais";
-  const description = "Acompanhe as notícias políticas da sua região.";
+  let description = "Acompanhe as notícias políticas da sua região.";
   const whereClause: { status_id: string; regiao?: string; estado?: string } = { status_id: "publicado" };
 
   if (slug === "nacional") {
     title = "Notícias Nacionais";
     whereClause.regiao = "Nacional";
+  } else if (slug === "internacional") {
+    title = "Notícias Internacionais";
+    whereClause.regiao = "Internacional";
+    description = "Acompanhe as notícias políticas de todo o mundo.";
   } else if (stateNames[slug]) {
     title = `Política em ${stateNames[slug]}`;
     whereClause.estado = slug.toUpperCase();

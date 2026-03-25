@@ -37,6 +37,9 @@ export default async function Header() {
             <Link href="/regiao/nacional" className="text-[14px] font-black text-slate-800 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Brasil
             </Link>
+            <Link href="/regiao/internacional" className="text-[14px] font-black text-slate-800 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+              Mundo
+            </Link>
             <Link href="/regiao/sp" className="text-[14px] font-black text-slate-800 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               São Paulo
             </Link>

@@ -240,6 +240,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-rose-500 transition-all font-medium"
                     >
                       <option value="Nacional">Nacional</option>
+                      <option value="Internacional">Internacional</option>
                       <option value="Estadual">Estadual</option>
                       <option value="Municipal">Municipal</option>
                     </select>

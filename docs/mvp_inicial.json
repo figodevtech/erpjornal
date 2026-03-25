@@ -363,14 +363,14 @@
                 {
                     "id": "M4-MVP-T1",
                     "title": "API de listagem de artigos",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como front-end, quero buscar lista de notícias publicadas.",
                     "description": "Criar endpoint para listar artigos com status publicado.",
                     "subtasks": [
                         {
                             "id": "M4-MVP-T1-ST1",
                             "title": "Endpoint GET /articles",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como portal, quero obter artigos recentes para exibir na home.",
                             "description": "Retornar lista paginada de artigos publicados ordenados por data_publicacao."
                         }

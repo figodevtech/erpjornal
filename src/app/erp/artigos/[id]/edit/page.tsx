@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import ArticleForm from "../../components/ArticleForm";
+import ArticleForm, { InitialData } from "../../components/ArticleForm";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -14,8 +14,12 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
   const id = resolvedParams.id;
 
   const article = await prisma.article.findUnique({
-    where: { id }
-  });
+    where: { id },
+    include: {
+      fact_checks: true,
+      politicos: { select: { id: true } }
+    }
+  }) as unknown as InitialData;
 
   if (!article) {
     redirect("/erp/artigos");
@@ -25,6 +29,11 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
   if (session.user.role === "reporter" && article.autor_id !== session.user.id) {
     redirect("/erp/artigos");
   }
+
+  const politicians = await prisma.politician.findMany({
+    select: { id: true, nome: true, partido: true },
+    orderBy: { nome: "asc" }
+  });
 
   const categories = await prisma.category.findMany({
     select: { id: true, nome: true },
@@ -49,7 +58,7 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <ArticleForm categories={categories} userRole={session.user.role} initialData={article} />
+      <ArticleForm categories={categories} politicians={politicians} userRole={session.user.role} initialData={article} />
     </div>
   );
 }

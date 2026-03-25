@@ -45,7 +45,11 @@ model Article {
   revisor_id      String?
   categoria_id    String?
   status_id       String    @default("rascunho")
+  legal_notes     String?
+  legal_status    String    @default("pendente") // pendente, em_analise, aprovado, ajustes
   data_publicacao DateTime?
+  regiao          String?   // Nacional, Estadual, Municipal
+  estado          String?   // SIGLA (DF, SP, etc)
   visualizacoes   Int       @default(0)
   og_image_url    String?
   created_at      DateTime  @default(now())
@@ -54,8 +58,48 @@ model Article {
   autor       User        @relation("ArticleAuthor", fields: [autor_id], references: [id])
   editor      User?       @relation("ArticleEditor", fields: [editor_id], references: [id])
   revisor     User?       @relation("ArticleRevisor", fields: [revisor_id], references: [id])
-  categoria   Category?   @relation(fields: [categoria_id], references: [id])
+  categoria   Category?        @relation(fields: [categoria_id], references: [id])
   action_logs ActionLog[]
+  versions    ArticleVersion[]
+  fact_checks FactCheck[]
+  politicos   Politician[] @relation("ArticlePoliticians")
+}
+
+model Politician {
+  id           String    @id @default(uuid())
+  nome         String
+  cargo        String?
+  partido      String?
+  biografia    String?
+  foto_url     String?
+  regiao       String?   // Nacional, Estadual, Municipal
+  estado       String?   // SIGLA (DF, SP, etc)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  artigos      Article[] @relation("ArticlePoliticians")
+}
+
+model FactCheck {
+  id                String   @id @default(uuid())
+  article_id        String
+  article           Article  @relation(fields: [article_id], references: [id])
+  fonte_url         String?
+  documento_url     String?
+  status_verificacao String   @default("verificado") // verificado, suspeito, falso
+  created_at        DateTime @default(now())
+}
+
+model ArticleVersion {
+  id              String   @id @default(uuid())
+  article_id      String
+  article         Article  @relation(fields: [article_id], references: [id])
+  titulo          String
+  resumo          String?
+  corpo_texto     String
+  status_id       String
+  user_id         String?
+  mudancas_resumo String?
+  created_at      DateTime @default(now())
 }
 
 model Category {

@@ -31,12 +31,20 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Artigos</h1>
-        <Link 
-          href="/erp/artigos/novo" 
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
-          Escrever Matéria
-        </Link>
+        <div className="flex gap-3 items-center">
+          <Link 
+            href="/erp/artigos/kanban" 
+            className="flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-medium px-5 py-2.5 rounded-lg border border-indigo-200 transition-all active:scale-95"
+          >
+            Visualizar Kanban
+          </Link>
+          <Link 
+            href="/erp/artigos/novo" 
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-5 py-2.5 rounded-lg shadow-sm transition-all focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Escrever Matéria
+          </Link>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">

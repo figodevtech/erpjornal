@@ -14,6 +14,11 @@ export default async function NovoArtigoPage() {
     orderBy: { nome: "asc" }
   });
 
+  const politicians = await prisma.politician.findMany({
+    select: { id: true, nome: true, partido: true },
+    orderBy: { nome: "asc" }
+  });
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
@@ -32,7 +37,7 @@ export default async function NovoArtigoPage() {
         </div>
       </div>
 
-      <ArticleForm categories={categories} userRole={session.user.role} />
+      <ArticleForm categories={categories} politicians={politicians} userRole={session.user.role} />
     </div>
   );
 }

@@ -57,21 +57,21 @@
                 {
                     "id": "M1-PLUS-T2",
                     "title": "Taxonomia política avançada e páginas de políticos",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como leitor interessado em política, quero explorar notícias por político, tema, esfera e região.",
                     "description": "Adicionar páginas de perfil de político, filtros por região e temas avançados.",
                     "subtasks": [
                         {
                             "id": "M1-PLUS-T2-ST1",
                             "title": "Páginas de perfil de político",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero ver o histórico de notícias de um político específico.",
                             "description": "Exibir biografia, cargo, partido e listagem de artigos vinculados ao político."
                         },
                         {
                             "id": "M1-PLUS-T2-ST2",
                             "title": "Páginas regionais (estado/região)",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero acompanhar notícias políticas por região.",
                             "description": "Criar páginas de listagem filtrando artigos por metadado de região/estado."
                         }
@@ -143,21 +143,21 @@
                 {
                     "id": "M2-PLUS-T1",
                     "title": "Workflow Kanban completo",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como editor-chefe, quero visualizar todo o fluxo editorial em um quadro Kanban.",
                     "description": "Criar quadro de Pauta → Apuração → Redação → Revisão → Jurídico → Publicado.",
                     "subtasks": [
                         {
                             "id": "M2-PLUS-T1-ST1",
                             "title": "Quadro Kanban de matérias",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero arrastar matérias entre etapas.",
                             "description": "Implementar UI Kanban com drag-and-drop com cards de artigos representando o estado de workflow."
                         },
                         {
                             "id": "M2-PLUS-T1-ST2",
                             "title": "Atribuição de pauta a repórteres",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero designar rapidamente um repórter para cada pauta.",
                             "description": "Adicionar campo responsável ao card e ação de atribuição na UI."
                         }
@@ -166,21 +166,21 @@
                 {
                     "id": "M2-PLUS-T2",
                     "title": "Versionamento de artigos e diff",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como editor, quero ver o histórico de versões de uma notícia.",
                     "description": "Armazenar versões de artigos e permitir comparação entre elas.",
                     "subtasks": [
                         {
                             "id": "M2-PLUS-T2-ST1",
                             "title": "Modelo de Article_Versions",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como sistema, quero guardar snapshots de artigos.",
                             "description": "Criar tabela de versões com campos essenciais e timestamps."
                         },
                         {
                             "id": "M2-PLUS-T2-ST2",
                             "title": "UI de histórico e diff",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero comparar duas versões e ver o que mudou.",
                             "description": "Interface de timeline de versões e componente de diff textual."
                         }
@@ -189,21 +189,21 @@
                 {
                     "id": "M2-PLUS-T3",
                     "title": "Revisão jurídica e fact-checking",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como revisor jurídico, quero um fluxo próprio para analisar conteúdos sensíveis.",
                     "description": "Adicionar etapa de revisão jurídica e módulo de fact-checking com evidências.",
                     "subtasks": [
                         {
                             "id": "M2-PLUS-T3-ST1",
                             "title": "Status e campos de revisão jurídica",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como jurídico, quero marcar o resultado da análise legal da matéria.",
                             "description": "Adicionar status específicos (em análise jurídica, aprovado, ajustes) e campos de notas jurídicas."
                         },
                         {
                             "id": "M2-PLUS-T3-ST2",
                             "title": "Tabela Fact_Checking e UI associada",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como time de checagem, quero registrar fontes e documentos que sustentam a notícia.",
                             "description": "Criar Fact_Checking com fonte_url, documento_pdf, status_verificacao, ligado a cada artigo."
                         }

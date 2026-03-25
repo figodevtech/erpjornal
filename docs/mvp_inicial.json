@@ -56,28 +56,28 @@
                 {
                     "id": "M1-MVP-T2",
                     "title": "Home com destaques e lista de notícias",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como leitor, quero ver as principais notícias políticas logo na home para me atualizar rapidamente.",
                     "description": "Construir home com bloco de destaques e listagem cronológica das notícias mais recentes.",
                     "subtasks": [
                         {
                             "id": "M1-MVP-T2-ST1",
                             "title": "Bloco de notícias em destaque",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero visualizar manchetes em destaque na home.",
                             "description": "Exibir de 3 a 5 notícias marcadas como destaque, com imagem, título e resumo curto."
                         },
                         {
                             "id": "M1-MVP-T2-ST2",
                             "title": "Lista de notícias recentes",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero ver uma lista de notícias recentes ordenadas por data.",
                             "description": "Implementar listagem paginada ou com 'carregar mais' consumindo API de artigos ordenados por data_publicacao."
                         },
                         {
                             "id": "M1-MVP-T2-ST3",
                             "title": "Indicação simples de categoria/tema",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero saber rapidamente a qual tema cada notícia pertence.",
                             "description": "Mostrar tag de categoria/tema no card de cada notícia com cor básica configurada."
                         }

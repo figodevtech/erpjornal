@@ -179,3 +179,18 @@ model SourceNote {
   autor   User     @relation("SourceNoteAuthor", fields: [autor_id], references: [id])
   article Article? @relation(fields: [article_id], references: [id])
 }
+
+model PodcastEpisode {
+  id          String   @id @default(uuid())
+  titulo      String
+  slug        String   @unique
+  descricao   String?  @db.Text
+  audio_url   String
+  capa_url    String?
+  duracao     Int?     // segundos
+  data_pub    DateTime @default(now())
+  tags        String[]
+  status      String   @default("draft") // draft, published
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}

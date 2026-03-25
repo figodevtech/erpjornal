@@ -80,14 +80,14 @@
                 {
                     "id": "M1-PLUS-T3",
                     "title": "Multiformatos no portal (podcasts, vídeos curtos, newsletters)",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como leitor, quero consumir o conteúdo político em áudio, vídeo e email.",
                     "description": "Criar seções e páginas dedicadas a podcasts, vídeos curtos e newsletters.",
                     "subtasks": [
                         {
                             "id": "M1-PLUS-T3-ST1",
                             "title": "Página e player de podcasts",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero ouvir episódios de podcast diretamente no site.",
                             "description": "Implementar listagem e página de episódio com player e metadados."
                         },

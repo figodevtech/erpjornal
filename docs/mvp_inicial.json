@@ -307,7 +307,7 @@
                 {
                     "id": "M3-MVP-T1",
                     "title": "Provisionamento ambiente mínimo",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como time técnico, quero um ambiente funcional para rodar portal e ERP.",
                     "description": "Configurar Vercel para front-end, Supabase para banco e armazenamento básico.",
                     "subtasks": [
@@ -321,7 +321,7 @@
                         {
                             "id": "M3-MVP-T1-ST2",
                             "title": "Provisionar Supabase/PostgreSQL",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como dev, quero ter banco pronto para o ERP.",
                             "description": "Criar projeto Supabase, configurar banco, usuários de acesso e backups básicos."
                         }
@@ -330,21 +330,21 @@
                 {
                     "id": "M3-MVP-T2",
                     "title": "Segurança e Cloudflare básicos",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como responsável de segurança, quero proteger o domínio contra ataques básicos e forçar HTTPS.",
                     "description": "Configurar Cloudflare com DNS, HTTPS e WAF básico.",
                     "subtasks": [
                         {
                             "id": "M3-MVP-T2-ST1",
                             "title": "DNS e HTTPS via Cloudflare",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero acessar o site com segurança (https).",
                             "description": "Apontar DNS para Vercel via Cloudflare com certificados ativos."
                         },
                         {
                             "id": "M3-MVP-T2-ST2",
                             "title": "Regras básicas de WAF e rate limit",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como responsável técnico, quero reduzir risco de ataques simples.",
                             "description": "Habilitar proteção padrão de WAF e regras simples de rate limiting em rotas críticas do ERP."
                         }

@@ -116,21 +116,21 @@
                 {
                     "id": "M1-MVP-T4",
                     "title": "Taxonomia política mínima",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como leitor, quero navegar por categorias políticas básicas.",
                     "description": "Implementar categorias e esferas mínimas (Executivo, Legislativo, Judiciário e alguns temas principais).",
                     "subtasks": [
                         {
                             "id": "M1-MVP-T4-ST1",
                             "title": "Páginas de categoria simples",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero ver uma página com todas as notícias de uma categoria.",
                             "description": "Criar template de listagem por categoria, consumindo API filtrada por category_id ou slug."
                         },
                         {
                             "id": "M1-MVP-T4-ST2",
                             "title": "Filtro simples por esfera",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero filtrar notícias por esfera de poder.",
                             "description": "Adicionar filtro básico (select ou tabs) por esfera (Executivo, Legislativo, Judiciário) na lista de notícias."
                         }

@@ -212,14 +212,14 @@
                 {
                     "id": "M2-PLUS-T4",
                     "title": "DAM avançado (Media_Library com IA)",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como editor de mídia, quero um acervo organizado com sugestão de tags.",
                     "description": "Estender Media_Library com metadados ricos e IA para tagging.",
                     "subtasks": [
                         {
                             "id": "M2-PLUS-T4-ST1",
                             "title": "Metadados avançados de mídia",
-                            "status": "pending",
+                            "status": "in_progress",
                             "user_story": "Como editor, quero saber direitos autorais e fontes de cada mídia.",
                             "description": "Incluir direitos_autorais, tipo_licenca, fonte e data de expiração."
                         },

@@ -125,3 +125,24 @@ model ActionLog {
   article    Article? @relation(fields: [article_id], references: [id])
   data_hora  DateTime @default(now())
 }
+
+model Media {
+  id                String   @id @default(uuid())
+  url               String
+  nome              String
+  tipo              String   // image, video, document
+  mimetype          String?
+  tamanho           Int?
+  
+  // Metadados avançados (M2-PLUS-T4-ST1)
+  direitos_autorais String?
+  tipo_licenca      String?  // Ex: CC BY-SA, Pago, Livre
+  fonte             String?
+  data_expiracao    DateTime?
+  
+  // IA Tags (M2-PLUS-T4-ST2)
+  tags_ia           Json?    // Array de tags sugeridas por IA
+  
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+}

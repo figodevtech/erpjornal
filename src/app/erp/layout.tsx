@@ -16,6 +16,7 @@ export default async function ERPLayout({ children }: { children: React.ReactNod
         <nav className="flex flex-col gap-2">
           <Link href="/erp/artigos" className="hover:bg-slate-800 p-2 rounded transition-colors text-slate-300 hover:text-white font-medium">Artigos</Link>
           <Link href="/erp/politicos" className="hover:bg-slate-800 p-2 rounded transition-colors text-slate-300 hover:text-white font-medium">Políticos</Link>
+          <Link href="/erp/midia" className="hover:bg-slate-800 p-2 rounded transition-colors text-slate-300 hover:text-white font-medium">Biblioteca de Mídia</Link>
           <form action="/api/auth/signout" method="POST">
             <button type="submit" className="w-full text-left hover:bg-red-500/10 text-red-400 p-2 rounded transition-colors font-medium mt-auto">Sair</button>
           </form>

@@ -139,21 +139,21 @@
                 {
                     "id": "M1-MVP-T5",
                     "title": "SEO on-page essencial e sitemap",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como responsável pelo portal, quero SEO básico funcionando para que as notícias sejam encontradas no Google.",
                     "description": "Implementar metatags básicas, titles dinâmicos e um sitemap simples.",
                     "subtasks": [
                         {
                             "id": "M1-MVP-T5-ST1",
                             "title": "Metatags básicas por página",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero que cada artigo tenha título e descrição configurados para SEO.",
                             "description": "Gerar title e description com base nos campos de artigo e categoria. Configurar canonical simples."
                         },
                         {
                             "id": "M1-MVP-T5-ST2",
                             "title": "Sitemap inicial",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como responsável por SEO, quero um sitemap das principais URLs.",
                             "description": "Criar endpoint de sitemap.xml com URLs de artigos publicados e categorias ativas."
                         }

@@ -44,8 +44,8 @@ export default function ArticleForm({ categories, userRole, initialData }: Artic
     startTransition(async () => {
       try {
         await saveArticle(formData);
-      } catch (err: any) {
-        setError(err.message || "Erro interno ao salvar.");
+      } catch (err: unknown) {
+        setError((err as Error).message || "Erro interno ao salvar.");
       }
     });
   };

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: Request) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: Request) {
     const skip = (page - 1) * limit;
 
     // Apenas listamos matérias oficiais que já chegaram no horário configurado
-    const whereClause: any = {
+    const whereClause: Prisma.ArticleWhereInput = {
       status_id: "publicado",
       data_publicacao: {
         lte: new Date(),

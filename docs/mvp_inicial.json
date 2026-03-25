@@ -26,28 +26,28 @@
                 {
                     "id": "M1-MVP-T1",
                     "title": "Layout base e navegação principal",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como leitor, quero navegar facilmente entre a home, seções e notícias para encontrar rapidamente as matérias recentes.",
                     "description": "Criar estrutura básica do portal em Next.js com header, footer, rotas principais e navegação simples.",
                     "subtasks": [
                         {
                             "id": "M1-MVP-T1-ST1",
                             "title": "Definir rotas principais (home, lista, artigo)",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero acessar home, listas de notícias e página de artigo sem fricção.",
                             "description": "Configurar rotas em Next.js para home (/), lista por categoria (/categoria/[slug]) e artigo (/noticia/[slug]) com fallback padrão."
                         },
                         {
                             "id": "M1-MVP-T1-ST2",
                             "title": "Implementar header e footer básicos",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero sempre ter acesso ao menu principal e links institucionais.",
                             "description": "Criar header com logo, navegação para seções principais e busca simples. Footer com links institucionais e de contato."
                         },
                         {
                             "id": "M1-MVP-T1-ST3",
                             "title": "Grid responsivo básico",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero conseguir ler bem o site no desktop e no celular.",
                             "description": "Definir um grid responsivo simples usando Tailwind, com largura de coluna adequada para texto e cards."
                         }

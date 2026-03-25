@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import ArticleFilters from "./components/ArticleFilters";
 import Link from "next/link";
 
@@ -12,7 +13,7 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
   const search = resolvedParams?.search || "";
   const status = resolvedParams?.status || "";
 
-  const whereClause: any = {};
+  const whereClause: Prisma.ArticleWhereInput = {};
   if (search) {
     whereClause.titulo = { contains: search, mode: "insensitive" };
   }
@@ -61,7 +62,7 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                   </td>
                 </tr>
               ) : (
-                articles.map((art: any) => (
+                articles.map((art) => (
                   <tr key={art.id} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4 font-medium text-slate-900">
                       <Link href={`/erp/artigos/${art.id}/edit`} className="hover:text-indigo-600 hover:underline">

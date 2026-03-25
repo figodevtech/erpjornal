@@ -1,8 +1,9 @@
 "use client";
 
-import { useTransition } from "react";
-import { saveMedia } from "../actions";
+import { useState, useTransition } from "react";
+import { saveMedia, suggestMediaTags } from "../actions";
 import Link from "next/link";
+import { Sparkles, X } from "lucide-react";
 
 interface MediaFormProps {
   initialData?: {
@@ -16,16 +17,42 @@ interface MediaFormProps {
     tipo_licenca?: string | null;
     fonte?: string | null;
     data_expiracao?: Date | null;
+    tags_ia?: any;
   };
 }
 
 export default function MediaForm({ initialData }: MediaFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [tags, setTags] = useState<string[]>(initialData?.tags_ia as string[] || []);
+  const [isSuggesting, setIsSuggesting] = useState(false);
+
+  async function handleSuggestTags() {
+    const nome = (document.getElementsByName("nome")[0] as HTMLInputElement).value;
+    const tipo = (document.getElementsByName("tipo")[0] as HTMLSelectElement).value;
+    
+    if (!nome) return alert("Digite um nome para sugerir tags");
+    
+    setIsSuggesting(true);
+    try {
+      const suggestions = await suggestMediaTags(nome, tipo);
+      setTags(prev => Array.from(new Set([...prev, ...suggestions])));
+    } finally {
+      setIsSuggesting(false);
+    }
+  }
+
+  function removeTag(tag: string) {
+    setTags(tags.filter(t => t !== tag));
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const formData = new FormData(form);
+    
+    // Adiciona as tags ao formData
+    formData.append("tags_ia", JSON.stringify(tags));
+    
     startTransition(() => saveMedia(formData));
   }
 
@@ -148,6 +175,41 @@ export default function MediaForm({ initialData }: MediaFormProps) {
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
               />
             </div>
+          </div>
+        {/* IA Tags (M2-PLUS-T4-ST2) */}
+        <div className="md:col-span-2 pt-6 border-t border-slate-100">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              Tags Sugeridas por IA
+            </h3>
+            <button
+              type="button"
+              onClick={handleSuggestTags}
+              disabled={isSuggesting}
+              className="text-[10px] font-bold uppercase tracking-widest bg-amber-50 text-amber-700 px-3 py-1.5 rounded-lg border border-amber-200 hover:bg-amber-100 transition-all flex items-center gap-2 disabled:opacity-50"
+            >
+              <Sparkles className="w-3 h-3" />
+              {isSuggesting ? "Sugerindo..." : "Gerar Sugestões"}
+            </button>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+            {tags.length === 0 && (
+              <p className="text-[11px] text-slate-400 italic">Nenhuma tag sugerida ainda. Clique em gerar para começar.</p>
+            )}
+            {tags.map(tag => (
+              <span key={tag} className="inline-flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm">
+                {tag}
+                <button 
+                  type="button" 
+                  onClick={() => removeTag(tag)}
+                  className="hover:text-rose-500 transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
           </div>
         </div>
       </div>

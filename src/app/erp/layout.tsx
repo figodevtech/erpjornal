@@ -6,7 +6,7 @@ import Link from "next/link";
 export default async function ERPLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    redirect("/api/auth/signin");
+    redirect("/login");
   }
 
   return (

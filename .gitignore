@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# additional system files
+.DS_Store
+Thumbs.db
+
+# AI Agents & Assistants
+.agent/
+.gemini/
+.stitch/
+.project_data/
+*.db
+*.sqlite
+/prisma/dev.db
+/prisma/dev.db-journal
+/design-system/

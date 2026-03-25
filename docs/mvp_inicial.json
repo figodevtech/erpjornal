@@ -379,14 +379,14 @@
                 {
                     "id": "M4-MVP-T2",
                     "title": "API de detalhe de artigo",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como portal, quero buscar uma notícia específica pelo slug.",
                     "description": "Criar endpoint de detalhe com corpo, resumo e metadados.",
                     "subtasks": [
                         {
                             "id": "M4-MVP-T2-ST1",
                             "title": "Endpoint GET /articles/{slug}",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como portal, quero carregar a página de notícia completa.",
                             "description": "Retornar artigo único com título, resumo, corpo, datas e categoria."
                         }

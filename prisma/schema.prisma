@@ -195,3 +195,27 @@ model PodcastEpisode {
   created_at  DateTime @default(now())
   updated_at  DateTime @updatedAt
 }
+
+model ShortVideo {
+  id          String   @id @default(uuid())
+  titulo      String
+  slug        String   @unique
+  descricao   String?  @db.Text
+  video_url   String
+  capa_url    String?
+  duracao     Int?     // segundos
+  data_pub    DateTime @default(now())
+  tags        String[]
+  status      String   @default("draft") // draft, published
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
+model NewsletterSubscription {
+  id         String   @id @default(uuid())
+  email      String   @unique
+  nome       String?
+  temas      String[] // ex: ['politica', 'economia', 'bastidores']
+  origem     String?  // ex: 'home', 'fim_artigo'
+  created_at DateTime @default(now())
+}

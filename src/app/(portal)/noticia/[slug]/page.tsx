@@ -5,6 +5,7 @@ import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Lock, Crown, ShieldAlert } from "lucide-react";
+import NewsletterForm from "@/components/portal/NewsletterForm";
 
 export const revalidate = 300;
 
@@ -59,7 +60,7 @@ export default async function NoticiaPage({ params }: PageProps) {
     data: { visualizacoes: { increment: 1 } }
   }).catch(() => {});
 
-  const isPremium = article.is_premium;
+  const isPremium = (article as any).is_premium;
   const isAuthed = !!session;
   const canAccess = !isPremium || isAuthed;
 
@@ -198,6 +199,11 @@ export default async function NoticiaPage({ params }: PageProps) {
                </div>
             </>
           )}
+        </div>
+
+        {/* Newsletter CTA at the end of article (M1-PLUS-T3-ST3) */}
+        <div className="mt-16 w-full max-w-[760px] mx-auto font-sans">
+          <NewsletterForm origem={`noticia_${article.slug}`} />
         </div>
 
       </article>

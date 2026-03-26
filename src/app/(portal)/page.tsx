@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Image from "next/image"; 
+import NewsletterForm from "@/components/portal/NewsletterForm";
 
 export const revalidate = 60;
 
@@ -108,6 +109,11 @@ export default async function PortalHome() {
              <p className="mt-2 text-slate-600">A equipe de jornalismo está apurando os próximos fatos.</p>
           </div>
         )}
+      </section>
+
+      {/* Seção de Newsletter (M1-PLUS-T3-ST3) */}
+      <section className="mb-20">
+        <NewsletterForm origem="home" />
       </section>
 
       {/* FEED DE NOTÍCIAS ("ÚLTIMAS" estilo Timeline de Portal) */}

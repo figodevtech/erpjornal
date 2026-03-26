@@ -52,6 +52,9 @@ export default async function Header() {
             <Link href="/podcasts" className="text-[14px] font-black text-slate-800 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Podcasts
             </Link>
+            <Link href="/videos" className="text-[14px] font-black text-slate-800 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+              Vídeos
+            </Link>
             {categories.map((cat: any) => (
               <Link 
                 key={cat.id} 

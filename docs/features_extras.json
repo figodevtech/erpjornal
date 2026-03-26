@@ -80,7 +80,7 @@
                 {
                     "id": "M1-PLUS-T3",
                     "title": "Multiformatos no portal (podcasts, vídeos curtos, newsletters)",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como leitor, quero consumir o conteúdo político em áudio, vídeo e email.",
                     "description": "Criar seções e páginas dedicadas a podcasts, vídeos curtos e newsletters.",
                     "subtasks": [
@@ -94,14 +94,14 @@
                         {
                             "id": "M1-PLUS-T3-ST2",
                             "title": "Galeria de vídeos curtos",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero assistir vídeos curtos sobre política em um feed dedicado.",
                             "description": "Criar grid/scroll vertical com vídeos curtos, reproduzindo inline com autoplay controlado."
                         },
                         {
                             "id": "M1-PLUS-T3-ST3",
                             "title": "Blocos de call-to-action para newsletter",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero me inscrever em newsletters temáticas.",
                             "description": "Adicionar formulários de inscrição em pontos estratégicos (home, fim de artigo) integrados ao backend de mailing."
                         }

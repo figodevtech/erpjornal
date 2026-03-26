@@ -1,4 +1,4 @@
-export type RoleName = 'reporter' | 'editor' | 'juridico' | 'admin';
+export type RoleName = 'reporter' | 'editor' | 'juridico' | 'admin' | 'assinante';
 
 export const rbacRules = {
   reporter: {
@@ -24,6 +24,12 @@ export const rbacRules = {
     canCreateDraft: true,
     canViewSecretSources: true,
     canManageUsers: true,
+  },
+  assinante: {
+    canPublish: false,
+    canCreateDraft: false,
+    canViewSecretSources: false,
+    canManageUsers: false,
   }
 };
 

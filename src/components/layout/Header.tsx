@@ -1,18 +1,33 @@
 import Link from "next/link";
 import { getCachedCategories } from "@/lib/data/categories";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { UserCircle, LogIn } from "lucide-react";
 
 export default async function Header() {
+  const session = await getServerSession(authOptions);
   const categories = await getCachedCategories();
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b-[4px] border-red-700">
-      {/* Top News Ticker / Date bar (optional, makes it look more native) */}
+      {/* Top News Ticker / Date bar */}
       <div className="hidden md:flex bg-slate-900 text-slate-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 justify-between items-center font-bold tracking-widest uppercase">
         <span>Atualizado: {new Date().toLocaleDateString("pt-BR")}</span>
-        <div className="flex gap-6">
+        <div className="flex gap-6 items-center">
           <Link href="/sobre" className="hover:text-white transition-colors">Institucional</Link>
           <Link href="/contato" className="hover:text-white transition-colors">Fale Conosco</Link>
-          <Link href="/assine" className="text-red-400 hover:text-red-300 transition-colors">Assine</Link>
+          
+          {session ? (
+            <Link href="/perfil" className="flex items-center gap-1.5 text-white hover:text-red-400 transition-colors">
+              <UserCircle className="w-4 h-4" />
+              <span>Olá, {session.user?.name?.split(' ')[0]}</span>
+            </Link>
+          ) : (
+            <Link href="/login" className="flex items-center gap-1.5 bg-red-700 text-white px-3 py-1 -my-1 rounded-sm hover:bg-red-600 transition-colors">
+              <LogIn className="w-3.5 h-3.5" />
+              <span>Login</span>
+            </Link>
+          )}
         </div>
       </div>
       
@@ -63,12 +78,14 @@ export default async function Header() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z" />
               </svg>
             </button>
-            <Link 
-              href="/erp/login" 
-              className="hidden sm:inline-flex items-center justify-center px-4 py-2 bg-slate-900 text-[11px] font-black uppercase tracking-widest text-white hover:bg-red-700 transition-colors"
-            >
-              Redação
-            </Link>
+            {session && ["admin", "editor", "reporter", "juridico"].includes(session.user?.role as string) && (
+              <Link 
+                href="/erp" 
+                className="hidden sm:inline-flex items-center justify-center px-4 py-2 bg-slate-900 text-[11px] font-black uppercase tracking-widest text-white hover:bg-red-700 transition-colors"
+              >
+                Painel ERP
+              </Link>
+            )}
           </div>
 
         </div>

@@ -6,9 +6,17 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
+    const isStaff = ["admin", "editor", "reporter", "juridico"].includes(token?.role as string);
+    const isERPRoute = path.startsWith("/erp");
+
+    // Bloquear assinantes do ERP
+    if (isERPRoute && !isStaff) {
+      return NextResponse.rewrite(new URL("/403", req.url));
+    }
+
     // Rotas estritas de admin
     if (path.startsWith("/erp/admin") && token?.role !== "admin") {
-      return NextResponse.rewrite(new URL("/403", req.url)); // Sem permissão
+      return NextResponse.rewrite(new URL("/403", req.url));
     }
 
     // Rotas de publicação (Editor e Admin apenas)

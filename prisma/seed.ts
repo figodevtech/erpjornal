@@ -9,7 +9,8 @@ async function main() {
     { nome: "admin" },
     { nome: "editor" },
     { nome: "reporter" },
-    { nome: "juridico" }
+    { nome: "juridico" },
+    { nome: "assinante" }
   ];
 
   for (const role of roles) {

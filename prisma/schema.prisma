@@ -54,6 +54,7 @@ model Article {
   estado          String?   // SIGLA (DF, SP, etc)
   visualizacoes   Int       @default(0)
   og_image_url    String?
+  is_premium      Boolean   @default(false)
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 

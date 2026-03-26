@@ -1,16 +1,16 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { useState } from "react";
+import { signIn, getSession } from "next-auth/react";
+import { useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { LogIn, ShieldCheck, Mail, Lock } from "lucide-react";
+import { LogIn, UserCircle, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const error = searchParams.get("error");
-  const callbackUrl = searchParams.get("callbackUrl") || "/erp";
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,10 +34,88 @@ export default function LoginPage() {
       setErrMessage("E-mail ou senha incorretos.");
       setLoading(false);
     } else {
-      router.push(callbackUrl);
+      // Pegar sessão para verificar o papel
+      const session = await getSession();
+      const role = session?.user?.role;
+
+      if (callbackUrl && callbackUrl !== "/erp" && callbackUrl !== "/erp/artigos") {
+        router.push(callbackUrl);
+      } else if (role && ['admin', 'editor', 'reporter', 'juridico'].includes(role)) {
+        router.push("/erp/artigos");
+      } else {
+        router.push("/");
+      }
     }
   };
 
+  return (
+    <>
+      <div className="mb-10">
+        <h2 className="text-4xl font-black text-white mb-3 text-center lg:text-left">Acesse sua Conta<span className="text-red-700">.</span></h2>
+        <p className="text-slate-400 font-medium text-center lg:text-left">Insira suas credenciais para continuar.</p>
+      </div>
+
+      {errMessage && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl mb-8 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+          <UserCircle className="w-5 h-5 shrink-0" />
+          <p className="text-sm font-bold">{errMessage}</p>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
+          <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 block">Endereço de E-mail</label>
+          <div className="relative group">
+            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-red-700 transition-colors" />
+            <input 
+              type="email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 text-white pl-12 pr-4 py-4 rounded-xl outline-none focus:border-red-700/50 transition-all font-medium placeholder:text-slate-700" 
+              placeholder="exemplo@revistagestao.pt"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between items-center">
+            <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 block">Chave de Acesso</label>
+            <Link href="#" className="text-slate-600 hover:text-red-700 text-xs font-bold uppercase transition-colors">Esqueceu a senha?</Link>
+          </div>
+          <div className="relative group">
+            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-red-700 transition-colors" />
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 text-white pl-12 pr-4 py-4 rounded-xl outline-none focus:border-red-700/50 transition-all font-medium placeholder:text-slate-700" 
+              placeholder="••••••••"
+              required
+            />
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="w-full bg-red-700 hover:bg-red-600 disabled:bg-red-900/50 disabled:cursor-not-allowed text-white font-black uppercase tracking-[0.1em] py-5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 relative overflow-hidden group"
+        >
+          {loading ? (
+            <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <LogIn className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              Entrar no Sistema
+            </>
+          )}
+        </button>
+      </form>
+    </>
+  );
+}
+
+export default function LoginPage() {
   return (
     <div className="min-h-screen bg-slate-950 flex">
       {/* Coluna Esquerda: Branding */}
@@ -76,72 +154,20 @@ export default function LoginPage() {
             <span className="text-xl font-black uppercase tracking-tighter">Revista<span className="text-red-700">.</span>Gestão</span>
           </div>
 
-          <div className="mb-10">
-            <h2 className="text-4xl font-black text-white mb-3">Redação<span className="text-red-700">.</span></h2>
-            <p className="text-slate-400 font-medium">Insira suas credenciais para acessar o painel administrativo.</p>
-          </div>
-
-          {errMessage && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl mb-8 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-              <ShieldCheck className="w-5 h-5 shrink-0" />
-              <p className="text-sm font-bold">{errMessage}</p>
+          <Suspense fallback={
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="w-12 h-12 border-4 border-red-700/30 border-t-red-700 rounded-full animate-spin" />
+              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Carregando formulário...</p>
             </div>
-          )}
+          }>
+            <LoginForm />
+          </Suspense>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 block">E-mail Corporativo</label>
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-red-700 transition-colors" />
-                <input 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 text-white pl-12 pr-4 py-4 rounded-xl outline-none focus:border-red-700/50 transition-all font-medium placeholder:text-slate-700" 
-                  placeholder="exemplo@revistagestao.pt"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 block">Chave de Acesso</label>
-                <Link href="#" className="text-slate-600 hover:text-red-700 text-xs font-bold uppercase transition-colors">Esqueceu a senha?</Link>
-              </div>
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-red-700 transition-colors" />
-                <input 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 text-white pl-12 pr-4 py-4 rounded-xl outline-none focus:border-red-700/50 transition-all font-medium placeholder:text-slate-700" 
-                  placeholder="••••••••"
-                  required
-                />
-              </div>
-            </div>
-
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-red-700 hover:bg-red-600 disabled:bg-red-900/50 disabled:cursor-not-allowed text-white font-black uppercase tracking-[0.1em] py-5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-3 relative overflow-hidden group"
-            >
-              {loading ? (
-                <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  <LogIn className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  Entrar no Sistema
-                </>
-              )}
-            </button>
-          </form>
-
-          <div className="mt-12 pt-8 border-t border-slate-900">
-             <p className="text-slate-600 text-sm font-medium text-center italic">
-                Acesso restrito a colaboradores autorizados da Revista Gestão.
+          <div className="mt-12 pt-8 border-t border-slate-900 text-center">
+             <p className="text-slate-600 text-sm font-medium italic mb-2">
+                Acesso exclusivo para assinantes e equipe Revista Gestão.
              </p>
+             <Link href="/assine" className="text-red-700 text-xs font-black uppercase tracking-[0.1em] hover:underline">Ainda não é assinante? Clique aqui</Link>
           </div>
         </div>
       </div>

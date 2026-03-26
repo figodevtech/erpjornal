@@ -48,7 +48,6 @@ export default function Footer() {
               <li><Link href="/sobre" className="text-[15px] font-medium text-slate-400 hover:text-white transition-colors">Sobre Nós</Link></li>
               <li><Link href="/expediente" className="text-[15px] font-medium text-slate-400 hover:text-white transition-colors">Expediente</Link></li>
               <li><Link href="/politica-de-privacidade" className="text-[15px] font-medium text-slate-400 hover:text-white transition-colors">Política de Privacidade</Link></li>
-              <li><Link href="/erp/login" className="text-[14px] font-black text-red-500 hover:text-red-400 transition-colors uppercase mt-4 block tracking-widest">Central do Redator</Link></li>
             </ul>
           </div>
           

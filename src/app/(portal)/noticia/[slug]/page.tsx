@@ -38,7 +38,7 @@ export default async function NoticiaPage({ params }: PageProps) {
   const session = await getServerSession(authOptions);
 
   // Busca o artigo
-  const article = await prisma.article.findUnique({
+  const article = await prisma.article.findFirst({
     where: {
       slug,
       status_id: "publicado",

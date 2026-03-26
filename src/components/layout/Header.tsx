@@ -2,8 +2,7 @@ import Link from "next/link";
 import { getCachedCategories } from "@/lib/data/categories";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { LogIn } from "lucide-react";
-import UserMenu from "@/components/auth/UserMenu";
+import AuthPortal from "@/components/auth/AuthPortal";
 
 export default async function Header() {
   const session = await getServerSession(authOptions);
@@ -11,26 +10,18 @@ export default async function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b-[4px] border-red-700">
-      {/* Top News Ticker / Date bar */}
+      {/* 1. TOP BAR (XPath: /html/body/header/div[1]) */}
       <div className="hidden md:flex bg-slate-900 text-slate-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 justify-between items-center font-bold tracking-widest uppercase">
         <span suppressHydrationWarning>Atualizado: {new Date().toLocaleDateString("pt-BR")}</span>
         <div className="flex gap-6 items-center">
           <Link href="/sobre" className="hover:text-white transition-colors">Institucional</Link>
           <Link href="/contato" className="hover:text-white transition-colors">Fale Conosco</Link>
-          
-          {session ? (
-            <div className="flex items-center gap-1.5">
-              <UserMenu user={session.user} />
-            </div>
-          ) : (
-            <Link href="/login" className="flex items-center gap-1.5 bg-red-700 text-white px-3 py-1 -my-1 rounded-sm hover:bg-red-600 transition-colors">
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Login</span>
-            </Link>
-          )}
+          {/* Este é o anchor a[3] no XPath do desktop */}
+          <AuthPortal session={session} />
         </div>
       </div>
       
+      {/* 2. MAIN BAR (XPath: /html/body/header/div[2]) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-[72px]">
           
@@ -78,14 +69,10 @@ export default async function Header() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z" />
               </svg>
             </button>
-            {session && ["admin", "editor", "reporter", "juridico"].includes(session.user?.role as string) && (
-              <Link 
-                href="/erp" 
-                className="hidden sm:inline-flex items-center justify-center px-4 py-2 bg-slate-900 text-[11px] font-black uppercase tracking-widest text-white hover:bg-red-700 transition-colors"
-              >
-                Painel ERP
-              </Link>
-            )}
+            {/* Mobile Auth Portal fallback */}
+            <div className="md:hidden">
+              <AuthPortal session={session} />
+            </div>
           </div>
 
         </div>

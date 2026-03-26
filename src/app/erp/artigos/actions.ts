@@ -20,6 +20,9 @@ export async function saveArticle(formData: FormData) {
   const legal_notes = formData.get("legal_notes") as string || null;
   const legal_status = formData.get("legal_status") as string || "pendente";
   const rawDate = formData.get("data_publicacao") as string;
+  const publish_channels = formData.getAll("publish_channels") as string[];
+  const source_url = formData.get("source_url") as string || null;
+  const external_author = formData.get("external_author") as string || null;
 
   if (!titulo || !slug || !corpo_texto) {
     throw new Error("Campos obrigatórios ausentes");
@@ -57,6 +60,9 @@ export async function saveArticle(formData: FormData) {
     data_publicacao,
     regiao,
     estado,
+    publish_channels,
+    source_url,
+    external_author,
   };
 
   const factChecksCount = parseInt(formData.get("fact_checks_count") as string || "0");

@@ -24,6 +24,9 @@ export interface InitialData {
   regiao: string | null;
   estado: string | null;
   autor_id?: string;
+  publish_channels?: string[];
+  source_url?: string | null;
+  external_author?: string | null;
 }
 
 interface Politician {
@@ -41,6 +44,9 @@ interface ArticleFormProps {
 
 import { FactCheckManager } from "./FactCheckManager";
 import { ArticleHistory } from "./ArticleHistory";
+import { scrapeNews } from "../import-actions";
+import { Globe, BookOpen, Link as LinkIcon, Sparkles } from "lucide-react";
+import { toast as sonnerToast } from "sonner";
 
 export default function ArticleForm({ categories, politicians, userRole, initialData }: ArticleFormProps) {
   const [isPending, startTransition] = useTransition();
@@ -48,6 +54,12 @@ export default function ArticleForm({ categories, politicians, userRole, initial
   // Inicia com o status do banco, ou "rascunho"
   const [statusInput, setStatusInput] = useState(initialData?.status_id || "rascunho");
   const [currentText, setCurrentText] = useState(initialData?.corpo_texto || "");
+  const [currentTitle, setCurrentTitle] = useState(initialData?.titulo || "");
+  const [currentResumo, setCurrentResumo] = useState(initialData?.resumo || "");
+  const [importUrl, setImportUrl] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [sourceUrl, setSourceUrl] = useState(initialData?.source_url || "");
+  const [externalAuthor, setExternalAuthor] = useState(initialData?.external_author || "");
 
   const formatSlug = (val: string) => {
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -81,6 +93,60 @@ export default function ArticleForm({ categories, politicians, userRole, initial
             {error}
           </div>
         )}
+
+        {/* MÓDULO DE IMPORTAÇÃO RÁPIDA (REPUBLICAÇÃO AUTOMÁTICA) */}
+        <div className="mb-10 p-5 bg-slate-900 rounded-[24px] border border-white/10 shadow-xl overflow-hidden relative group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
+          
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <Globe className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <h4 className="text-white text-sm font-black uppercase tracking-widest">Republicação Inteligente</h4>
+                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Preencha o formulário a partir de uma fonte externa</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <input 
+                type="url" 
+                placeholder="Cole o link da notícia aqui (ex: https://g1.globo.com/...)"
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-indigo-500 transition-all font-medium"
+              />
+              <button 
+                type="button"
+                onClick={async () => {
+                   if (!importUrl) return sonnerToast.error("Insira uma URL válida");
+                   setIsImporting(true);
+                   const res = await scrapeNews(importUrl);
+                   if (res) {
+                      setCurrentTitle(res.titulo);
+                      setCurrentResumo(res.resumo);
+                      setSourceUrl(res.url_original);
+                      setExternalAuthor(res.fonte);
+                      sonnerToast.success("Dados básicos extraídos com sucesso!");
+                   } else {
+                      sonnerToast.error("Não foi possível acessar a URL ou extrair metadados.");
+                   }
+                   setIsImporting(false);
+                }}
+                disabled={isImporting}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
+              >
+                {isImporting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                Extrair
+              </button>
+            </div>
+            
+            <p className="mt-3 text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] italic">
+              *A republicação exige créditos autorais claros e link de fonte.
+            </p>
+          </div>
+        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
@@ -92,7 +158,8 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                 type="text" 
                 name="titulo" 
                 required 
-                defaultValue={initialData?.titulo}
+                value={currentTitle}
+                onChange={(e) => setCurrentTitle(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" 
                 placeholder="Ex: Nova reforma tem impacto positivo"
               />
@@ -120,7 +187,8 @@ export default function ArticleForm({ categories, politicians, userRole, initial
               <textarea 
                 name="resumo" 
                 rows={2}
-                defaultValue={initialData?.resumo || ""}
+                value={currentResumo}
+                onChange={(e) => setCurrentResumo(e.target.value)}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none" 
                 placeholder="Breve sumário exibido abaixo do título..."
               ></textarea>
@@ -255,6 +323,72 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-rose-500 transition-all font-medium uppercase"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* CRÉDITOS E TRANSPARÊNCIA (M4-REPUBLICAÇÃO) */}
+              <div className="pt-6 border-t border-slate-200/80">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2 font-sans">
+                  <BookOpen className="w-4 h-4 text-emerald-600" />
+                  Transparência e Fonte (Republicação)
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                      <Globe className="w-3 h-3" /> Portal/Autor Original
+                    </label>
+                    <input 
+                      name="external_author" 
+                      placeholder="Ex: CNN Brasil, G1, Folha"
+                      value={externalAuthor}
+                      onChange={(e) => setExternalAuthor(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1">
+                      <LinkIcon className="w-3 h-3" /> Link da Fonte Original
+                    </label>
+                    <input 
+                      name="source_url" 
+                      placeholder="URL completa para crédito"
+                      value={sourceUrl}
+                      onChange={(e) => setSourceUrl(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-emerald-500 transition-all font-mono text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-200/80">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2 font-sans">
+                  <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                  </svg>
+                  Canais de Distribuição
+                </h3>
+                
+                <div className="space-y-3">
+                  {[
+                    { id: "portal", label: "Portal Revista Gestão", icon: "🌐" },
+                    { id: "newsletter", label: "Newsletter Matinal", icon: "📧" },
+                    { id: "redes_sociais", label: "Redes Sociais (Social Post)", icon: "📱" }
+                  ].map((channel) => (
+                    <label key={channel.id} className="flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl cursor-pointer border border-transparent hover:border-slate-200 transition-all group">
+                      <input 
+                        type="checkbox" 
+                        name="publish_channels" 
+                        value={channel.id}
+                        defaultChecked={initialData?.publish_channels?.includes(channel.id) || (!initialData && channel.id === "portal")}
+                        className="w-5 h-5 text-indigo-600 border-slate-300 rounded-lg focus:ring-indigo-500 transition-all"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-bold text-slate-700 group-hover:text-indigo-600 transition-colors">
+                          {channel.icon} {channel.label}
+                        </span>
+                      </div>
+                    </label>
+                  ))}
                 </div>
               </div>
 

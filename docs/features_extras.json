@@ -325,14 +325,14 @@
                 {
                     "id": "M4-PLUS-T1",
                     "title": "Publicação omnichannel",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como editor, quero publicar em site, newsletter e redes sociais a partir do ERP.",
                     "description": "Criar lógica de destinos de publicação e integrações com canais.",
                     "subtasks": [
                         {
                             "id": "M4-PLUS-T1-ST1",
                             "title": "Configuração de canais por artigo",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero escolher para onde a matéria será distribuída.",
                             "description": "Adicionar campos de destinos (site, newsletter, redes) no artigo e UI de seleção."
                         },

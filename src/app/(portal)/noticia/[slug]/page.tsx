@@ -127,6 +127,22 @@ export default async function NoticiaPage({ params }: PageProps) {
                     hour: "2-digit", minute: "2-digit"
                   })}
                 </time>
+                {(article as any).external_author && (
+                  <p className="text-[13px] font-bold text-slate-500 mt-2 flex items-center gap-2 uppercase tracking-tight">
+                    <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px] text-slate-400">Fonte Original:</span>
+                    <span className="text-slate-900">{(article as any).external_author}</span>
+                    {(article as any).source_url && (
+                      <a 
+                        href={(article as any).source_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-red-700 hover:text-red-800 underline decoration-dotted underline-offset-4"
+                      >
+                        Ver Original
+                      </a>
+                    )}
+                  </p>
+                )}
               </div>
             </div>
             

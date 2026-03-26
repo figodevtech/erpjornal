@@ -55,6 +55,9 @@ model Article {
   visualizacoes   Int       @default(0)
   og_image_url    String?
   is_premium      Boolean   @default(false)
+  publish_channels String[]  @default(["portal"]) // portal, newsletter, redes_sociais
+  source_url      String?   // URL da fonte original para republicações
+  external_author String?   // Nome do autor/portal original
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 

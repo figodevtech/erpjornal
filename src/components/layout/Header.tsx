@@ -2,7 +2,8 @@ import Link from "next/link";
 import { getCachedCategories } from "@/lib/data/categories";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { UserCircle, LogIn } from "lucide-react";
+import { LogIn } from "lucide-react";
+import UserMenu from "@/components/auth/UserMenu";
 
 export default async function Header() {
   const session = await getServerSession(authOptions);
@@ -12,16 +13,15 @@ export default async function Header() {
     <header className="sticky top-0 z-50 w-full bg-white shadow-sm border-b-[4px] border-red-700">
       {/* Top News Ticker / Date bar */}
       <div className="hidden md:flex bg-slate-900 text-slate-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 justify-between items-center font-bold tracking-widest uppercase">
-        <span>Atualizado: {new Date().toLocaleDateString("pt-BR")}</span>
+        <span suppressHydrationWarning>Atualizado: {new Date().toLocaleDateString("pt-BR")}</span>
         <div className="flex gap-6 items-center">
           <Link href="/sobre" className="hover:text-white transition-colors">Institucional</Link>
           <Link href="/contato" className="hover:text-white transition-colors">Fale Conosco</Link>
           
           {session ? (
-            <Link href="/perfil" className="flex items-center gap-1.5 text-white hover:text-red-400 transition-colors">
-              <UserCircle className="w-4 h-4" />
-              <span>Olá, {session.user?.name?.split(' ')[0]}</span>
-            </Link>
+            <div className="flex items-center gap-1.5">
+              <UserMenu user={session.user} />
+            </div>
           ) : (
             <Link href="/login" className="flex items-center gap-1.5 bg-red-700 text-white px-3 py-1 -my-1 rounded-sm hover:bg-red-600 transition-colors">
               <LogIn className="w-3.5 h-3.5" />
@@ -61,7 +61,7 @@ export default async function Header() {
             <Link href="/podcasts" className="text-[14px] font-black text-slate-800 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Podcasts
             </Link>
-            {categories.map((cat) => (
+            {categories.map((cat: any) => (
               <Link 
                 key={cat.id} 
                 href={`/categoria/${cat.slug}`}

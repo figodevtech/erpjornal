@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
 export default withAuth(
-  function middleware(req) {
+  function proxy(req) {
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
@@ -33,6 +33,6 @@ export default withAuth(
   }
 );
 
-export const config = { 
-  matcher: ["/erp/:path*", "/api/protected/:path*"] 
+export const config = {
+  matcher: ["/erp/:path*", "/api/protected/:path*"]
 };

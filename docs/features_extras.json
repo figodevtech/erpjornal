@@ -346,12 +346,12 @@
                         {
                             "id": "M4-PLUS-T1-ST3",
                             "title": "Integração com serviço de newsletter",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero disparar newsletters automáticas.",
                             "description": "Integrar com serviço de e-mail (Resend/Postmark) para disparar newsletters com base em templates."
                         },
                         {
-                            "id": "M4-PLUS-T1-ST3",
+                            "id": "M4-PLUS-T1-ST4",
                             "title": "Integração com APIs de redes sociais",
                             "status": "pending",
                             "user_story": "Como editor, quero que o sistema poste as notícias em redes ao publicar.",

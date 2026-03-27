@@ -325,7 +325,7 @@
                 {
                     "id": "M4-PLUS-T1",
                     "title": "Publicação omnichannel",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como editor, quero publicar em site, newsletter e redes sociais a partir do ERP.",
                     "description": "Criar lógica de destinos de publicação e integrações com canais.",
                     "subtasks": [
@@ -349,13 +349,6 @@
                             "status": "completed",
                             "user_story": "Como editor, quero disparar newsletters automáticas.",
                             "description": "Integrar com serviço de e-mail (Resend/Postmark) para disparar newsletters com base em templates."
-                        },
-                        {
-                            "id": "M4-PLUS-T1-ST4",
-                            "title": "Integração com APIs de redes sociais",
-                            "status": "pending",
-                            "user_story": "Como editor, quero que o sistema poste as notícias em redes ao publicar.",
-                            "description": "Implementar chamadas às APIs (X/Twitter, Facebook etc.) com título, link e imagem OG."
                         }
                     ]
                 },

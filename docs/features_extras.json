@@ -27,14 +27,14 @@
                 {
                     "id": "M1-PLUS-T1",
                     "title": "Dark Mode e acessibilidade avançada",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como leitor, quero modo escuro e melhor acessibilidade para consumir notícias com conforto.",
                     "description": "Adicionar modo escuro, leitor de texto para áudio e melhorias de acessibilidade ARIA.",
                     "subtasks": [
                         {
                             "id": "M1-PLUS-T1-ST1",
                             "title": "Toggle de Dark Mode com persistência",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero alternar para modo escuro e manter minha escolha salva.",
                             "description": "Implementar botão de Dark Mode, persistir escolha em localStorage/cookie e ajustar tokens de cor."
                         },

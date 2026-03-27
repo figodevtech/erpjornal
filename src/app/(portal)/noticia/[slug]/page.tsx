@@ -65,11 +65,11 @@ export default async function NoticiaPage({ params }: PageProps) {
   const canAccess = !isPremium || isAuthed;
 
   return (
-    <div className="w-full bg-white pb-20 overflow-x-hidden">
+    <div className="w-full bg-white dark:bg-slate-950 pb-20 overflow-x-hidden transition-colors duration-300">
       
       {/* Top Banner Category Header */}
       {article.categoria && (
-        <div className="w-full bg-slate-100 border-b border-slate-200 py-3 hidden md:block">
+        <div className="w-full bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-3 hidden md:block transition-colors">
           <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
              <Link 
                href={`/categoria/${article.categoria.slug}`}
@@ -103,12 +103,12 @@ export default async function NoticiaPage({ params }: PageProps) {
              )}
           </div>
 
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.05] tracking-tight mb-6">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 dark:text-slate-100 leading-[1.05] tracking-tight mb-6">
             {article.titulo}
           </h1>
 
           {article.resumo && (
-            <p className="text-[20px] md:text-[24px] text-slate-600 font-medium leading-snug mb-8 font-serif">
+            <p className="text-[20px] md:text-[24px] text-slate-600 dark:text-slate-400 font-medium leading-snug mb-8 font-serif">
               {article.resumo}
             </p>
           )}
@@ -117,10 +117,10 @@ export default async function NoticiaPage({ params }: PageProps) {
           <div className="flex flex-col sm:flex-row sm:items-center py-4 border-y-2 border-slate-900/10 justify-between gap-4">
             <div className="flex items-center gap-4">
               <div>
-                <p className="text-[15px] font-bold text-slate-900 uppercase tracking-widest">
+                <p className="text-[15px] font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest">
                   Por <span className="text-red-700">{article.autor?.nome || "Redação"}</span>
                 </p>
-                <time className="text-[13px] font-semibold text-slate-500 uppercase tracking-widest flex items-center gap-2 mt-1">
+                <time className="text-[13px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2 mt-1">
                   {article.data_publicacao?.toLocaleDateString("pt-BR", { 
                     day: "2-digit", month: "long", year: "numeric"
                   })} às {article.data_publicacao?.toLocaleTimeString("pt-BR", { 
@@ -128,9 +128,9 @@ export default async function NoticiaPage({ params }: PageProps) {
                   })}
                 </time>
                 {article.external_author && (
-                  <p className="text-[13px] font-bold text-slate-500 mt-2 flex items-center gap-2 uppercase tracking-tight">
-                    <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px] text-slate-400">Fonte Original:</span>
-                    <span className="text-slate-900">{article.external_author}</span>
+                  <p className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-2 uppercase tracking-tight">
+                    <span className="bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded text-[11px] text-slate-400">Fonte Original:</span>
+                    <span className="text-slate-900 dark:text-slate-100">{article.external_author}</span>
                     {article.source_url && (
                       <a 
                         href={article.source_url} 
@@ -156,8 +156,8 @@ export default async function NoticiaPage({ params }: PageProps) {
         </header>
 
         {/* Hero Image */}
-        <figure className="w-full aspect-video md:aspect-[21/9] bg-slate-100 mb-12 relative border border-slate-200 pointer-events-none group">
-          <div className="absolute inset-0 bg-slate-50 flex items-center justify-center text-slate-300">
+        <figure className="w-full aspect-video md:aspect-[21/9] bg-slate-100 dark:bg-slate-900 mb-12 relative border border-slate-200 dark:border-slate-800 pointer-events-none group">
+          <div className="absolute inset-0 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-slate-300 dark:text-slate-700">
              <svg className="w-16 h-16 transform group-hover:scale-110 transition-transform duration-500" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           </div>
         </figure>
@@ -165,10 +165,10 @@ export default async function NoticiaPage({ params }: PageProps) {
         {/* Corpo do Texto */}
         <div className={`
           w-full max-w-[760px] mx-auto 
-          prose prose-slate prose-lg md:prose-xl max-w-none
-          prose-p:text-slate-900 prose-p:leading-[1.75] prose-p:mb-7
-          prose-h2:text-slate-900 prose-h2:font-black prose-h2:mt-12 prose-h2:mb-6
-          prose-blockquote:border-red-700 prose-blockquote:italic prose-blockquote:text-slate-700
+          prose prose-slate dark:prose-invert prose-lg md:prose-xl max-w-none
+          prose-p:text-slate-900 dark:prose-p:text-slate-100 prose-p:leading-[1.75] prose-p:mb-7
+          prose-h2:text-slate-900 dark:prose-h2:text-slate-100 prose-h2:font-black prose-h2:mt-12 prose-h2:mb-6
+          prose-blockquote:border-red-700 prose-blockquote:italic prose-blockquote:text-slate-700 dark:prose-blockquote:text-slate-300
           prose-a:text-red-700 prose-a:no-underline hover:prose-a:underline
           ${!canAccess ? 'max-h-[300px] overflow-hidden relative mask-fade-to-bottom' : ''}
         `}>
@@ -179,7 +179,7 @@ export default async function NoticiaPage({ params }: PageProps) {
                <div className="pointer-events-none opacity-40" dangerouslySetInnerHTML={{ __html: article.corpo_texto.substring(0, 400) + "..." }} />
                
                {/* PAYWALL / CTA */}
-               <div className="absolute inset-0 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-col items-center justify-end pb-10 text-center px-4">
+               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-slate-950 via-white/95 dark:via-slate-950/95 to-transparent flex flex-col items-center justify-end pb-10 text-center px-4">
                   <div className="p-8 bg-slate-900 rounded-3xl shadow-2xl max-w-sm border-2 border-red-700/30 transform sm:scale-110">
                     <div className="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-slate-900 -mt-14 shadow-xl">
                       <Lock className="w-6 h-6 text-white" />

@@ -78,18 +78,18 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
   }
 
   return (
-    <div className="bg-slate-900 rounded-[40px] p-8 md:p-12 relative overflow-hidden shadow-2xl border-l-[8px] border-red-700">
-      <div className="absolute top-0 right-0 w-64 h-64 bg-red-700/10 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
+    <div className="bg-slate-900 dark:bg-slate-900/40 rounded-[40px] p-8 md:p-12 relative overflow-hidden shadow-2xl border-l-[8px] border-red-700 transition-colors">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-red-700/20 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
       
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-4">
           <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500">Exclusivo Revista Gestão</span>
         </div>
-        <h3 className="text-3xl md:text-4xl font-black text-white tracking-tighter mb-4 leading-none uppercase">
+        <h3 className="text-3xl md:text-4xl font-black text-white dark:text-slate-50 tracking-tighter mb-4 leading-none uppercase">
           A política antes de virar <span className="text-red-700">notícia</span>.
         </h3>
-        <p className="text-slate-400 text-lg mb-8 max-w-lg font-medium">
+        <p className="text-slate-400 dark:text-slate-300 text-lg mb-8 max-w-lg font-medium">
           Receba bastidores exclusivos e análises profundas no seu e-mail toda manhã.
         </p>
 

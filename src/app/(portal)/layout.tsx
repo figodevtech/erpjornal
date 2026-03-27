@@ -9,7 +9,7 @@ export default function PortalLayout({
   return (
     <>
       <Header />
-      <main className="flex-1 w-full bg-white flex flex-col items-center">
+      <main className="flex-1 w-full bg-background flex flex-col items-center transition-colors duration-300">
         {children}
       </main>
       <Footer />

@@ -53,16 +53,16 @@ export default async function CategoriaPage(props: PageProps) {
   });
 
   return (
-    <div className="w-full bg-white min-h-[70vh]">
+    <div className="w-full bg-background min-h-[70vh] transition-colors duration-300">
       
       {/* Header Escopo Categoria */}
-      <div className="bg-slate-100 border-b-4 border-slate-900 pt-12 pb-8">
+      <div className="bg-slate-100 dark:bg-slate-900/50 border-b-4 border-slate-900 dark:border-slate-800 pt-12 pb-8 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-[32px] md:text-[48px] font-black text-slate-900 tracking-tight flex items-center gap-4 mb-2 uppercase">
+          <h1 className="text-[32px] md:text-[48px] font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-4 mb-2 uppercase">
              <span className="w-4 h-12 shadow-sm" style={{ backgroundColor: category.cor || "#C4170C" }}></span>
              {category.nome}
           </h1>
-          <p className="text-slate-600 text-lg font-medium max-w-2xl pl-8 border-l-4 border-slate-300 ml-2">
+          <p className="text-slate-800 dark:text-slate-300 text-lg font-medium max-w-2xl pl-8 border-l-4 border-slate-300 dark:border-slate-700 ml-2">
             Acompanhe as últimas informações e apurações exclusivas sobre {category.nome}.
           </p>
         </div>
@@ -72,12 +72,12 @@ export default async function CategoriaPage(props: PageProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         {articles.length === 0 ? (
-          <div className="py-20 text-center bg-slate-50 border border-slate-200 max-w-3xl mx-auto">
-             <svg className="w-12 h-12 text-slate-300 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="py-20 text-center bg-slate-50 dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 max-w-3xl mx-auto">
+             <svg className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
              </svg>
-             <h3 className="text-lg font-bold text-slate-900">Pauta Vazia</h3>
-             <p className="text-slate-500 mt-1">Nenhum artigo publicado recentemente nesta editoria.</p>
+             <h3 className="text-lg font-bold text-slate-950 dark:text-slate-100">Pauta Vazia</h3>
+             <p className="text-slate-700 dark:text-slate-400 mt-1">Nenhum artigo publicado recentemente nesta editoria.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 gap-y-12">
@@ -100,13 +100,13 @@ export default async function CategoriaPage(props: PageProps) {
                     </span>
                   </div>
 
-                  <h2 className="text-[22px] font-black text-slate-900 leading-[1.2] group-hover:text-red-700 transition-colors line-clamp-3 mb-3">
+                  <h2 className="text-[22px] font-black text-slate-950 dark:text-slate-100 leading-[1.2] group-hover:text-red-700 transition-colors line-clamp-3 mb-3">
                     {art.titulo}
                   </h2>
 
-                  {art.resumo && <p className="text-[16px] leading-snug text-slate-600 line-clamp-3 mb-4 flex-grow">{art.resumo}</p>}
+                  {art.resumo && <p className="text-[16px] leading-snug text-slate-800 dark:text-slate-300 line-clamp-3 mb-4 flex-grow">{art.resumo}</p>}
 
-                  <div className="mt-auto flex items-center gap-3 text-[11px] text-slate-500 font-bold uppercase tracking-widest pt-2 w-full">
+                  <div className="mt-auto flex items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-widest pt-2 w-full">
                     <time>
                       {art.data_publicacao!.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </time>

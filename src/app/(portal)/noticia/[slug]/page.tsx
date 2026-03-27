@@ -65,7 +65,7 @@ export default async function NoticiaPage({ params }: PageProps) {
   const canAccess = !isPremium || isAuthed;
 
   return (
-    <div className="w-full bg-white dark:bg-slate-950 pb-20 overflow-x-hidden transition-colors duration-300">
+    <div className="w-full bg-background pb-20 overflow-x-hidden transition-colors duration-300">
       
       {/* Top Banner Category Header */}
       {article.categoria && (
@@ -108,7 +108,7 @@ export default async function NoticiaPage({ params }: PageProps) {
           </h1>
 
           {article.resumo && (
-            <p className="text-[20px] md:text-[24px] text-slate-600 dark:text-slate-400 font-medium leading-snug mb-8 font-serif">
+            <p className="text-[20px] md:text-[24px] text-slate-800 dark:text-slate-200 font-medium leading-[1.3] mb-8 font-serif">
               {article.resumo}
             </p>
           )}
@@ -117,10 +117,10 @@ export default async function NoticiaPage({ params }: PageProps) {
           <div className="flex flex-col sm:flex-row sm:items-center py-4 border-y-2 border-slate-900/10 justify-between gap-4">
             <div className="flex items-center gap-4">
               <div>
-                <p className="text-[15px] font-bold text-slate-900 dark:text-slate-100 uppercase tracking-widest">
+                <p className="text-[15px] font-bold text-slate-950 dark:text-slate-50 uppercase tracking-widest">
                   Por <span className="text-red-700">{article.autor?.nome || "Redação"}</span>
                 </p>
-                <time className="text-[13px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2 mt-1">
+                <time className="text-[13px] font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-widest flex items-center gap-2 mt-1">
                   {article.data_publicacao?.toLocaleDateString("pt-BR", { 
                     day: "2-digit", month: "long", year: "numeric"
                   })} às {article.data_publicacao?.toLocaleTimeString("pt-BR", { 
@@ -128,9 +128,9 @@ export default async function NoticiaPage({ params }: PageProps) {
                   })}
                 </time>
                 {article.external_author && (
-                  <p className="text-[13px] font-bold text-slate-500 dark:text-slate-400 mt-2 flex items-center gap-2 uppercase tracking-tight">
+                  <p className="text-[13px] font-bold text-slate-600 dark:text-slate-400 mt-2 flex items-center gap-2 uppercase tracking-tight">
                     <span className="bg-slate-100 dark:bg-slate-900 px-2 py-0.5 rounded text-[11px] text-slate-400">Fonte Original:</span>
-                    <span className="text-slate-900 dark:text-slate-100">{article.external_author}</span>
+                    <span className="text-slate-950 dark:text-slate-100">{article.external_author}</span>
                     {article.source_url && (
                       <a 
                         href={article.source_url} 
@@ -166,9 +166,9 @@ export default async function NoticiaPage({ params }: PageProps) {
         <div className={`
           w-full max-w-[760px] mx-auto 
           prose prose-slate dark:prose-invert prose-lg md:prose-xl max-w-none
-          prose-p:text-slate-900 dark:prose-p:text-slate-100 prose-p:leading-[1.75] prose-p:mb-7
-          prose-h2:text-slate-900 dark:prose-h2:text-slate-100 prose-h2:font-black prose-h2:mt-12 prose-h2:mb-6
-          prose-blockquote:border-red-700 prose-blockquote:italic prose-blockquote:text-slate-700 dark:prose-blockquote:text-slate-300
+          prose-p:text-slate-950 dark:prose-p:text-slate-100 prose-p:leading-[1.8] prose-p:mb-7
+          prose-h2:text-slate-950 dark:prose-h2:text-slate-100 prose-h2:font-black prose-h2:mt-12 prose-h2:mb-6
+          prose-blockquote:border-red-700 prose-blockquote:italic prose-blockquote:text-slate-800 dark:prose-blockquote:text-slate-200
           prose-a:text-red-700 prose-a:no-underline hover:prose-a:underline
           ${!canAccess ? 'max-h-[300px] overflow-hidden relative mask-fade-to-bottom' : ''}
         `}>

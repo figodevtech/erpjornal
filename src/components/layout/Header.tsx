@@ -40,19 +40,22 @@ export default async function Header() {
             <Link href="/" className="text-[14px] font-black text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Capa
             </Link>
-            <Link href="/regiao/nacional" className="text-[14px] font-black text-slate-800 dark:text-slate-200 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/regiao/nacional" className="text-[14px] font-black text-slate-950 dark:text-slate-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Brasil
             </Link>
-            <Link href="/regiao/internacional" className="text-[14px] font-black text-slate-800 dark:text-slate-200 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/regiao/internacional" className="text-[14px] font-black text-slate-950 dark:text-slate-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Mundo
             </Link>
-            <Link href="/regiao/sp" className="text-[14px] font-black text-slate-800 dark:text-slate-200 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/regiao/sp" className="text-[14px] font-black text-slate-950 dark:text-slate-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               São Paulo
             </Link>
-            <Link href="/podcasts" className="text-[14px] font-black text-slate-800 dark:text-slate-200 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/politica" className="text-[14px] font-black text-slate-950 dark:text-slate-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+              Política
+            </Link>
+            <Link href="/podcasts" className="text-[14px] font-black text-slate-950 dark:text-slate-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Podcasts
             </Link>
-            <Link href="/videos" className="text-[14px] font-black text-slate-800 dark:text-slate-200 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/videos" className="text-[14px] font-black text-slate-950 dark:text-slate-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Vídeos
             </Link>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -60,7 +63,7 @@ export default async function Header() {
               <Link 
                 key={cat.id} 
                 href={`/categoria/${cat.slug}`}
-                className="text-[14px] font-black text-slate-800 dark:text-slate-200 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight"
+                className="text-[14px] font-black text-slate-950 dark:text-slate-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight"
               >
                 {cat.nome}
               </Link>

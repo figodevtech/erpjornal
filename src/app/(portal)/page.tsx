@@ -63,7 +63,7 @@ export default async function PortalHome() {
                 </h1>
                 
                 {featured[0].resumo && (
-                  <p className="text-[18px] md:text-[22px] text-slate-600 dark:text-slate-400 font-medium leading-snug mb-5 max-w-4xl line-clamp-2">
+                  <p className="text-[18px] md:text-[22px] text-slate-800 dark:text-slate-300 font-medium leading-snug mb-5 max-w-4xl line-clamp-2">
                     {featured[0].resumo}
                   </p>
                 )}
@@ -105,8 +105,8 @@ export default async function PortalHome() {
           </div>
         ) : (
           <div className="py-24 text-center text-slate-500 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800">
-             <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">Nenhuma Pauta Aberta</h3>
-             <p className="mt-2 text-slate-600 dark:text-slate-400">A equipe de jornalismo está apurando os próximos fatos.</p>
+             <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50">Nenhuma Pauta Aberta</h3>
+             <p className="mt-2 text-slate-700 dark:text-slate-300">A equipe de jornalismo está apurando os próximos fatos.</p>
           </div>
         )}
       </section>
@@ -146,12 +146,12 @@ export default async function PortalHome() {
                 </h3>
                 
                 {art.resumo && (
-                  <p className="text-[16px] leading-snug text-slate-600 dark:text-slate-400 line-clamp-3 mb-4">
+                  <p className="text-[16px] leading-snug text-slate-700 dark:text-slate-300 line-clamp-3 mb-4">
                     {art.resumo}
                   </p>
                 )}
                 
-                <div className="mt-auto text-[11px] text-slate-500 font-bold tracking-widest uppercase">
+                <div className="mt-auto text-[11px] text-slate-500 dark:text-slate-400 font-bold tracking-widest uppercase">
                   {art.data_publicacao!.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               </Link>

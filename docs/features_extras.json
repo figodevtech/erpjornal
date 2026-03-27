@@ -351,36 +351,6 @@
                             "description": "Integrar com serviço de e-mail (Resend/Postmark) para disparar newsletters com base em templates."
                         }
                     ]
-                },
-                {
-                    "id": "M4-PLUS-T2",
-                    "title": "Webhooks e notificações externas",
-                    "status": "pending",
-                    "user_story": "Como integrador, quero receber eventos quando artigos forem publicados.",
-                    "description": "Criar webhooks configuráveis e integrações com canais internos.",
-                    "subtasks": [
-                        {
-                            "id": "M4-PLUS-T2-ST1",
-                            "title": "Cadastro de webhooks e eventos",
-                            "status": "pending",
-                            "user_story": "Como admin, quero configurar destinos para eventos de publicação.",
-                            "description": "Tela/API para cadastrar webhooks com tipos de evento (published, updated, breaking)."
-                        },
-                        {
-                            "id": "M4-PLUS-T2-ST2",
-                            "title": "Disparo de webhooks e retries",
-                            "status": "pending",
-                            "user_story": "Como sistema, quero garantir entrega confiável de webhooks.",
-                            "description": "Processar fila de webhooks com tentativas e logs de falha."
-                        },
-                        {
-                            "id": "M4-PLUS-T2-ST3",
-                            "title": "Notificações em canais internos (Telegram/WhatsApp)",
-                            "status": "pending",
-                            "user_story": "Como redação, quero receber alertas em grupos de mensagem.",
-                            "description": "Usar webhooks/integrations para enviar mensagens a grupos de Telegram/WhatsApp em eventos críticos."
-                        }
-                    ]
                 }
             ]
         },
@@ -465,7 +435,6 @@
                 "name": "Pós-MVP Fase 3 - Omnichannel, webhooks e SEO avançado",
                 "modules": [
                     "M4-PLUS-T1",
-                    "M4-PLUS-T2",
                     "M1-PLUS-T4"
                 ]
             },

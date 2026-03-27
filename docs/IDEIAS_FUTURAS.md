@@ -22,5 +22,15 @@ Este documento registra funcionalidades que foram discutidas, mas removidas do w
 
 ---
 
-## 2. Próximas Ideias...
+## 2. Webhooks e Notificações Externas (Event-Driven)
+**Contexto:** Permitir que o sistema dispare alertas para canais internos (Telegram/WhatsApp) e exponha webhooks para integrações externas.
+
+- **Por que é uma ideia futura:** A integração via webhook é poderosa, mas exige uma camada robusta de gerenciamento de retentativas (retries) e logs para garantir confiabilidade. Atualmente, o foco está na experiência direta do leitor e do editor no portal.
+- **Implementação Sugerida:**
+  - Criar um sistema de fila (Queue/Job) para disparar os eventos sem bloquear o fluxo principal.
+  - Interface no ERP para usuários Admin cadastrarem URLs externas e quais eventos querem ouvir (`news.published`, `breaking.active`).
+
+---
+
+## 3. Próximas Ideias...
 *   [Espaço reservado para futuras discussões]

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { Lock, Crown, ShieldAlert } from "lucide-react";
+import { Lock, Crown } from "lucide-react";
 import NewsletterForm from "@/components/portal/NewsletterForm";
 
 export const revalidate = 300;
@@ -60,7 +60,7 @@ export default async function NoticiaPage({ params }: PageProps) {
     data: { visualizacoes: { increment: 1 } }
   }).catch(() => {});
 
-  const isPremium = (article as any).is_premium;
+  const isPremium = article.is_premium;
   const isAuthed = !!session;
   const canAccess = !isPremium || isAuthed;
 
@@ -127,13 +127,13 @@ export default async function NoticiaPage({ params }: PageProps) {
                     hour: "2-digit", minute: "2-digit"
                   })}
                 </time>
-                {(article as any).external_author && (
+                {article.external_author && (
                   <p className="text-[13px] font-bold text-slate-500 mt-2 flex items-center gap-2 uppercase tracking-tight">
                     <span className="bg-slate-100 px-2 py-0.5 rounded text-[11px] text-slate-400">Fonte Original:</span>
-                    <span className="text-slate-900">{(article as any).external_author}</span>
-                    {(article as any).source_url && (
+                    <span className="text-slate-900">{article.external_author}</span>
+                    {article.source_url && (
                       <a 
-                        href={(article as any).source_url} 
+                        href={article.source_url} 
                         target="_blank" 
                         rel="noopener noreferrer" 
                         className="text-red-700 hover:text-red-800 underline decoration-dotted underline-offset-4"

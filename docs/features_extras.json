@@ -110,14 +110,14 @@
                 {
                     "id": "M1-PLUS-T4",
                     "title": "SEO avançado e Open Graph dinâmico",
-                    "status": "pending",
+                    "status": "in_progress",
                     "user_story": "Como negócio, quero que o compartilhamento em redes sociais destaque bem as notícias.",
                     "description": "Gerar imagens Open Graph dinâmicas e sitemaps avançados.",
                     "subtasks": [
                         {
                             "id": "M1-PLUS-T4-ST1",
                             "title": "Open Graph Image dinâmico por artigo",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como usuário de redes sociais, quero ver uma imagem com a manchete ao receber o link.",
                             "description": "Usar Next.js para gerar uma imagem OG com título, foto do artigo e eventualmente o nome do político."
                         },

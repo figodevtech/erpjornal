@@ -58,11 +58,11 @@ export default async function CategoriaPage(props: PageProps) {
       {/* Header Escopo Categoria */}
       <div className="bg-slate-100 dark:bg-slate-900/50 border-b-4 border-slate-900 dark:border-slate-800 pt-12 pb-8 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-[32px] md:text-[48px] font-black text-slate-900 dark:text-slate-100 tracking-tight flex items-center gap-4 mb-2 uppercase">
+          <h1 className="text-[32px] md:text-[48px] font-black text-slate-950 dark:text-slate-100 tracking-tight flex items-center gap-4 mb-2 uppercase">
              <span className="w-4 h-12 shadow-sm" style={{ backgroundColor: category.cor || "#C4170C" }}></span>
              {category.nome}
           </h1>
-          <p className="text-slate-800 dark:text-slate-300 text-lg font-medium max-w-2xl pl-8 border-l-4 border-slate-300 dark:border-slate-700 ml-2">
+          <p className="text-slate-800 dark:text-slate-300 text-lg font-bold max-w-2xl pl-8 border-l-4 border-slate-400 dark:border-slate-700 ml-2">
             Acompanhe as últimas informações e apurações exclusivas sobre {category.nome}.
           </p>
         </div>
@@ -106,7 +106,7 @@ export default async function CategoriaPage(props: PageProps) {
 
                   {art.resumo && <p className="text-[16px] leading-snug text-slate-800 dark:text-slate-300 line-clamp-3 mb-4 flex-grow">{art.resumo}</p>}
 
-                  <div className="mt-auto flex items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400 font-bold uppercase tracking-widest pt-2 w-full">
+                  <div className="mt-auto flex items-center gap-3 text-[11px] text-slate-800 dark:text-slate-400 font-black uppercase tracking-widest pt-2 w-full">
                     <time>
                       {art.data_publicacao!.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </time>

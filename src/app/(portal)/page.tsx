@@ -68,7 +68,7 @@ export default async function PortalHome() {
                   </p>
                 )}
                 
-                <div className="text-[13px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-auto">
+                <div className="text-[13px] font-bold text-slate-800 dark:text-slate-400 uppercase tracking-widest mt-auto">
                   Por {featured[0].autor?.nome || "Redação"} &bull; {featured[0].data_publicacao!.toLocaleDateString("pt-BR")}
                 </div>
               </Link>
@@ -95,7 +95,7 @@ export default async function PortalHome() {
                     </div>
                   </div>
 
-                  <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-auto">
+                  <div className="text-[11px] font-bold text-slate-800 dark:text-slate-500 uppercase tracking-widest mt-auto">
                     {art.data_publicacao!.toLocaleDateString("pt-BR")}
                   </div>
                 </Link>
@@ -146,12 +146,12 @@ export default async function PortalHome() {
                 </h3>
                 
                 {art.resumo && (
-                  <p className="text-[16px] leading-snug text-slate-700 dark:text-slate-300 line-clamp-3 mb-4">
+                  <p className="text-[16px] leading-snug text-slate-800 dark:text-slate-300 line-clamp-3 mb-4">
                     {art.resumo}
                   </p>
                 )}
                 
-                <div className="mt-auto text-[11px] text-slate-500 dark:text-slate-400 font-bold tracking-widest uppercase">
+                <div className="mt-auto text-[11px] text-slate-800 dark:text-slate-400 font-bold tracking-widest uppercase">
                   {art.data_publicacao!.toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                 </div>
               </Link>

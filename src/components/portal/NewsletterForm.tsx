@@ -89,7 +89,7 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
         <h3 className="text-3xl md:text-4xl font-black text-white dark:text-slate-50 tracking-tighter mb-4 leading-none uppercase">
           A política antes de virar <span className="text-red-700">notícia</span>.
         </h3>
-        <p className="text-slate-400 dark:text-slate-300 text-lg mb-8 max-w-lg font-medium">
+        <p className="text-slate-200 dark:text-slate-300 text-lg mb-8 max-w-lg font-medium">
           Receba bastidores exclusivos e análises profundas no seu e-mail toda manhã.
         </p>
 
@@ -113,8 +113,8 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
           </button>
         </form>
         
-        <p className="mt-6 text-[10px] text-slate-500 font-bold uppercase tracking-widest flex items-center gap-2">
-          <CheckCircle2 className="w-3 h-3 text-red-900" /> Sem spam. Apenas política levada a sério.
+        <p className="mt-6 text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest flex items-center gap-2">
+          <CheckCircle2 className="w-3 h-3 text-red-600" /> Sem spam. Apenas política levada a sério.
         </p>
       </div>
     </div>

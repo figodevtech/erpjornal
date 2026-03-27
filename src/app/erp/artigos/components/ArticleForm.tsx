@@ -47,6 +47,7 @@ import { ArticleHistory } from "./ArticleHistory";
 import { scrapeNews } from "../import-actions";
 import { Globe, BookOpen, Link as LinkIcon, Sparkles } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 
 export default function ArticleForm({ categories, politicians, userRole, initialData }: ArticleFormProps) {
   const [isPending, startTransition] = useTransition();
@@ -94,61 +95,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
           </div>
         )}
 
-        {/* MÓDULO DE IMPORTAÇÃO RÁPIDA (REPUBLICAÇÃO AUTOMÁTICA) */}
-        <div className="mb-10 p-5 bg-slate-900 rounded-[24px] border border-white/10 shadow-xl overflow-hidden relative group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full -mr-16 -mt-16 blur-3xl" />
-          
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <Globe className="w-4 h-4 text-white" />
-              </div>
-              <div>
-                <h4 className="text-white text-sm font-black uppercase tracking-widest">Republicação Inteligente</h4>
-                <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">Preencha o formulário a partir de uma fonte externa</p>
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <input 
-                type="url" 
-                placeholder="Cole o link da notícia aqui (ex: https://g1.globo.com/...)"
-                value={importUrl}
-                onChange={(e) => setImportUrl(e.target.value)}
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 text-white text-sm outline-none focus:border-indigo-500 transition-all font-medium"
-              />
-              <button 
-                type="button"
-                onClick={async () => {
-                   if (!importUrl) return sonnerToast.error("Insira uma URL válida");
-                   setIsImporting(true);
-                   const res = await scrapeNews(importUrl);
-                   if (res) {
-                      setCurrentTitle(res.titulo);
-                      setCurrentResumo(res.resumo);
-                      setSourceUrl(res.url_original);
-                      setExternalAuthor(res.fonte);
-                      sonnerToast.success("Dados básicos extraídos com sucesso!");
-                   } else {
-                      sonnerToast.error("Não foi possível acessar a URL ou extrair metadados.");
-                   }
-                   setIsImporting(false);
-                }}
-                disabled={isImporting}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 disabled:opacity-50 flex items-center gap-2"
-              >
-                {isImporting ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                Extrair
-              </button>
-            </div>
-            
-            <p className="mt-3 text-[10px] text-slate-500 font-bold uppercase tracking-[0.2em] italic">
-              *A republicação exige créditos autorais claros e link de fonte.
-            </p>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
           <div className="lg:col-span-2 space-y-6">
             <div>
               <label className="block text-sm font-semibold text-slate-800 mb-2 font-sans">
@@ -198,15 +145,11 @@ export default function ArticleForm({ categories, politicians, userRole, initial
               <label className="block text-sm font-semibold text-slate-800 mb-2 font-sans">
                 Corpo do Texto <span className="text-rose-500">*</span>
               </label>
-              <textarea 
-                name="corpo_texto" 
-                required
-                rows={14}
-                value={currentText}
-                onChange={(e) => setCurrentText(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-4 text-slate-900 font-serif leading-relaxed focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-inner" 
-                placeholder="Escreva a matéria detalhada aqui..."
-              ></textarea>
+              <RichTextEditor 
+                content={currentText} 
+                onChange={setCurrentText} 
+              />
+              <input type="hidden" name="corpo_texto" value={currentText} required />
             </div>
 
             <FactCheckManager initialData={initialData?.fact_checks} />

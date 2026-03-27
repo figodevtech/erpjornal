@@ -58,6 +58,9 @@ model Article {
   publish_channels String[]  @default(["portal"]) // portal, newsletter, redes_sociais
   source_url      String?   // URL da fonte original para republicações
   external_author String?   // Nome do autor/portal original
+  rss_item_id     String?   @unique
+  rss_item        RSSItemRaw? @relation(fields: [rss_item_id], references: [id])
+  human_reviewer  String?   // Nome do editor que revisou
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 
@@ -221,4 +224,47 @@ model NewsletterSubscription {
   temas      String[] // ex: ['politica', 'economia', 'bastidores']
   origem     String?  // ex: 'home', 'fim_artigo'
   created_at DateTime @default(now())
+}
+
+model RSSSource {
+  id           String   @id @default(uuid())
+  feed_url     String   @unique
+  name         String
+  logo         String?
+  tone         String?  // ex: 'jornalistico', 'direto', 'opinativo'
+  cache_ttl    Int      @default(30) // minutos
+  regiao       String?  // 'Nacional', 'Estadual', etc
+  estado       String?  // Sigla
+  last_harvest DateTime?
+  created_at   DateTime @default(now())
+  items        RSSItemRaw[]
+}
+
+model RSSItemRaw {
+  id              String   @id @default(uuid())
+  source_id       String
+  source          RSSSource @relation(fields: [source_id], references: [id])
+  guid            String?   @unique
+  original_title  String
+  original_link   String
+  original_author String?
+  description     String?  @db.Text
+  thumbnail       String?
+  pub_date        DateTime @default(now())
+  status          String   @default("pending") // pending, selected, ai_generated, approved, rejected, published
+  created_at      DateTime @default(now())
+  
+  article         Article?
+  rewrite_logs    RewriteLog[]
+}
+
+model RewriteLog {
+  id               String   @id @default(uuid())
+  rss_item_id      String
+  rss_item         RSSItemRaw @relation(fields: [rss_item_id], references: [id])
+  ai_prompt        String?  @db.Text
+  ai_response      Json?    // Estrutura enviada pela IA
+  human_changes    Json?    // Mudanças feitas pelo revisor
+  approval_time    DateTime?
+  created_at       DateTime @default(now())
 }

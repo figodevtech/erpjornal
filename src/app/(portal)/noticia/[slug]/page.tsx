@@ -165,27 +165,18 @@ export default async function NoticiaPage({ params }: PageProps) {
         {/* Corpo do Texto */}
         <div className={`
           w-full max-w-[760px] mx-auto 
-          text-[19px] md:text-[21px] leading-[1.7] md:leading-[1.75] text-slate-900
-          [&>p]:mb-7 [&>p:last-child]:mb-0
-          [&>h2]:text-[28px] md:[&>h2]:text-[32px] [&>h2]:font-black [&>h2]:text-slate-900 [&>h2]:mt-12 [&>h2]:mb-6 [&>h2]:leading-tight
-          [&>h3]:text-[22px] md:[&>h3]:text-[24px] [&>h3]:font-bold [&>h3]:text-slate-900 [&>h3]:mt-10 [&>h3]:mb-4
-          [&>a]:text-red-700 [&>a]:underline [&>a:hover]:text-red-800
-          [&>blockquote]:border-l-[6px] [&>blockquote]:border-red-700 [&>blockquote]:pl-6 [&>blockquote]:italic [&>blockquote]:text-slate-700 [&>blockquote]:py-4 [&>blockquote]:my-10 [&>blockquote]:text-2xl
+          prose prose-slate prose-lg md:prose-xl max-w-none
+          prose-p:text-slate-900 prose-p:leading-[1.75] prose-p:mb-7
+          prose-h2:text-slate-900 prose-h2:font-black prose-h2:mt-12 prose-h2:mb-6
+          prose-blockquote:border-red-700 prose-blockquote:italic prose-blockquote:text-slate-700
+          prose-a:text-red-700 prose-a:no-underline hover:prose-a:underline
           ${!canAccess ? 'max-h-[300px] overflow-hidden relative mask-fade-to-bottom' : ''}
         `}>
           {canAccess ? (
-            article.corpo_texto.split("\n\n").map((paragraph, index) => {
-              if (paragraph.startsWith("## ")) return <h2 key={index}>{paragraph.replace("## ", "")}</h2>;
-              if (paragraph.startsWith("> ")) return <blockquote key={index}>{paragraph.replace("> ", "")}</blockquote>;
-              return <p key={index}>{paragraph}</p>;
-            })
+            <div dangerouslySetInnerHTML={{ __html: article.corpo_texto }} />
           ) : (
             <>
-               <div className="pointer-events-none opacity-40">
-                {article.corpo_texto.split("\n\n").slice(0, 2).map((paragraph, index) => (
-                  <p key={index}>{paragraph}</p>
-                ))}
-               </div>
+               <div className="pointer-events-none opacity-40" dangerouslySetInnerHTML={{ __html: article.corpo_texto.substring(0, 400) + "..." }} />
                
                {/* PAYWALL / CTA */}
                <div className="absolute inset-0 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-col items-center justify-end pb-10 text-center px-4">

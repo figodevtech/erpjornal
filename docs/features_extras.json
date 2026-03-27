@@ -338,6 +338,13 @@
                         },
                         {
                             "id": "M4-PLUS-T1-ST2",
+                            "title": "Integração de Curadoria (RSS + IA)",
+                            "status": "completed",
+                            "user_story": "Como editor, quero descobrir e reescrever notícias de terceiros com agilidade.",
+                            "description": "Fluxo de Harvester RSS, Dashboard de Seleção e Reescrita assistida por Gemini."
+                        },
+                        {
+                            "id": "M4-PLUS-T1-ST3",
                             "title": "Integração com serviço de newsletter",
                             "status": "pending",
                             "user_story": "Como editor, quero disparar newsletters automáticas.",

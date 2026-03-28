@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import React, { useTransition, useState } from "react";
 import { saveArticle } from "../actions";
 
 interface Category {
@@ -44,11 +44,24 @@ interface ArticleFormProps {
 
 import { FactCheckManager } from "./FactCheckManager";
 import { ArticleHistory } from "./ArticleHistory";
-import { scrapeNews } from "../import-actions";
-import { Globe, BookOpen, Link as LinkIcon, Sparkles } from "lucide-react";
+import { 
+  Globe,
+  BookOpen,
+  Link as LinkIcon, 
+  Sparkles, 
+  Eye, 
+  Edit3, 
+  Columns, 
+  Tablet, 
+  Smartphone, 
+  Monitor, 
+  ArrowLeftRight
+} from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import { SEOSidebar } from "./SEOSidebar";
+import { ArticlePreview } from "./ArticlePreview";
+import { rephraseArticleContent } from "../ai-actions";
 
 export default function ArticleForm({ categories, politicians, userRole, initialData }: ArticleFormProps) {
   const [isPending, startTransition] = useTransition();
@@ -62,6 +75,10 @@ export default function ArticleForm({ categories, politicians, userRole, initial
   const [isImporting, setIsImporting] = useState(false);
   const [sourceUrl, setSourceUrl] = useState(initialData?.source_url || "");
   const [externalAuthor, setExternalAuthor] = useState(initialData?.external_author || "");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [viewMode, setViewMode] = useState<"edit" | "preview" | "split">("edit");
+  const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initialData?.categoria_id || "");
 
   const formatSlug = (val: string) => {
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -70,6 +87,33 @@ export default function ArticleForm({ categories, politicians, userRole, initial
   const formatedDate = initialData?.data_publicacao 
     ? new Date(initialData.data_publicacao.getTime() - initialData.data_publicacao.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
     : "";
+
+  const handleAiRefactor = async (e: React.MouseEvent) => {
+    if (!currentTitle || !currentText) {
+      sonnerToast.error("Preencha o título e o corpo do texto antes de usar a IA.");
+      return;
+    }
+
+    setIsAiLoading(true);
+    try {
+      const result = await rephraseArticleContent(currentTitle, currentText);
+      
+      if (result.new_title) setCurrentTitle(result.new_title);
+      if (result.new_text) setCurrentText(result.new_text);
+      
+      sonnerToast.success("Texto Refinado com Sucesso!", {
+        description: result.summary || "A IA melhorou a clareza e o fluxo editorial.",
+        duration: 5000,
+      });
+    } catch (err: unknown) {
+      const error = err as Error;
+      sonnerToast.error("Erro na Mágica IA", {
+        description: error.message || "Tente novamente em instantes.",
+      });
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   const handleAction = async (formData: FormData) => {
     setError("");
@@ -86,7 +130,89 @@ export default function ArticleForm({ categories, politicians, userRole, initial
 
   return (
     <div className="space-y-8">
-      <form action={handleAction} className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200">
+      {/* Toolbar Superior de Modos de Visualização */}
+      <div className="sticky top-4 z-50 flex items-center justify-between bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-gray-200 shadow-xl mx-auto max-w-fit gap-2">
+        <div className="flex bg-gray-100 p-1 rounded-xl">
+          <button
+            type="button"
+            onClick={() => setViewMode("edit")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "edit" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
+          >
+            <Edit3 size={14} /> Editor
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("split")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "split" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
+          >
+            <Columns size={14} /> Split View
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("preview")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "preview" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
+          >
+            <Eye size={14} /> Preview Real
+          </button>
+        </div>
+
+        {viewMode !== "edit" && (
+          <>
+            <div className="w-px h-6 bg-gray-200 mx-2" />
+            <div className="flex bg-gray-100 p-1 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("mobile")}
+                className={`p-2 rounded-lg transition-all ${previewDevice === "mobile" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}
+              >
+                <Smartphone size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("tablet")}
+                className={`p-2 rounded-lg transition-all ${previewDevice === "tablet" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}
+              >
+                <Tablet size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => setPreviewDevice("desktop")}
+                className={`p-2 rounded-lg transition-all ${previewDevice === "desktop" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}
+              >
+                <Monitor size={14} />
+              </button>
+            </div>
+          </>
+        )}
+
+        <div className="w-px h-6 bg-gray-200 mx-2" />
+        
+        <button
+          type="button"
+          disabled={isAiLoading}
+          onClick={handleAiRefactor}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all group overflow-hidden relative ${
+            isAiLoading 
+            ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
+            : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105"
+          }`}
+        >
+          {isAiLoading ? (
+            <>
+              <div className="animate-spin rounded-full h-3 w-3 border-2 border-gray-400 border-t-white" />
+              Processando...
+            </>
+          ) : (
+            <>
+              <Sparkles size={14} className="group-hover:animate-pulse" />
+              Mágica IA
+              <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-[-100%] transition-transform duration-1000 skew-x-12" />
+            </>
+          )}
+        </button>
+      </div>
+
+      <form action={handleAction} className={`transition-all duration-500 ${viewMode === "preview" ? "opacity-0 invisible h-0" : ""}`}>
         {/* Campo Oculto para UPDATE Dinâmico Controlado por React API Routes */}
         {initialData?.id && <input type="hidden" name="id" value={initialData.id} />}
 
@@ -96,8 +222,8 @@ export default function ArticleForm({ categories, politicians, userRole, initial
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-4">
-          <div className="lg:col-span-2 space-y-6">
+        <div className={`grid grid-cols-1 gap-8 pt-4 transition-all duration-500 ${viewMode === "split" ? "lg:grid-cols-2" : "lg:grid-cols-3"}`}>
+          <div className={`${viewMode === "split" ? "col-span-1" : "lg:col-span-2"} space-y-6`}>
             <div>
               <label className="block text-sm font-semibold text-gray-800 mb-2 font-sans">
                 Título da Matéria <span className="text-rose-500">*</span>
@@ -156,28 +282,46 @@ export default function ArticleForm({ categories, politicians, userRole, initial
             <FactCheckManager initialData={initialData?.fact_checks} />
           </div>
 
-          <div className="space-y-6">
-            <SEOSidebar title={currentTitle} resumo={currentResumo} content={currentText} />
-            
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200/60 shadow-sm">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-5">
-                Controle de Publicação
-              </h3>
-              
-              <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                  <select 
-                    name="categoria_id" 
-                    defaultValue={initialData?.categoria_id || ""}
-                    className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
-                  >
-                    <option value="">Selecione uma categoria...</option>
-                    {categories.map(c => (
-                      <option key={c.id} value={c.id}>{c.nome}</option>
-                    ))}
-                  </select>
+          {viewMode === "split" ? (
+             <div className="bg-slate-100 rounded-3xl p-4 overflow-x-hidden relative h-[calc(100vh-100px)] sticky top-24 border border-gray-200">
+                <div className={`mx-auto transition-all duration-500 ${
+                  previewDevice === "mobile" ? "max-w-[375px]" : 
+                  previewDevice === "tablet" ? "max-w-[768px]" : "max-w-full"
+                }`}>
+                  <ArticlePreview 
+                    titulo={currentTitle}
+                    resumo={currentResumo}
+                    corpo_texto={currentText}
+                    categoria={categories.find(c => c.id === selectedCategoryId)?.nome}
+                    regiao={initialData?.regiao}
+                    estado={initialData?.estado}
+                  />
                 </div>
+             </div>
+          ) : (
+            <div className="space-y-6">
+              <SEOSidebar title={currentTitle} resumo={currentResumo} content={currentText} />
+              
+              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200/60 shadow-sm">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-5">
+                  Controle de Publicação
+                </h3>
+                
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                    <select 
+                      name="categoria_id" 
+                      value={selectedCategoryId}
+                      onChange={(e) => setSelectedCategoryId(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
+                    >
+                      <option value="">Selecione uma categoria...</option>
+                      {categories.map(c => (
+                        <option key={c.id} value={c.id}>{c.nome}</option>
+                      ))}
+                    </select>
+                  </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status do Workflow</label>
@@ -206,8 +350,9 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                   </div>
                 )}
               </div>
+            </div>
 
-              <div className="pt-6 border-t border-gray-200/80">
+            <div className="pt-6 border-t border-gray-200/80">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2 font-sans">
                   <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -394,11 +539,52 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                 </button>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </form>
 
-      {initialData?.id && (
+      {/* Modo Preview Full Screen */}
+      {viewMode === "preview" && (
+        <div className="fixed inset-0 z-[60] bg-slate-100 overflow-y-auto p-4 md:p-8 animate-in fade-in duration-300">
+          <div className="flex justify-center mb-8">
+            <div className="bg-white p-2 rounded-2xl shadow-xl border border-gray-200 flex items-center gap-4">
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                <button onClick={() => setViewMode("split")} className="p-2 text-gray-500 hover:text-blue-600 transition-all font-bold text-xs flex items-center gap-2">
+                  <ArrowLeftRight size={14} /> Voltar ao Editor
+                </button>
+              </div>
+              <div className="w-px h-6 bg-gray-200" />
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                <button onClick={() => setPreviewDevice("mobile")} className={`p-2 rounded-lg transition-all ${previewDevice === "mobile" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}><Smartphone size={16} /></button>
+                <button onClick={() => setPreviewDevice("tablet")} className={`p-2 rounded-lg transition-all ${previewDevice === "tablet" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}><Tablet size={16} /></button>
+                <button onClick={() => setPreviewDevice("desktop")} className={`p-2 rounded-lg transition-all ${previewDevice === "desktop" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}><Monitor size={16} /></button>
+              </div>
+              <button 
+                onClick={() => setViewMode("edit")}
+                className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30"
+              >
+                Concluir Visualização
+              </button>
+            </div>
+          </div>
+
+          <div className={`mx-auto transition-all duration-500 pb-20 ${
+            previewDevice === "mobile" ? "max-w-[375px]" : 
+            previewDevice === "tablet" ? "max-w-[768px]" : "max-w-7xl"
+          }`}>
+            <ArticlePreview 
+              titulo={currentTitle}
+              resumo={currentResumo}
+              corpo_texto={currentText}
+              categoria={categories.find(c => c.id === selectedCategoryId)?.nome}
+              regiao={initialData?.regiao}
+              estado={initialData?.estado}
+            />
+          </div>
+        </div>
+      )}
+
+      {initialData?.id && viewMode === "edit" && (
         <ArticleHistory articleId={initialData.id} currentContent={currentText} />
       )}
     </div>

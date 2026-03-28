@@ -1,15 +1,14 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Underline from '@tiptap/extension-underline';
 import { 
-  Bold, Italic, List, ListOrdered, Quote, Link as LinkIcon, 
-  Image as ImageIcon, Undo, Redo, Heading1, Heading2, Strikethrough,
-  Underline as UnderlineIcon
+  Bold, Italic, List, ListOrdered, Quote, 
+  Image as ImageIcon, Undo, Redo, Heading1, Heading2,
+  Underline as UnderlineIcon, AlignCenter
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -18,165 +17,177 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
-const MenuBar = ({ editor }: { editor: any }) => {
+// Extensão Customizada de Imagem para Suportar Tamanhos
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      size: {
+        default: 'medium',
+        renderHTML: attributes => {
+          if (attributes.size === 'small') return { class: 'w-[250px] mx-auto block rounded-2xl shadow-lg my-6' };
+          if (attributes.size === 'large') return { class: 'w-[800px] max-w-full mx-auto block rounded-2xl shadow-xl my-8' };
+          if (attributes.size === 'full') return { class: 'w-full block rounded-2xl shadow-2xl my-10' };
+          return { class: 'w-[500px] max-w-full mx-auto block rounded-2xl shadow-lg my-6' }; // medium
+        },
+        parseHTML: element => element.getAttribute('data-size') || 'medium',
+      },
+      align: {
+        default: 'center',
+        renderHTML: attributes => {
+          if (attributes.align === 'left') return { style: 'margin-left: 0; margin-right: auto;' };
+          if (attributes.align === 'right') return { style: 'margin-left: auto; margin-right: 0;' };
+          return { style: 'margin-left: auto; margin-right: auto;' };
+        },
+        parseHTML: element => element.getAttribute('data-align') || 'center',
+      }
+    }
+  }
+});
+
+const MenuBar = ({ editor }: { editor: Editor | null }) => {
   if (!editor) return null;
 
-  const addImage = () => {
-    const url = window.prompt('URL da Imagem:');
-    if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
-    }
+  const updateImageSize = (size: 'small' | 'medium' | 'large' | 'full') => {
+    editor.chain().focus().updateAttributes('image', { size }).run();
   };
 
-  const setLink = () => {
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL do Link:', previousUrl);
-    
-    if (url === null) return;
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
-    }
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  const updateImageAlign = (align: 'left' | 'center' | 'right') => {
+    editor.chain().focus().updateAttributes('image', { align }).run();
   };
 
   return (
-    <div className="flex flex-wrap gap-1 p-2 border-b border-gray-200 bg-gray-50 rounded-t-2xl">
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBold().run()}
-        disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-        title="Negrito"
-      >
-        <Bold size={18} />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleItalic().run()}
-        disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-      >
-        <Italic size={18} />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('underline') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-      >
-        <UnderlineIcon size={18} />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('strike') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-      >
-        <Strikethrough size={18} />
-      </button>
-
-      <div className="w-[1px] h-6 bg-gray-300 mx-1 self-center" />
-
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-      >
-        <Heading1 size={18} />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-      >
-        <Heading2 size={18} />
-      </button>
-
-      <div className="w-[1px] h-6 bg-gray-300 mx-1 self-center" />
-
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-      >
-        <List size={18} />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-      >
-        <ListOrdered size={18} />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('blockquote') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-      >
-        <Quote size={18} />
-      </button>
-
-      <div className="w-[1px] h-6 bg-gray-300 mx-1 self-center" />
-
-      <button
-        type="button"
-        onClick={setLink}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('link') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
-        title="Inserir Link"
-      >
-        <LinkIcon size={18} />
-      </button>
-      
-      <div className="relative group/upload">
+    <div className="flex flex-wrap items-center gap-1 p-3 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-10 transition-all rounded-t-3xl">
+      <div className="flex bg-gray-100/50 p-1 rounded-xl">
         <button
           type="button"
-          className="p-2 rounded hover:bg-gray-200 text-gray-600"
-          title="Inserir Imagem"
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={`p-2 rounded-lg transition-all ${editor.isActive('bold') ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+          title="Negrito"
         >
-          <ImageIcon size={18} />
+          <Bold size={16} />
         </button>
-        <input 
-          type="file" 
-          accept="image/*"
-          className="absolute inset-0 opacity-0 cursor-pointer"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              if (file.size > 2 * 1024 * 1024) {
-                 alert('A imagem é muito grande! O limite é 2MB para inclusão direta no texto.');
-                 return;
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={`p-2 rounded-lg transition-all ${editor.isActive('italic') ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+        >
+          <Italic size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          className={`p-2 rounded-lg transition-all ${editor.isActive('underline') ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+        >
+          <UnderlineIcon size={16} />
+        </button>
+      </div>
+
+      <div className="w-[1px] h-4 bg-gray-200 mx-2" />
+
+      <div className="flex bg-gray-100/50 p-1 rounded-xl">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+          className={`p-2 rounded-lg transition-all ${editor.isActive('heading', { level: 1 }) ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+        >
+          <Heading1 size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={`p-2 rounded-lg transition-all ${editor.isActive('heading', { level: 2 }) ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+        >
+          <Heading2 size={16} />
+        </button>
+      </div>
+
+      <div className="w-[1px] h-4 bg-gray-200 mx-2" />
+
+      <div className="flex bg-gray-100/50 p-1 rounded-xl gap-0.5">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={`p-2 rounded-lg transition-all ${editor.isActive('bulletList') ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+        >
+          <List size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={`p-2 rounded-lg transition-all ${editor.isActive('orderedList') ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+        >
+          <ListOrdered size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          className={`p-2 rounded-lg transition-all ${editor.isActive('blockquote') ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+        >
+          <Quote size={16} />
+        </button>
+      </div>
+
+      <div className="w-[1px] h-4 bg-gray-200 mx-2" />
+
+      <div className="flex bg-gray-100/50 p-1 rounded-xl gap-0.5">
+        <div className="relative group/upload">
+          <button
+            type="button"
+            className="p-2 rounded-lg transition-all text-gray-500 hover:text-gray-900"
+            title="Inserir Imagem / Redimensionar"
+          >
+            <ImageIcon size={16} />
+          </button>
+          <input 
+            type="file" 
+            accept="image/*"
+            className="absolute inset-0 opacity-0 cursor-pointer"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                  const src = event.target?.result as string;
+                  editor.chain().focus().setImage({ src }).run();
+                };
+                reader.readAsDataURL(file);
               }
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                const src = event.target?.result as string;
-                editor.chain().focus().setImage({ src }).run();
-              };
-              reader.onerror = () => {
-                alert('Erro ao carregar a imagem selecionada.');
-              };
-              reader.readAsDataURL(file);
-            }
-          }}
-        />
+            }}
+          />
+        </div>
+
+        {editor.isActive('image') && (
+          <div className="flex items-center gap-0.5 animate-in slide-in-from-left-2 duration-200">
+            <div className="w-[1px] h-4 bg-gray-300 mx-1" />
+            <button onClick={() => updateImageSize('small')} className="p-2 hover:bg-white rounded-lg text-xs font-bold text-gray-500" title="Pequena">S</button>
+            <button onClick={() => updateImageSize('medium')} className="p-2 hover:bg-white rounded-lg text-xs font-bold text-gray-500" title="Média">M</button>
+            <button onClick={() => updateImageSize('large')} className="p-2 hover:bg-white rounded-lg text-xs font-bold text-gray-500" title="Grande">L</button>
+            <button onClick={() => updateImageSize('full')} className="p-2 hover:bg-white rounded-lg text-xs font-bold text-gray-500" title="Total">XL</button>
+            <button onClick={() => updateImageAlign('left')} className="p-2 hover:bg-white rounded-lg text-gray-500"><AlignCenter className="-rotate-90 w-4 h-4" /></button>
+            <button onClick={() => updateImageAlign('center')} className="p-2 hover:bg-white rounded-lg text-gray-500"><AlignCenter className="w-4 h-4" /></button>
+          </div>
+        )}
       </div>
 
       <div className="flex-1" />
 
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().undo().run()}
-        disabled={!editor.can().chain().focus().undo().run()}
-        className="p-2 rounded hover:bg-gray-200 text-gray-400 disabled:opacity-30"
-      >
-        <Undo size={18} />
-      </button>
-      <button
-        type="button"
-        onClick={() => editor.chain().focus().redo().run()}
-        disabled={!editor.can().chain().focus().redo().run()}
-        className="p-2 rounded hover:bg-gray-200 text-gray-400 disabled:opacity-30"
-      >
-        <Redo size={18} />
-      </button>
+      <div className="flex bg-gray-100/50 p-1 rounded-xl">
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().undo().run()}
+          className="p-2 text-gray-400 hover:text-gray-900 disabled:opacity-30"
+        >
+          <Undo size={16} />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().redo().run()}
+          className="p-2 text-gray-400 hover:text-gray-900 disabled:opacity-30"
+        >
+          <Redo size={16} />
+        </button>
+      </div>
     </div>
   );
 };
@@ -185,19 +196,16 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
   const editor = useEditor({
     extensions: [
       StarterKit,
-      // Se StarterKit não tiver underline ou link (como em versões antigas), 
-      // o console vai avisar que eles não existem se eu removesse.
-      // Como o console está avisando que eles são DUPLICADOS, significa que o StarterKit já os tem.
-      // Vou tentar manter apenas o Link configurado.
+      Underline,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-indigo-600 underline text-red-700 font-bold',
+          class: 'text-blue-600 underline font-bold transition-all hover:text-blue-800',
         },
       }),
-      Image.configure({
+      CustomImage.configure({
         HTMLAttributes: {
-          class: 'rounded-2xl max-w-full h-auto my-4 shadow-lg mx-auto block',
+          class: 'rounded-2xl max-w-full h-auto my-6 shadow-xl mx-auto block cursor-pointer transition-all hover:shadow-2xl',
         },
       }),
     ],
@@ -208,22 +216,15 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-gray max-w-none focus:outline-none min-h-[350px] p-6 text-lg font-serif leading-relaxed',
+        class: 'prose prose-slate prose-lg max-w-none focus:outline-none min-h-[500px] p-8 md:p-12 text-slate-800 font-serif selection:bg-blue-100',
       },
     },
   });
 
-  // Sincroniza conteúdo externo (ex: IA reescrever) para o editor
-  useEffect(() => {
-    if (editor && content !== editor.getHTML()) {
-      editor.commands.setContent(content);
-    }
-  }, [content, editor]);
-
   return (
-    <div className="w-full bg-gray-50 border-2 border-gray-100 rounded-[24px] focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all overflow-hidden flex flex-col group">
+    <div className="w-full bg-white border border-gray-100 rounded-[32px] focus-within:ring-4 focus-within:ring-blue-100 focus-within:border-blue-500 transition-all overflow-hidden flex flex-col group shadow-sm hover:shadow-md">
       <MenuBar editor={editor} />
-      <EditorContent editor={editor} className="bg-white overflow-y-auto max-h-[600px] outline-none" />
+      <EditorContent editor={editor} className="overflow-y-auto max-h-[800px] outline-none" />
     </div>
   );
 }

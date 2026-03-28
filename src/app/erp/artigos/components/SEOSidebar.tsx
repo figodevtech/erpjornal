@@ -1,16 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CheckCircle2, AlertCircle, XCircle, Search, Info } from "lucide-react";
-
-interface SEOStats {
-  score: number;
-  checks: {
-    label: string;
-    status: "pass" | "warn" | "fail";
-    detail: string;
-  }[];
-}
+import React, { useState, useEffect } from "react";
+import { Search, Info, TrendingUp, AlertCircle, CheckCircle2, XCircle, Tag, Sparkles } from "lucide-react";
 
 interface SEOSidebarProps {
   title: string;
@@ -18,135 +9,140 @@ interface SEOSidebarProps {
   content: string;
 }
 
-export function SEOSidebar({ title, resumo, content }: SEOSidebarProps) {
-  const [stats, setStats] = useState<SEOStats>({ score: 0, checks: [] });
+interface SEOStats {
+  score: number;
+  checks: {
+    label: string;
+    status: "success" | "warning" | "error";
+  }[];
+}
 
-  useEffect(() => {
-    analyzeContent();
-  }, [title, resumo, content]);
+export function SEOSidebar({ title, resumo, content }: SEOSidebarProps) {
+  const [stats, setStats] = useState<SEOStats>({
+    score: 0,
+    checks: []
+  });
 
   const analyzeContent = () => {
     const checks: SEOStats["checks"] = [];
     let score = 0;
 
-    // 1. Título
-    if (title.length >= 40 && title.length <= 70) {
-      checks.push({ label: "Tamanho do Título", status: "pass", detail: `${title.length} chars (Ideal)` });
-      score += 20;
-    } else if (title.length > 0) {
-      checks.push({ label: "Tamanho do Título", status: "warn", detail: `${title.length} chars (40-70 ideal)` });
-      score += 10;
+    // Título
+    if (title.length > 30 && title.length < 60) {
+      score += 25;
+      checks.push({ label: "Título com tamanho ideal (30-60 chars)", status: "success" });
     } else {
-      checks.push({ label: "Tamanho do Título", status: "fail", detail: "Obrigatório" });
+      checks.push({ label: "Título muito curto ou longo", status: "warning" });
     }
 
-    // 2. Resumo (Meta Description)
-    const resLen = resumo.length;
-    if (resLen >= 120 && resLen <= 160) {
-      checks.push({ label: "Linha Fina (Meta)", status: "pass", detail: `${resLen} chars (Ideal)` });
-      score += 20;
-    } else if (resLen > 0) {
-      checks.push({ label: "Linha Fina (Meta)", status: "warn", detail: `${resLen} chars (120-160 ideal)` });
-      score += 10;
+    // Resumo/Lead
+    if (resumo && resumo.length > 50) {
+      score += 25;
+      checks.push({ label: "Resumo/Lead presente", status: "success" });
     } else {
-      checks.push({ label: "Linha Fina (Meta)", status: "fail", detail: "Altamente recomendado" });
+      checks.push({ label: "Adicione um resumo impactante", status: "error" });
     }
 
-    // 3. Extensão do Conteúdo
-    // Strip HTML to count words correctly
-    const plainText = content.replace(/<[^>]*>/g, " ");
-    const words = plainText.trim().split(/\s+/).filter(w => w.length > 0).length;
-
-    if (words >= 300) {
-      checks.push({ label: "Extensão do Texto", status: "pass", detail: `${words} palavras (Ótimo)` });
-      score += 20;
-    } else if (words >= 100) {
-      checks.push({ label: "Extensão do Texto", status: "warn", detail: `${words} palavras (Muito curto)` });
-      score += 10;
+    // Conteúdo
+    const wordCount = content.replace(/<[^>]*>/g, "").split(/\s+/).length;
+    if (wordCount > 300) {
+      score += 25;
+      checks.push({ label: `Conteúdo rico (${wordCount} palavras)`, status: "success" });
     } else {
-      checks.push({ label: "Extensão do Texto", status: "fail", detail: `${words} palavras (Crítico)` });
+      checks.push({ label: "Texto muito curto para SEO", status: "warning" });
     }
 
-    // 4. Estrutura de Headings (H2/H3)
+    // Formatação (H2/H3)
     const h2Count = (content.match(/<h2/g) || []).length;
-    const h3Count = (content.match(/<h3/g) || []).length;
-    if (h2Count >= 1) {
-      checks.push({ label: "Hierarquia (H2)", status: "pass", detail: `${h2Count} subtítulos encontrados` });
-      score += 20;
+    if (h2Count > 0) {
+      score += 25;
+      checks.push({ label: "Uso de subtítulos (H2)", status: "success" });
     } else {
-      checks.push({ label: "Hierarquia (H2)", status: "warn", detail: "Use H2 para melhor SEO" });
-    }
-
-    // 5. Mídia/Imagens
-    const imgCount = (content.match(/<img/g) || []).length;
-    if (imgCount >= 1) {
-      checks.push({ label: "Conteúdo Rico", status: "pass", detail: `${imgCount} imagens no corpo` });
-      score += 20;
-    } else {
-      checks.push({ label: "Conteúdo Rico", status: "warn", detail: "Sem imagens no corpo" });
+      checks.push({ label: "Considere usar subtítulos", status: "warning" });
     }
 
     setStats({ score, checks });
   };
 
+  useEffect(() => {
+    analyzeContent();
+  }, [title, resumo, content]);
+
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "pass": return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
-      case "warn": return <AlertCircle className="w-4 h-4 text-amber-500" />;
-      case "fail": return <XCircle className="w-4 h-4 text-rose-500" />;
-      default: return null;
+      case "success": return <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/50" />;
+      case "warning": return <div className="w-2 h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" />;
+      case "error": return <div className="w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50" />;
+      default: return <div className="w-2 h-2 rounded-full bg-gray-300" />;
     }
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm animate-in fade-in slide-in-from-right-4 duration-500">
-      <div className="p-4 bg-gray-900 text-white flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Search className="w-4 h-4 text-red-500" />
-          <h3 className="text-sm font-black uppercase tracking-widest">Análise de SEO</h3>
+    <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+          <Search size={20} />
         </div>
-        <div className={`text-xs font-black px-2 py-1 rounded ${stats.score >= 80 ? 'bg-emerald-500' : stats.score >= 50 ? 'bg-amber-500' : 'bg-rose-500'}`}>
-          {stats.score}/100
+        <div>
+          <h3 className="text-sm font-bold text-slate-800">Análise de SEO</h3>
+          <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Métrica de Engajamento</p>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
-        {stats.checks.map((check, i) => (
-          <div key={i} className="flex items-start gap-3 group">
-            <div className="mt-0.5 shrink-0">
-              {getStatusIcon(check.status)}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-gray-800 leading-tight">{check.label}</p>
-              <p className="text-[10px] text-gray-500 truncate">{check.detail}</p>
+      <div className="space-y-6">
+        {/* Score Ring */}
+        <div className="flex items-center justify-center py-4">
+          <div className="relative flex items-center justify-center">
+            <svg className="w-24 h-24 transform -rotate-90">
+              <circle
+                cx="48"
+                cy="48"
+                r="40"
+                stroke="currentColor"
+                strokeWidth="8"
+                fill="transparent"
+                className="text-gray-100"
+              />
+              <circle
+                cx="48"
+                cy="48"
+                r="40"
+                stroke="currentColor"
+                strokeWidth="8"
+                fill="transparent"
+                strokeDasharray={251.2}
+                strokeDashoffset={251.2 - (251.2 * stats.score) / 100}
+                className="text-blue-600 transition-all duration-1000 ease-out"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute flex flex-col items-center">
+              <span className="text-2xl font-black text-slate-800">{stats.score}</span>
+              <span className="text-[8px] font-bold text-gray-400 uppercase">Pontos</span>
             </div>
           </div>
-        ))}
-
-        <div className="mt-6 pt-4 border-t border-gray-100">
-          <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-indigo-500" /> Sugestões Adicionais
-          </h4>
-          <ul className="space-y-2">
-            <li className="text-[11px] text-gray-600 bg-gray-50 p-2 rounded border border-gray-100 leading-relaxed italic">
-              "Tente incluir a palavra-chave principal nos primeiros 10% do texto."
-            </li>
-            <li className="text-[11px] text-gray-600 bg-gray-50 p-2 rounded border border-gray-100 leading-relaxed italic">
-                "Adicione links internos para outros artigos relacionados."
-            </li>
-          </ul>
         </div>
 
-        <div className="mt-4 p-3 bg-indigo-50 rounded-lg flex gap-3 items-start">
-            <Info className="w-4 h-4 text-indigo-500 shrink-0" />
-            <p className="text-[10px] text-indigo-700 leading-snug">
-                Esta análise é baseada em tempo real sobre o conteúdo bruto e estrutural do seu artigo.
+        <div className="space-y-2">
+          {stats.checks.map((check, index) => (
+            <div key={index} className="flex items-center gap-3 p-3 bg-gray-50/50 border border-gray-100 rounded-xl hover:bg-white hover:shadow-sm transition-all group">
+              {getStatusIcon(check.status)}
+              <span className="text-[11px] font-medium text-gray-600 group-hover:text-slate-800">{check.label}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="pt-4 border-t border-gray-100">
+          <p className="text-[10px] text-gray-400 leading-relaxed italic">
+            &quot;Um bom SEO aumenta em até 300% a chance de indexação pelo Google News.&quot;
+          </p>
+          <div className="mt-4 p-3 bg-blue-50/50 border border-blue-100 rounded-xl">
+            <p className="text-[10px] text-blue-700 font-medium">
+              💡 Dica: Use palavras-chave como &quot;Brasília&quot;, &quot;Relatório&quot; ou nomes de políticos no título.
             </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-// Re-export Sparkles for the Sidebar
-import { Sparkles } from "lucide-react";

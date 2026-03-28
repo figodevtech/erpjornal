@@ -138,7 +138,7 @@ export default async function PortalHome() {
                 {art.categoria && (
                   <div className="flex items-center gap-2 mb-4">
                     <span 
-                      className="text-[11px] font-black uppercase tracking-widest text-red-700 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-sm"
+                      className="text-[11px] font-black uppercase tracking-widest text-white bg-red-800 dark:bg-red-700/80 border border-red-900 dark:border-red-900/30 px-3 py-1 rounded-sm"
                     >
                       {art.categoria.nome}
                     </span>

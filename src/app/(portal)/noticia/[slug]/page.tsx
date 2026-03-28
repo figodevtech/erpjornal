@@ -1,4 +1,4 @@
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
@@ -73,7 +73,7 @@ export default async function NoticiaPage({ params }: PageProps) {
           <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8">
              <Link 
                href={`/categoria/${article.categoria.slug}`}
-               className="text-[14px] font-black uppercase tracking-widest text-red-700 hover:text-red-800 transition-colors"
+               className="text-[14px] font-black uppercase tracking-widest text-red-700 hover:text-red-950 transition-colors"
              >
                {article.categoria.nome}
              </Link>
@@ -136,7 +136,7 @@ export default async function NoticiaPage({ params }: PageProps) {
                         href={article.source_url} 
                         target="_blank" 
                         rel="noopener noreferrer" 
-                        className="text-red-700 hover:text-red-800 underline decoration-dotted underline-offset-4"
+                        className="text-red-700 hover:text-red-950 underline decoration-dotted underline-offset-4"
                       >
                         Ver Original
                       </a>

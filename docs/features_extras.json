@@ -27,7 +27,7 @@
                 {
                     "id": "M1-PLUS-T1",
                     "title": "Dark Mode e acessibilidade avançada",
-                    "status": "in_progress",
+                    "status": "completed",
                     "user_story": "Como leitor, quero modo escuro e melhor acessibilidade para consumir notícias com conforto.",
                     "description": "Adicionar modo escuro, leitor de texto para áudio e melhorias de acessibilidade ARIA.",
                     "subtasks": [
@@ -41,14 +41,14 @@
                         {
                             "id": "M1-PLUS-T1-ST2",
                             "title": "Leitor de texto (TTS) em notícias",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como leitor, quero ouvir a notícia em vez de ler.",
                             "description": "Adicionar botão de 'Ouvir' na página de artigo, usar API de TTS e exibir controles de reprodução."
                         },
                         {
                             "id": "M1-PLUS-T1-ST3",
                             "title": "Melhorias ARIA e navegação por teclado",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como usuário de leitor de tela, quero navegar corretamente pelo site.",
                             "description": "Revisar estrutura semântica, roles, aria-labels e foco visível nos principais componentes."
                         }
@@ -268,46 +268,53 @@
                 {
                     "id": "M3-PLUS-T1",
                     "title": "Redis para cache e contagem de visualizações",
-                    "status": "pending",
-                    "user_story": "Como editor, quero ver audiência quase em tempo real.",
-                    "description": "Adicionar Redis para armazenar contagem de visualizações e cache de trechos.",
+                    "status": "completed",
+                    "user_story": "Como leitor, quero ver as notícias mais lidas e o portal deve carregar instantaneamente.",
+                    "description": "Configurar Redis para contagem atômica de visualizações e cache de borda para categorias e notícias populares.",
                     "subtasks": [
                         {
                             "id": "M3-PLUS-T1-ST1",
-                            "title": "Integração Redis",
-                            "status": "pending",
-                            "user_story": "Como dev, quero registrar hits de página sem sobrecarregar o banco.",
-                            "description": "Registrar incrementos de visualização em Redis por slug."
+                            "title": "Configurar cliente Redis (Upstash) e conexão",
+                            "status": "completed",
+                            "user_story": "Como desenvolvedor, quero que o sistema se conecte ao Redis de forma segura.",
+                            "description": "Instalar @upstash/redis, configurar variáveis de ambiente e exportar singleton do cliente."
                         },
                         {
                             "id": "M3-PLUS-T1-ST2",
-                            "title": "Job de consolidação em PostgreSQL",
-                            "status": "pending",
-                            "user_story": "Como sistema, quero consolidar as visualizações de tempos em tempos.",
-                            "description": "Criar job periódico para somar contagens de Redis no campo visualizacoes do Article."
+                            "title": "Implementar contador de visualizações atômico por artigo",
+                            "status": "completed",
+                            "user_story": "Como portal, quero contar as visitas sem travar o banco de dados principal.",
+                            "description": "Usar incr() do Redis via Server Action disparada por um componente de cliente."
+                        },
+                        {
+                            "id": "M3-PLUS-T1-ST3",
+                            "title": "Cache de categorias e notícias populares no Redis",
+                            "status": "completed",
+                            "user_story": "Como leitor, quero carregar o menu e as listas de populares instantaneamente.",
+                            "description": "Implementar lógica de Cache-Aside (Look-aside) para categorias e ranking de visualizações via Sorted Sets."
                         }
                     ]
                 },
                 {
                     "id": "M3-PLUS-T2",
                     "title": "Observabilidade e monitoramento avançados",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como time de operações, quero acompanhar erros e performance do sistema.",
                     "description": "Adicionar logging centralizado, métricas e alertas.",
                     "subtasks": [
                         {
                             "id": "M3-PLUS-T2-ST1",
                             "title": "Coleta e centralização de logs",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como operador, quero consultar logs de forma unificada.",
-                            "description": "Integrar com ferramenta de logs (ex: Logflare/CloudWatch)."
+                            "description": "Integrar com ferramenta de logs (Pino para estruturação e Sentry para captura de erros)."
                         },
                         {
                             "id": "M3-PLUS-T2-ST2",
                             "title": "Dashboards de métricas e alertas",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como gestor, quero ver uptime e latência do portal.",
-                            "description": "Criar dashboards com métricas de uptime, erro 5xx e tempo de resposta, com alertas configurados."
+                            "description": "Configurado Vercel Analytics e Speed Insights para monitoramento de CWV e audiência."
                         }
                     ]
                 }

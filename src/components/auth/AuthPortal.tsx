@@ -64,7 +64,10 @@ export default function AuthPortal({ session }: AuthPortalProps) {
         /* ESTADO LOGADO: USER MENU */
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-1.5 text-white hover:text-red-400 transition-colors focus:outline-none"
+          className="flex items-center gap-1.5 text-white hover:text-red-400 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-red-400 rounded-lg p-1"
+          aria-expanded={isOpen}
+          aria-haspopup="true"
+          aria-label="Menu do usuário"
         >
           <UserCircle className="w-4 h-4" />
           <span className="max-w-[100px] truncate">Olá, {user.name?.split(' ')[0]}</span>
@@ -73,7 +76,9 @@ export default function AuthPortal({ session }: AuthPortalProps) {
         /* ESTADO DESLOGADO: LOGIN TRIGGER */
         <button 
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-1.5 bg-red-700 text-white px-3 py-1 rounded-sm hover:bg-red-600 transition-colors focus:outline-none font-bold"
+          className="flex items-center gap-1.5 bg-red-700 text-white px-3 py-1 rounded-sm hover:bg-red-600 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-red-400 font-bold"
+          aria-expanded={isOpen}
+          aria-haspopup="true"
         >
           <LogIn className="w-3.5 h-3.5" />
           <span>LOGIN</span>
@@ -82,7 +87,11 @@ export default function AuthPortal({ session }: AuthPortalProps) {
 
       {/* DROPDOWNS */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-72 bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-[100] border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200 overflow-hidden transition-colors">
+        <div 
+          className="absolute right-0 mt-3 w-72 bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-[100] border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200 overflow-hidden transition-colors"
+          role="dialog"
+          aria-label={user ? "Menu do usuário" : "Formulário de acesso"}
+        >
           
           {user ? (
             /* CONTEÚDO USER MENU (LOGADO) */
@@ -134,41 +143,46 @@ export default function AuthPortal({ session }: AuthPortalProps) {
 
               <form onSubmit={handleLogin} className="space-y-4">
                 {error && (
-                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-600 flex items-center gap-2 text-red-700 dark:text-red-400 text-xs font-bold rounded-r-md animate-in slide-in-from-top-1">
+                  <div 
+                    className="p-3 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-600 flex items-center gap-2 text-red-700 dark:text-red-400 text-xs font-bold rounded-r-md animate-in slide-in-from-top-1"
+                    role="alert"
+                  >
                     <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">E-mail</label>
+                  <label htmlFor="login-email" className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">E-mail</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -trangray-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <input 
+                      id="login-email"
                       type="email" 
                       required
                       placeholder="seu@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all text-gray-950 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-600"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all text-gray-950 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-600"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center ml-1">
-                    <label className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Senha</label>
+                    <label htmlFor="login-password" className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Senha</label>
                     <Link href="/recuperar" className="text-[10px] font-bold text-red-600 hover:text-red-700 transition-colors uppercase">Esqueci</Link>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -trangray-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <input 
+                      id="login-password"
                       type="password" 
                       required
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all text-gray-950 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-600"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all text-gray-950 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-600"
                     />
                   </div>
                 </div>

@@ -43,6 +43,8 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         className="flex items-center justify-center p-8 bg-green-50 rounded-[32px] border-2 border-green-100 text-green-800 gap-4"
+        aria-live="polite"
+        role="status"
       >
         <CheckCircle2 className="w-8 h-8 text-green-600" />
         <div>
@@ -58,12 +60,14 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
          <div className="relative flex-1">
             <input 
+              id={`newsletter-email-${origem}`}
               type="email" 
               required
               placeholder="Seu melhor e-mail"
+              aria-label="Seu melhor e-mail para newsletter"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-12 px-6 rounded-full bg-white border-2 border-gray-100 focus:border-red-700 outline-none font-medium transition-all"
+              className="w-full h-12 px-6 rounded-full bg-white border-2 border-gray-100 focus:border-red-700 focus:ring-2 focus:ring-red-700/20 outline-none font-medium transition-all"
             />
          </div>
          <button 
@@ -96,12 +100,14 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
         <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 max-w-xl">
           <div className="flex-1">
             <input 
+              id={`newsletter-email-box-${origem}`}
               type="email" 
               required
               placeholder="seu@email.com"
+              aria-label="E-mail exclusivo Revista Gestão"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-14 px-8 rounded-2xl bg-white/5 border-2 border-white/10 text-white placeholder:text-gray-500 focus:border-red-700 outline-none font-bold transition-all"
+              className="w-full h-14 px-8 rounded-2xl bg-white/5 border-2 border-white/10 text-white placeholder:text-gray-500 focus:border-red-700 focus:ring-2 focus:ring-red-700/20 outline-none font-bold transition-all"
             />
           </div>
           <button 

@@ -27,8 +27,8 @@ export default async function Header() {
         <div className="flex justify-between items-center h-[72px]">
           
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="group flex items-center gap-2">
-              <div className="w-10 h-10 bg-red-700 text-white flex items-center justify-center font-black text-2xl tracking-tighter">
+            <Link href="/" className="group flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-red-700/50 rounded-lg p-1" aria-label="Revista Gestão - Início">
+              <div className="w-10 h-10 bg-red-700 text-white flex items-center justify-center font-black text-2xl tracking-tighter" aria-hidden="true">
                 RG
               </div>
               <span className="font-black text-[28px] tracking-tighter text-gray-900 dark:text-gray-100 group-hover:text-red-700 transition-colors">
@@ -38,22 +38,22 @@ export default async function Header() {
           </div>
 
           <nav className="hidden lg:flex flex-1 justify-center space-x-8">
-            <Link href="/regiao/nacional" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/regiao/nacional" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
               Brasil
             </Link>
-            <Link href="/regiao/internacional" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/regiao/internacional" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
               Mundo
             </Link>
-            <Link href="/regiao/sp" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/regiao/sp" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
               São Paulo
             </Link>
-            <Link href="/politica" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/politica" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
               Política
             </Link>
             <Link href="/podcasts" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Podcasts
             </Link>
-            <Link href="/videos" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+            <Link href="/videos" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
               Vídeos
             </Link>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
@@ -69,7 +69,7 @@ export default async function Header() {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <button className="text-gray-900 dark:text-gray-100 hover:text-red-700 transition-colors p-2" aria-label="Pesquisar">
+            <button className="text-gray-900 dark:text-gray-100 hover:text-red-700 transition-colors p-2 focus-visible:ring-2 focus-visible:ring-red-700 rounded-full outline-none" aria-label="Pesquisar">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z" />
               </svg>

@@ -38,9 +38,6 @@ export default async function Header() {
           </div>
 
           <nav className="hidden lg:flex space-x-6">
-            <Link href="/" className="text-[14px] font-black text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
-              Capa
-            </Link>
             <Link href="/regiao/nacional" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Brasil
             </Link>

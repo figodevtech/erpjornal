@@ -17,6 +17,7 @@ export default async function Header() {
         <div className="flex gap-6 items-center">
           <Link href="/sobre" className="hover:text-white transition-colors">Institucional</Link>
           <Link href="/contato" className="hover:text-white transition-colors">Fale Conosco</Link>
+          <ThemeToggle />
           <AuthPortal session={session} />
         </div>
       </div>
@@ -71,7 +72,6 @@ export default async function Header() {
           </nav>
 
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
             <button className="text-gray-900 dark:text-gray-100 hover:text-red-700 transition-colors p-2" aria-label="Pesquisar">
               <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z" />

@@ -58,7 +58,7 @@ export default async function PortalHome() {
                   </span>
                 )}
                 
-                <h1 className="text-[32px] md:text-[48px] font-black text-red-900 dark:text-red-100 leading-[1.05] tracking-tight group-hover:text-red-700 transition-colors mb-4 line-clamp-3">
+                <h1 className="text-[32px] md:text-[48px] font-black text-red-900 dark:text-red-100 leading-[1.05] tracking-tight group-hover:text-red-950 transition-colors duration-500 mb-4 line-clamp-3">
                   {featured[0].titulo}
                 </h1>
                 
@@ -85,7 +85,7 @@ export default async function PortalHome() {
                      </span>
                   )}
                   
-                  <h2 className="text-[24px] font-black text-red-900 dark:text-red-100 leading-tight group-hover:text-red-700 transition-colors mb-4 line-clamp-4">
+                  <h2 className="text-[24px] font-black text-red-900 dark:text-red-100 leading-tight group-hover:text-red-950 transition-colors duration-500 mb-4 line-clamp-4">
                     {art.titulo}
                   </h2>
                   
@@ -145,7 +145,7 @@ export default async function PortalHome() {
                   </div>
                 )}
                 
-                <h3 className="text-[22px] font-black text-red-900 dark:text-red-100 leading-[1.2] group-hover:text-red-700 transition-colors mb-3">
+                <h3 className="text-[22px] font-black text-red-900 dark:text-red-100 leading-[1.2] group-hover:text-red-950 transition-colors duration-500 mb-3">
                   {art.titulo}
                 </h3>
                 

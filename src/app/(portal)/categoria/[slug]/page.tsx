@@ -100,7 +100,7 @@ export default async function CategoriaPage(props: PageProps) {
                     </span>
                   </div>
 
-                  <h2 className="text-[22px] font-black text-red-900 dark:text-red-100 leading-[1.2] group-hover:text-red-700 transition-colors line-clamp-3 mb-3">
+                  <h2 className="text-[22px] font-black text-red-900 dark:text-red-100 leading-[1.2] group-hover:text-red-950 transition-colors duration-500 line-clamp-3 mb-3">
                     {art.titulo}
                   </h2>
 

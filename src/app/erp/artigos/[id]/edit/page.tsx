@@ -1,4 +1,4 @@
-﻿import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ArticleForm, { InitialData } from "../../components/ArticleForm";
@@ -25,7 +25,7 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
     redirect("/erp/artigos");
   }
 
-  // PrevenÃ§Ã£o Rigorosa de EdiÃ§Ã£o se Reporter tentar editar artigo de outros
+  // Prevenção Rigorosa de Edição se Reporter tentar editar artigo de outros
   if (session.user.role === "reporter" && article.autor_id !== session.user.id) {
     redirect("/erp/artigos");
   }
@@ -53,8 +53,8 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
           </svg>
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Editar MatÃ©ria</h1>
-          <p className="text-sm text-gray-500 mt-1">Modificando o workflow ou conteÃºdo do artigo original.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Editar Matéria</h1>
+          <p className="text-sm text-gray-500 mt-1">Modificando o workflow ou conteúdo do artigo original.</p>
         </div>
       </div>
 

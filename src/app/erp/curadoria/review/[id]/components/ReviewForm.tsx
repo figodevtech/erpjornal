@@ -25,7 +25,7 @@ export function ReviewForm({ item, aiData, user }: { item: any; aiData: any; use
         setTitulo(res.aiResponse.ai_title);
         setResumo(res.aiResponse.ai_lead);
         setCorpo(res.aiResponse.ai_body);
-        toast.success("IA gerou uma nova versÃ£o!");
+        toast.success("IA gerou uma nova versão!");
       }
     } catch (err: any) {
       toast.error(err.message);
@@ -36,7 +36,7 @@ export function ReviewForm({ item, aiData, user }: { item: any; aiData: any; use
 
   async function handlePublish(e: React.FormEvent) {
     e.preventDefault();
-    if (!confirm("Confirmar publicaÃ§Ã£o deste artigo reescrito?")) return;
+    if (!confirm("Confirmar publicação deste artigo reescrito?")) return;
     
     startTransition(async () => {
       try {
@@ -54,14 +54,14 @@ export function ReviewForm({ item, aiData, user }: { item: any; aiData: any; use
   return (
     <form onSubmit={handlePublish} className="space-y-8 animate-in fade-in duration-1000">
       
-      {/* BotÃ£o Gatilho IA */}
+      {/* Botão Gatilho IA */}
       <div className="flex flex-col md:flex-row items-center justify-between p-6 bg-gray-900 rounded-[32px] text-white shadow-xl shadow-indigo-500/10 relative overflow-hidden group border border-white/10">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-indigo-500/20 transition-all" />
         <div className="relative z-10 text-center md:text-left">
           <h3 className="text-xl font-black uppercase tracking-tight flex items-center justify-center md:justify-start gap-2">
             <Sparkles className="w-6 h-6 text-indigo-400" /> Reescrita IA (Gemini)
           </h3>
-          <p className="text-white/50 text-xs font-bold uppercase tracking-widest mt-1">Gere uma versÃ£o original e exclusiva do conteÃºdo</p>
+          <p className="text-white/50 text-xs font-bold uppercase tracking-widest mt-1">Gere uma versão original e exclusiva do conteúdo</p>
         </div>
         <button
           type="button"
@@ -69,21 +69,21 @@ export function ReviewForm({ item, aiData, user }: { item: any; aiData: any; use
           disabled={loadingIA}
           className="mt-6 md:mt-0 bg-white text-gray-900 font-black uppercase tracking-widest px-8 py-5 rounded-2xl hover:bg-indigo-500 hover:text-white transition-all flex items-center gap-3 shadow-lg active:scale-95 disabled:opacity-50 text-xs relative z-10"
         >
-          {loadingIA ? "Coletando inteligÃªncia..." : "Reescrever com IA"}
+          {loadingIA ? "Coletando inteligência..." : "Reescrever com IA"}
           <RotateCcw className={`w-4 h-4 ${loadingIA ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-[40px] p-6 md:p-10 shadow-sm space-y-8">
         
-        {/* TÃ­tulo Final */}
+        {/* Título Final */}
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">TÃ­tulo Redesign</label>
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Título Redesign</label>
           <input 
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             className="w-full bg-gray-50 border-2 border-gray-100 rounded-3xl p-6 text-2xl font-black text-gray-900 focus:bg-white focus:border-indigo-500 outline-none transition-all placeholder:text-gray-300"
-            placeholder="TÃ­tulo final da matÃ©ria..."
+            placeholder="Título final da matéria..."
           />
         </div>
 
@@ -100,7 +100,7 @@ export function ReviewForm({ item, aiData, user }: { item: any; aiData: any; use
         </div>
 
         <div className="space-y-2">
-          <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Corpo da MatÃ©ria</label>
+          <label className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] ml-2">Corpo da Matéria</label>
           <RichTextEditor 
             content={corpo} 
             onChange={setCorpo} 
@@ -122,7 +122,7 @@ export function ReviewForm({ item, aiData, user }: { item: any; aiData: any; use
              <button
                 type="button"
                 onClick={async () => {
-                  if(confirm("Rejeitar? Este item sumirÃ¡ do dashboard.")) {
+                  if(confirm("Rejeitar? Este item sumirá do dashboard.")) {
                     await rejectRSSItem(item.id);
                     toast.info("Rejeitado");
                     router.push('/erp/curadoria/dashboard');
@@ -139,27 +139,27 @@ export function ReviewForm({ item, aiData, user }: { item: any; aiData: any; use
                 className="flex-[2] md:flex-none flex items-center justify-center gap-3 px-10 py-5 rounded-[24px] bg-emerald-600 text-white font-black uppercase tracking-[0.15em] text-xs hover:bg-emerald-500 transition-all shadow-xl shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
              >
                 <CheckCircle2 className="w-5 h-5" />
-                {isPending ? "Publicando..." : "Publicar MatÃ©ria"}
+                {isPending ? "Publicando..." : "Publicar Matéria"}
              </button>
           </div>
         </div>
 
       </div>
       
-      {/* RodapÃ© Legal AutomÃ¡tico Preview */}
+      {/* Rodapé Legal Automático Preview */}
       <div className="p-8 bg-gray-900 rounded-[40px] text-white/50 border border-white/10 italic text-xs space-y-1 relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 text-white/5 opacity-20">
            <Layout className="w-32 h-32" />
         </div>
         <p className="text-white/80 font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-2 text-[10px]">
           <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" />
-          Preview do RodapÃ© de Autoria (Portal)
+          Preview do Rodapé de Autoria (Portal)
         </p>
         <p className="border-t border-white/5 pt-4">---</p>
-        <p>ðŸ”— Baseado em matÃ©ria original do portal <strong>{item.source.name}</strong></p>
-        <p>ðŸ“… Publicado originalmente em {new Date(item.pub_date).toLocaleDateString('pt-BR')} Ã s {new Date(item.pub_date).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</p>
-        <p>âœï¸ ConteÃºdo reescrito via IA e revisado por <strong>{user.name || 'RedaÃ§Ã£o'}</strong></p>
-        <p>ðŸ“° Revista GestÃ£o - Sua Fonte ConfiÃ¡vel</p>
+        <p>ðŸ”— Baseado em matéria original do portal <strong>{item.source.name}</strong></p>
+        <p>ðŸ“… Publicado originalmente em {new Date(item.pub_date).toLocaleDateString('pt-BR')} à s {new Date(item.pub_date).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})}</p>
+        <p>âœï¸ Conteúdo reescrito via IA e revisado por <strong>{user.name || 'Redação'}</strong></p>
+        <p>ðŸ“° Revista Gestão - Sua Fonte Confiável</p>
         <p>---</p>
       </div>
 

@@ -417,7 +417,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                 </div>
               </div>
 
-              {/* CRÉDITOS E TRANSPARÊNCIA (M4-REPUBLICAÇÃO) */}
+              {/* CRÉDITOS E TRANSPARÊNCIA (M4-REPUBLICAÇàO) */}
               <div className="pt-6 border-t border-gray-200/80">
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2 font-sans">
                   <BookOpen className="w-4 h-4 text-emerald-600" />

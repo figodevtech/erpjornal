@@ -6,7 +6,7 @@ import { ArrowLeft, Share2 } from "lucide-react";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const ep = (await (prisma as any).podcastEpisode.findUnique({ where: { slug: params.slug } }));
-  if (!ep) return { title: "EpisÃ³dio NÃ£o Encontrado" };
+  if (!ep) return { title: "Episódio Não Encontrado" };
   return { title: `${ep.titulo} | Podcast RG`, description: ep.descricao };
 }
 
@@ -31,7 +31,7 @@ export default async function EpisodePage({ params }: { params: { slug: string }
         <div className="flex items-center gap-4 text-[11px] font-bold text-gray-400 tracking-widest uppercase">
            <span>Publicado: {new Date(ep.data_pub).toLocaleDateString("pt-BR", { day:'numeric', month:'long', year:'numeric' })}</span>
            <span className="text-gray-200">|</span>
-           <span>Revista GestÃ£o Oficial</span>
+           <span>Revista Gestão Oficial</span>
         </div>
       </div>
 
@@ -39,7 +39,7 @@ export default async function EpisodePage({ params }: { params: { slug: string }
 
       <div className="mt-12 space-y-8">
         <div className="prose prose-gray max-w-none">
-           <h3 className="text-xl font-bold text-gray-900 border-l-[4px] border-red-700 pl-4 mb-4">Sobre este episÃ³dio</h3>
+           <h3 className="text-xl font-bold text-gray-900 border-l-[4px] border-red-700 pl-4 mb-4">Sobre este episódio</h3>
            <p className="text-gray-600 text-lg leading-relaxed whitespace-pre-wrap">{ep.descricao}</p>
         </div>
 
@@ -54,7 +54,7 @@ export default async function EpisodePage({ params }: { params: { slug: string }
            </div>
            
            <div className="flex items-center gap-4">
-              <span className="text-xs font-black uppercase tracking-widest text-red-500">OuÃ§a tambÃ©m em:</span>
+              <span className="text-xs font-black uppercase tracking-widest text-red-500">Ouça também em:</span>
               <div className="flex gap-4 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
                  <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" className="w-6 h-6" alt="Spotify" />
                  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Podcasts_%28iOS%29.svg" className="w-6 h-6" alt="Apple Podcasts" />

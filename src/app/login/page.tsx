@@ -141,7 +141,7 @@ export default function LoginPage() {
           </div>
           <div className="flex gap-8 text-gray-500 text-sm font-bold uppercase tracking-widest">
              <span>v1.0.0</span>
-             <span>© 2026 REVISTA GESTÃO</span>
+             <span>© 2026 REVISTA GESTàO</span>
           </div>
         </div>
       </div>

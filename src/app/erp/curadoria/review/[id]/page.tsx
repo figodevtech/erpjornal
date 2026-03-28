@@ -50,7 +50,7 @@ export default async function CuradoriaReviewPage({ params }: { params: Promise<
         <div className="xl:col-span-4 space-y-6">
           <div className="bg-gray-50 border border-gray-200 rounded-[32px] p-8 sticky top-8">
             <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <Globe className="w-4 h-4" /> MatÃ©ria Original
+              <Globe className="w-4 h-4" /> Matéria Original
             </h3>
             
             <div className="space-y-4">
@@ -64,7 +64,7 @@ export default async function CuradoriaReviewPage({ params }: { params: Promise<
               </h1>
 
               <div className="text-sm text-gray-500 font-medium leading-relaxed bg-gray-100/50 p-4 rounded-2xl italic">
-                {item.description?.replace(/<[^>]*>?/gm, '') || "Sem descriÃ§Ã£o original."}
+                {item.description?.replace(/<[^>]*>?/gm, '') || "Sem descrição original."}
               </div>
 
               <a 

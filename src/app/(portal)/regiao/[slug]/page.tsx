@@ -4,12 +4,12 @@ import Link from "next/link";
 import { MapPin, ArrowRight, Calendar, Globe } from "lucide-react";
 
 const stateNames: Record<string, string> = {
-  "ac": "Acre", "al": "Alagoas", "ap": "AmapÃ¡", "am": "Amazonas", "ba": "Bahia",
-  "ce": "CearÃ¡", "df": "Distrito Federal", "es": "EspÃ­rito Santo", "go": "GoiÃ¡s",
-  "ma": "MaranhÃ£o", "mt": "Mato Grosso", "ms": "Mato Grosso do Sul", "mg": "Minas Gerais",
-  "pa": "ParÃ¡", "pb": "ParaÃ­ba", "pr": "ParanÃ¡", "pe": "Pernambuco", "pi": "PiauÃ­",
+  "ac": "Acre", "al": "Alagoas", "ap": "Amapá", "am": "Amazonas", "ba": "Bahia",
+  "ce": "Ceará", "df": "Distrito Federal", "es": "Espírito Santo", "go": "Goiás",
+  "ma": "Maranhão", "mt": "Mato Grosso", "ms": "Mato Grosso do Sul", "mg": "Minas Gerais",
+  "pa": "Pará", "pb": "Paraíba", "pr": "Paraná", "pe": "Pernambuco", "pi": "Piauí",
   "rj": "Rio de Janeiro", "rn": "Rio Grande do Norte", "rs": "Rio Grande do Sul",
-  "ro": "RondÃ´nia", "rr": "Roraima", "sc": "Santa Catarina", "sp": "SÃ£o Paulo",
+  "ro": "Rondônia", "rr": "Roraima", "sc": "Santa Catarina", "sp": "São Paulo",
   "se": "Sergipe", "to": "Tocantins", "nacional": "Nacional"
 };
 
@@ -30,25 +30,25 @@ export default async function RegionalPage({ params }: { params: { slug: string 
   const resolvedParams = await params;
   const slug = resolvedParams.slug.toLowerCase();
   
-  let title = "NotÃ­cias Regionais";
-  let description = "Acompanhe as notÃ­cias polÃ­ticas da sua regiÃ£o.";
+  let title = "Notícias Regionais";
+  let description = "Acompanhe as notícias políticas da sua região.";
   const whereClause: { status_id: string; regiao?: string; estado?: string } = { status_id: "publicado" };
 
   if (slug === "nacional") {
-    title = "NotÃ­cias Nacionais";
+    title = "Notícias Nacionais";
     whereClause.regiao = "Nacional";
   } else if (slug === "internacional") {
-    title = "NotÃ­cias Internacionais";
+    title = "Notícias Internacionais";
     whereClause.regiao = "Internacional";
-    description = "Acompanhe as notÃ­cias polÃ­ticas de todo o mundo.";
+    description = "Acompanhe as notícias políticas de todo o mundo.";
   } else if (stateNames[slug]) {
-    title = `PolÃ­tica em ${stateNames[slug]}`;
+    title = `Política em ${stateNames[slug]}`;
     whereClause.estado = slug.toUpperCase();
   } else {
-    // Tenta filtrar por esfera se nÃ£o for estado
+    // Tenta filtrar por esfera se não for estado
     const spheres = ["estadual", "municipal"];
     if (spheres.includes(slug)) {
-      title = `PolÃ­tica ${slug.charAt(0).toUpperCase() + slug.slice(1)}`;
+      title = `Política ${slug.charAt(0).toUpperCase() + slug.slice(1)}`;
       whereClause.regiao = slug.charAt(0).toUpperCase() + slug.slice(1);
     } else {
       notFound();
@@ -100,7 +100,7 @@ export default async function RegionalPage({ params }: { params: { slug: string 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-black text-red-600 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded border border-red-100">
-                    {artigo.categoria?.nome || "PolÃ­tica"}
+                    {artigo.categoria?.nome || "Política"}
                   </span>
                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                     {artigo.regiao} {artigo.estado ? `â€¢ ${artigo.estado}` : ""}
@@ -134,8 +134,8 @@ export default async function RegionalPage({ params }: { params: { slug: string 
       {articles.length === 0 && (
         <div className="py-32 text-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50">
           <Globe className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-400">Nenhum artigo encontrado para esta regiÃ£o.</h3>
-          <p className="text-gray-400 max-w-sm mx-auto mt-2">Estamos trabalhando para trazer as notÃ­cias polÃ­ticas mais relevantes desta localidade em breve.</p>
+          <h3 className="text-xl font-bold text-gray-400">Nenhum artigo encontrado para esta região.</h3>
+          <p className="text-gray-400 max-w-sm mx-auto mt-2">Estamos trabalhando para trazer as notícias políticas mais relevantes desta localidade em breve.</p>
         </div>
       )}
     </div>

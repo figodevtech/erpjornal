@@ -16,11 +16,11 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { slug } = params;
   const category = await prisma.category.findUnique({ where: { slug } });
 
-  if (!category) return { title: "Categoria nÃ£o encontrada" };
+  if (!category) return { title: "Categoria não encontrada" };
 
   return {
-    title: `${category.nome} | NotÃ­cias - Revista GestÃ£o`,
-    description: `Acompanhe as Ãºltimas publicaÃ§Ãµes arquivadas na seÃ§Ã£o ${category.nome} da Revista GestÃ£o.`,
+    title: `${category.nome} | Notícias - Revista Gestão`,
+    description: `Acompanhe as últimas publicações arquivadas na seção ${category.nome} da Revista Gestão.`,
   };
 }
 
@@ -28,7 +28,7 @@ export default async function CategoriaPage(props: PageProps) {
   const params = await props.params;
   const { slug } = params;
 
-  // Primeiro descobre a categoria (ValidaÃ§Ã£o primÃ¡ria)
+  // Primeiro descobre a categoria (Validação primária)
   const category = await prisma.category.findUnique({
     where: { slug }
   });
@@ -63,7 +63,7 @@ export default async function CategoriaPage(props: PageProps) {
              {category.nome}
           </h1>
           <p className="text-gray-800 dark:text-gray-300 text-lg font-bold max-w-2xl pl-8 border-l-4 border-gray-400 dark:border-gray-700 ml-2">
-            Acompanhe as Ãºltimas informaÃ§Ãµes e apuraÃ§Ãµes exclusivas sobre {category.nome}.
+            Acompanhe as últimas informações e apurações exclusivas sobre {category.nome}.
           </p>
         </div>
       </div>
@@ -112,7 +112,7 @@ export default async function CategoriaPage(props: PageProps) {
                     </time>
                     <span className="w-1 h-1 bg-gray-300 hidden sm:block"></span>
                     <span className="hidden sm:inline-block truncate">
-                       {art.autor?.nome || "RedaÃ§Ã£o"}
+                       {art.autor?.nome || "Redação"}
                     </span>
                   </div>
               </Link>

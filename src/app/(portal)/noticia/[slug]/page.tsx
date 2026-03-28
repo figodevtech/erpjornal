@@ -22,11 +22,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     where: { slug }
   });
 
-  if (!article) return { title: "Artigo nÃ£o encontrado" };
+  if (!article) return { title: "Artigo não encontrado" };
 
   return {
-    title: `${article.titulo} | Revista GestÃ£o`,
-    description: article.resumo || "Leia esta matÃ©ria na Revista GestÃ£o.",
+    title: `${article.titulo} | Revista Gestão`,
+    description: article.resumo || "Leia esta matéria na Revista Gestão.",
     openGraph: {
       title: article.titulo,
       description: article.resumo || "",
@@ -83,7 +83,7 @@ export default async function NoticiaPage({ params }: PageProps) {
 
       <article className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-14 font-serif">
         
-        {/* CabeÃ§alho do Artigo */}
+        {/* Cabeçalho do Artigo */}
         <header className="mb-10 lg:mb-12 font-sans">
           
           <div className="flex items-center gap-3 mb-4">
@@ -118,12 +118,12 @@ export default async function NoticiaPage({ params }: PageProps) {
             <div className="flex items-center gap-4">
               <div>
                 <p className="text-[15px] font-bold text-gray-950 dark:text-gray-50 uppercase tracking-widest">
-                  Por <span className="text-red-700">{article.autor?.nome || "RedaÃ§Ã£o"}</span>
+                  Por <span className="text-red-700">{article.autor?.nome || "Redação"}</span>
                 </p>
                 <time className="text-[13px] font-black text-gray-950 dark:text-gray-300 uppercase tracking-widest flex items-center gap-2 mt-1">
                   {article.data_publicacao?.toLocaleDateString("pt-BR", { 
                     day: "2-digit", month: "long", year: "numeric"
-                  })} Ã s {article.data_publicacao?.toLocaleTimeString("pt-BR", { 
+                  })} à s {article.data_publicacao?.toLocaleTimeString("pt-BR", { 
                     hour: "2-digit", minute: "2-digit"
                   })}
                 </time>
@@ -191,16 +191,16 @@ export default async function NoticiaPage({ params }: PageProps) {
                     <div className="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-gray-900 -mt-14 shadow-xl">
                       <Lock className="w-6 h-6 text-white" />
                     </div>
-                    <h3 className="text-white text-xl font-black uppercase tracking-tight mb-2">ConteÃºdo Exclusivo</h3>
+                    <h3 className="text-white text-xl font-black uppercase tracking-tight mb-2">Conteúdo Exclusivo</h3>
                     <p className="text-gray-400 text-sm font-medium mb-6">
-                      Esta matÃ©ria Ã© reservada para assinantes da <span className="text-white font-bold">Revista GestÃ£o</span>.
+                      Esta matéria é reservada para assinantes da <span className="text-white font-bold">Revista Gestão</span>.
                     </p>
                     <div className="space-y-3">
                       <Link 
                         href="/login" 
                         className="block w-full bg-red-700 hover:bg-red-600 text-white font-black uppercase text-xs py-4 rounded-xl transition-all shadow-lg"
                       >
-                        JÃ¡ sou assinante / Entrar
+                        Já sou assinante / Entrar
                       </Link>
                       <Link 
                         href="/assine" 

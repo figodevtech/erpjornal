@@ -88,25 +88,25 @@ export default async function FonteDetailPage({ params }: PageProps) {
         )}
       </div>
 
-      {/* AnotaÃ§Ãµes */}
+      {/* Anotações */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-indigo-500" />
-            AnotaÃ§Ãµes ({fonte.anotacoes.length})
+            Anotações ({fonte.anotacoes.length})
           </h2>
         </div>
 
-        {/* FormulÃ¡rio Nova AnotaÃ§Ã£o */}
+        {/* Formulário Nova Anotação */}
         <form action={saveSourceNote} className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
           <input type="hidden" name="source_id" value={id} />
           <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Nova AnotaÃ§Ã£o</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Nova Anotação</label>
             <textarea
               name="conteudo"
               required
               rows={3}
-              placeholder="Registre uma observaÃ§Ã£o sobre esta fonte..."
+              placeholder="Registre uma observação sobre esta fonte..."
               className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none"
             />
           </div>
@@ -114,11 +114,11 @@ export default async function FonteDetailPage({ params }: PageProps) {
             type="submit"
             className="flex items-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-indigo-500 transition-all text-sm"
           >
-            <Plus className="w-4 h-4" /> Adicionar AnotaÃ§Ã£o
+            <Plus className="w-4 h-4" /> Adicionar Anotação
           </button>
         </form>
 
-        {/* Lista de AnotaÃ§Ãµes */}
+        {/* Lista de Anotações */}
         {fonte.anotacoes.map((nota) => (
           <div key={nota.id} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-2">
             <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{nota.conteudo}</p>
@@ -139,7 +139,7 @@ export default async function FonteDetailPage({ params }: PageProps) {
         ))}
 
         {fonte.anotacoes.length === 0 && (
-          <p className="text-sm text-gray-400 italic text-center py-8">Nenhuma anotaÃ§Ã£o ainda.</p>
+          <p className="text-sm text-gray-400 italic text-center py-8">Nenhuma anotação ainda.</p>
         )}
       </div>
     </div>

@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 export const runtime = 'nodejs'; // Using nodejs because of Prisma
 
 // Image metadata
-export const alt = 'Revista GestÃ£o - NotÃ­cia';
+export const alt = 'Revista Gestão - Notícia';
 export const size = {
   width: 1200,
   height: 630,
@@ -28,7 +28,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
     return new ImageResponse(
       (
         <div style={{ display: 'flex', width: '100%', height: '100%', background: 'white' }}>
-          <h1>Artigo nÃ£o encontrado</h1>
+          <h1>Artigo não encontrado</h1>
         </div>
       ),
       { ...size }
@@ -148,7 +148,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
                 letterSpacing: '-0.02em',
               }}
             >
-              REVISTA <span style={{ color: '#d32f2f' }}>GESTÃƒO</span>
+              REVISTA <span style={{ color: '#d32f2f' }}>GESTàƒO</span>
             </div>
           </div>
         </div>

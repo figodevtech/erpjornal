@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth";
+﻿import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -38,12 +38,12 @@ export default async function FonteDetailPage({ params }: PageProps) {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Header */}
       <div className="flex items-start gap-4">
-        <Link href="/erp/fontes" className="text-slate-400 hover:text-slate-900 bg-white hover:bg-slate-100 p-2 rounded-full shadow-sm transition-all border border-slate-200 mt-1">
+        <Link href="/erp/fontes" className="text-gray-400 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-full shadow-sm transition-all border border-gray-200 mt-1">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{fonte.nome}</h1>
+            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">{fonte.nome}</h1>
             {fonte.nivel_sigilo === "confidencial" && (
               <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-widest bg-red-50 text-red-700 border border-red-200 px-3 py-1 rounded-full">
                 <Lock className="w-3 h-3" /> Confidencial
@@ -51,7 +51,7 @@ export default async function FonteDetailPage({ params }: PageProps) {
             )}
           </div>
           {(fonte.cargo || fonte.organizacao) && (
-            <p className="text-slate-500 mt-1">{fonte.cargo}{fonte.cargo && fonte.organizacao ? " · " : ""}{fonte.organizacao}</p>
+            <p className="text-gray-500 mt-1">{fonte.cargo}{fonte.cargo && fonte.organizacao ? " Â· " : ""}{fonte.organizacao}</p>
           )}
         </div>
         <Link
@@ -63,71 +63,71 @@ export default async function FonteDetailPage({ params }: PageProps) {
       </div>
 
       {/* Contatos */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-4">
         {fonte.email && (
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Email</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Email</p>
             <a href={`mailto:${fonte.email}`} className="text-sm font-medium text-indigo-600 hover:underline">{fonte.email}</a>
           </div>
         )}
         {fonte.telefone && (
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Telefone</p>
-            <p className="text-sm font-medium text-slate-700">{fonte.telefone}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Telefone</p>
+            <p className="text-sm font-medium text-gray-700">{fonte.telefone}</p>
           </div>
         )}
         <div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cadastrado por</p>
-          <p className="text-sm font-medium text-slate-700">{fonte.criador.nome}</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Cadastrado por</p>
+          <p className="text-sm font-medium text-gray-700">{fonte.criador.nome}</p>
         </div>
         {fonte.notas && (
           <div className="md:col-span-3">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Notas Gerais</p>
-            <p className="text-sm text-slate-600 whitespace-pre-line">{fonte.notas}</p>
+            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Notas Gerais</p>
+            <p className="text-sm text-gray-600 whitespace-pre-line">{fonte.notas}</p>
           </div>
         )}
       </div>
 
-      {/* Anotações */}
+      {/* AnotaÃ§Ãµes */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-indigo-500" />
-            Anotações ({fonte.anotacoes.length})
+            AnotaÃ§Ãµes ({fonte.anotacoes.length})
           </h2>
         </div>
 
-        {/* Formulário Nova Anotação */}
-        <form action={saveSourceNote} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+        {/* FormulÃ¡rio Nova AnotaÃ§Ã£o */}
+        <form action={saveSourceNote} className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm space-y-4">
           <input type="hidden" name="source_id" value={id} />
           <div>
-            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nova Anotação</label>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">Nova AnotaÃ§Ã£o</label>
             <textarea
               name="conteudo"
               required
               rows={3}
-              placeholder="Registre uma observação sobre esta fonte..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none"
+              placeholder="Registre uma observaÃ§Ã£o sobre esta fonte..."
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none"
             />
           </div>
           <button
             type="submit"
             className="flex items-center gap-2 bg-indigo-600 text-white font-bold px-4 py-2 rounded-xl hover:bg-indigo-500 transition-all text-sm"
           >
-            <Plus className="w-4 h-4" /> Adicionar Anotação
+            <Plus className="w-4 h-4" /> Adicionar AnotaÃ§Ã£o
           </button>
         </form>
 
-        {/* Lista de Anotações */}
+        {/* Lista de AnotaÃ§Ãµes */}
         {fonte.anotacoes.map((nota) => (
-          <div key={nota.id} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-2">
-            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-line">{nota.conteudo}</p>
-            <div className="flex items-center gap-3 text-[11px] text-slate-400 pt-2 border-t border-slate-50">
+          <div key={nota.id} className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-2">
+            <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{nota.conteudo}</p>
+            <div className="flex items-center gap-3 text-[11px] text-gray-400 pt-2 border-t border-gray-50">
               <UserCheck className="w-3 h-3" />
               <span>{nota.autor.nome}</span>
               {nota.article && (
                 <>
-                  <span>·</span>
+                  <span>Â·</span>
                   <Link href={`/erp/artigos/${nota.article_id}/edit`} className="text-indigo-500 hover:underline">
                     {nota.article.titulo}
                   </Link>
@@ -139,9 +139,10 @@ export default async function FonteDetailPage({ params }: PageProps) {
         ))}
 
         {fonte.anotacoes.length === 0 && (
-          <p className="text-sm text-slate-400 italic text-center py-8">Nenhuma anotação ainda.</p>
+          <p className="text-sm text-gray-400 italic text-center py-8">Nenhuma anotaÃ§Ã£o ainda.</p>
         )}
       </div>
     </div>
   );
 }
+

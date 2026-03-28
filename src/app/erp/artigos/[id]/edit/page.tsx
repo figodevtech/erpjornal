@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth";
+﻿import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ArticleForm, { InitialData } from "../../components/ArticleForm";
@@ -25,7 +25,7 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
     redirect("/erp/artigos");
   }
 
-  // Prevenção Rigorosa de Edição se Reporter tentar editar artigo de outros
+  // PrevenÃ§Ã£o Rigorosa de EdiÃ§Ã£o se Reporter tentar editar artigo de outros
   if (session.user.role === "reporter" && article.autor_id !== session.user.id) {
     redirect("/erp/artigos");
   }
@@ -45,7 +45,7 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
       <div className="flex items-center gap-4">
         <Link 
           href="/erp/artigos" 
-          className="text-slate-400 hover:text-slate-900 bg-white hover:bg-slate-100 p-2 rounded-full shadow-sm transition-all border border-slate-200"
+          className="text-gray-400 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-full shadow-sm transition-all border border-gray-200"
           aria-label="Voltar para a listagem"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -53,8 +53,8 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
           </svg>
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Editar Matéria</h1>
-          <p className="text-sm text-slate-500 mt-1">Modificando o workflow ou conteúdo do artigo original.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Editar MatÃ©ria</h1>
+          <p className="text-sm text-gray-500 mt-1">Modificando o workflow ou conteÃºdo do artigo original.</p>
         </div>
       </div>
 
@@ -62,3 +62,4 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
     </div>
   );
 }
+

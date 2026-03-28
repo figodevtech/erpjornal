@@ -54,7 +54,7 @@ export default async function PodcastsPage() {
                     {new Date(ep.data_pub).toLocaleDateString("pt-BR", { day:'numeric', month:'long' })}
                  </span>
                </div>
-               <h2 className="text-xl md:text-2xl font-black text-gray-900 group-hover:tracking-tight transition-all mb-2 leading-tight">
+               <h2 className="text-xl md:text-2xl font-black text-red-900 dark:text-red-100 group-hover:text-red-700 transition-colors mb-2 leading-tight">
                  {ep.titulo}
                </h2>
                <p className="text-sm text-gray-500 line-clamp-2 md:line-clamp-1 leading-relaxed">

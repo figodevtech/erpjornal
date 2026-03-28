@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth";
+﻿import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect, notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -33,7 +33,7 @@ export default async function CuradoriaReviewPage({ params }: { params: Promise<
       <div className="flex items-center justify-between">
         <Link 
           href="/erp/curadoria/dashboard" 
-          className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest hover:text-slate-900 transition-colors"
+          className="flex items-center gap-2 text-xs font-black text-gray-400 uppercase tracking-widest hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Voltar ao Dashboard
         </Link>
@@ -48,23 +48,23 @@ export default async function CuradoriaReviewPage({ params }: { params: Promise<
         
         {/* Lado Esquerdo: Original */}
         <div className="xl:col-span-4 space-y-6">
-          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 sticky top-8">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-              <Globe className="w-4 h-4" /> Matéria Original
+          <div className="bg-gray-50 border border-gray-200 rounded-[32px] p-8 sticky top-8">
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+              <Globe className="w-4 h-4" /> MatÃ©ria Original
             </h3>
             
             <div className="space-y-4">
-              <div className="bg-white p-4 rounded-2xl border border-slate-200">
+              <div className="bg-white p-4 rounded-2xl border border-gray-200">
                 <span className="text-[10px] font-black text-indigo-500 uppercase tracking-widest block mb-1">Fonte</span>
-                <p className="text-sm font-bold text-slate-900">{item.source.name}</p>
+                <p className="text-sm font-bold text-gray-900">{item.source.name}</p>
               </div>
 
-              <h1 className="text-xl font-black text-slate-900 leading-tight">
+              <h1 className="text-xl font-black text-gray-900 leading-tight">
                 {item.original_title}
               </h1>
 
-              <div className="text-sm text-slate-500 font-medium leading-relaxed bg-slate-100/50 p-4 rounded-2xl italic">
-                {item.description?.replace(/<[^>]*>?/gm, '') || "Sem descrição original."}
+              <div className="text-sm text-gray-500 font-medium leading-relaxed bg-gray-100/50 p-4 rounded-2xl italic">
+                {item.description?.replace(/<[^>]*>?/gm, '') || "Sem descriÃ§Ã£o original."}
               </div>
 
               <a 
@@ -92,3 +92,4 @@ export default async function CuradoriaReviewPage({ params }: { params: Promise<
     </div>
   );
 }
+

@@ -373,23 +373,23 @@
                 {
                     "id": "M5-PLUS-T1",
                     "title": "Dashboard editorial avançado",
-                    "status": "pending",
-                    "user_story": "Como editor-chefe, quero um painel com visão de status e audiência.",
-                    "description": "Criar dashboard com cards de status, ranking de artigos e alertas de plantão.",
+                    "status": "completed",
+                    "user_story": "Como administrador, quero uma visão gerencial do sistema para tomada de decisão.",
+                    "description": "Implementar visão consolidada de status e ranking de audiência em tempo real.",
                     "subtasks": [
                         {
                             "id": "M5-PLUS-T1-ST1",
                             "title": "Visão por status de matérias",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero ver quantas matérias estão em cada fase.",
                             "description": "Exibir contagem por status e link para listas filtradas."
                         },
                         {
                             "id": "M5-PLUS-T1-ST2",
                             "title": "Ranking de audiência",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero saber quais notícias performam melhor.",
-                            "description": "Mostrar top artigos por visualizações no período."
+                            "description": "Mostrar top artigos por visualizações no período (via Redis Sorted Sets)."
                         }
                     ]
                 },

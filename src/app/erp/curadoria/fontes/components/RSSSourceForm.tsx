@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Globe, Save, Trash2 } from "lucide-react";
+import { Plus, X, Globe, Save, Trash2, RefreshCcw } from "lucide-react";
 import { saveRSSSource, deleteRSSSource } from "../../actions";
 import { toast } from "sonner";
+
+import { createPortal } from "react-dom";
 
 interface RSSSourceFormProps {
   source?: any;
@@ -12,6 +14,15 @@ interface RSSSourceFormProps {
 export function RSSSourceForm({ source }: RSSSourceFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Garantir que o portal só renderize no cliente
+  useState(() => {
+    if (typeof window !== "undefined") {
+      setMounted(true);
+    }
+    return undefined;
+  });
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,6 +39,126 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
     }
   }
 
+  const modalContent = isOpen && (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+      <div className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-gray-100 flex flex-col">
+        {/* Header - Solid Background */}
+        <div className="bg-slate-900 p-8 text-white relative flex-shrink-0">
+          <button 
+            type="button"
+            onClick={() => setIsOpen(false)} 
+            className="absolute top-6 right-6 text-white/40 hover:text-white transition-all"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          
+          <div className="flex items-center gap-5">
+            <div className="w-12 h-12 bg-indigo-500 rounded-2xl flex items-center justify-center shadow-lg">
+              <Globe className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black uppercase tracking-tight">{source ? "Editar Fonte" : "Novo Feed"}</h2>
+              <p className="text-indigo-400 text-[9px] font-black uppercase tracking-widest">Configuração de Canal</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Content - Solid White Background */}
+        <form onSubmit={handleSubmit} className="p-8 space-y-6 bg-white overflow-y-auto max-h-[80vh]">
+          <input type="hidden" name="id" value={source?.id || ""} />
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Nome da Fonte</label>
+              <input 
+                name="name" 
+                defaultValue={source?.name} 
+                required 
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all" 
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">URL do Feed (XML)</label>
+              <input 
+                name="feed_url" 
+                defaultValue={source?.feed_url} 
+                required 
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all" 
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Tom de Voz</label>
+                <select 
+                  name="tone" 
+                  defaultValue={source?.tone || "jornalistico"} 
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all cursor-pointer"
+                >
+                  <option value="jornalistico">Jornalístico</option>
+                  <option value="direto">Hard News</option>
+                  <option value="informal">Informal</option>
+                </select>
+              </div>
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Refresh (Min)</label>
+                <input 
+                  name="cache_ttl" 
+                  type="number" 
+                  defaultValue={source?.cache_ttl || 30} 
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all" 
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 pb-2">
+              <label className="flex items-center gap-3 cursor-pointer group">
+                <div className="relative">
+                  <input 
+                    type="checkbox" 
+                    name="is_active" 
+                    defaultChecked={source?.is_active ?? true}
+                    className="sr-only peer" 
+                    value="true"
+                  />
+                  <div className="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-emerald-500 transition-all" />
+                  <div className="absolute left-1 top-1 w-3 h-3 bg-white rounded-full peer-checked:translate-x-5 transition-all" />
+                </div>
+                <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Fonte Ativa</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+            {source && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if(confirm("Deletar esta fonte?")) {
+                    await deleteRSSSource(source.id);
+                    toast.success("Deletada");
+                    setIsOpen(false);
+                  }
+                }}
+                className="p-3 rounded-xl border border-gray-200 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 bg-indigo-600 text-white font-black uppercase tracking-widest p-4 rounded-xl hover:bg-indigo-700 active:scale-95 transition-all shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {loading ? <RefreshCcw className="w-4 h-4 animate-spin" /> : source ? "Atualizar" : "Criar Fonte"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
   return (
     <>
       <button
@@ -41,102 +172,7 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
         ) : <><Plus className="w-4 h-4" /> Novo Feed RSS</>}
       </button>
 
-      {isOpen && (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300">
-            <div className="bg-gray-900 p-8 text-white relative">
-              <button onClick={() => setIsOpen(false)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
-                <X className="w-6 h-6" />
-              </button>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center">
-                  <Globe className="w-6 h-6" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight">{source ? "Editar Feed" : "Novo Feed RSS"}</h2>
-                  <p className="text-white/50 text-xs font-bold uppercase tracking-widest">Configuração de Coleta</p>
-                </div>
-              </div>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <input type="hidden" name="id" value={source?.id || ""} />
-              
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Nome do Veículo</label>
-                    <input name="name" defaultValue={source?.name} required placeholder="Ex: CNN Brasil" className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">URL do Feed RSS</label>
-                    <input name="feed_url" defaultValue={source?.feed_url} required placeholder="https://..." className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-mono text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Tom de Voz</label>
-                    <select name="tone" defaultValue={source?.tone || "jornalistico"} className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
-                      <option value="jornalistico">Jornalístico</option>
-                      <option value="direto">Direto / Hard News</option>
-                      <option value="opinativo">Opinativo</option>
-                      <option value="informal">Informal</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Intervalo (Minutos)</label>
-                    <input name="cache_ttl" type="number" defaultValue={source?.cache_ttl || 30} className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none" />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Região</label>
-                    <select name="regiao" defaultValue={source?.regiao || "Nacional"} className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
-                      <option value="Nacional">Nacional</option>
-                      <option value="Estadual">Estadual</option>
-                      <option value="Municipal">Municipal</option>
-                      <option value="Internacional">Internacional</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Estado (Sigla)</label>
-                    <input name="estado" maxLength={2} defaultValue={source?.estado} placeholder="SP" className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold uppercase focus:ring-2 focus:ring-indigo-500 outline-none" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 pt-4">
-                {source && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if(confirm("Deseja realmente excluir este feed?")) {
-                        await deleteRSSSource(source.id);
-                        toast.success("Feed excluído");
-                        setIsOpen(false);
-                      }
-                    }}
-                    className="p-4 rounded-2xl border border-gray-200 text-rose-500 hover:bg-rose-50 transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 bg-indigo-600 text-white font-black uppercase tracking-widest p-4 rounded-2xl hover:bg-indigo-500 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-                >
-                  <Save className="w-5 h-5" />
-                  {loading ? "Salvando..." : "Salvar Configuração"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {mounted && typeof document !== "undefined" && createPortal(modalContent, document.body)}
     </>
   );
 }
-

@@ -46,10 +46,18 @@ export default async function PortalHome() {
             <div className="lg:col-span-8 flex flex-col">
               <Link href={`/noticia/${featured[0].slug}`} className="group flex flex-col items-start w-full">
                 
-                <div className="w-full aspect-video bg-gray-200 dark:bg-gray-800 mb-5 relative overflow-hidden transition-all duration-500">
-                  <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
-                    <svg className="w-16 h-16 text-gray-300 dark:text-gray-700" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  </div>
+                <div className="w-full aspect-video bg-gray-200 dark:bg-gray-800 mb-5 relative overflow-hidden transition-all duration-500 border border-gray-200 dark:border-gray-800">
+                  {featured[0].og_image_url ? (
+                    <img 
+                      src={featured[0].og_image_url} 
+                      alt={featured[0].titulo}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
+                      <svg className="w-16 h-16 text-gray-300 dark:text-gray-700" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </div>
+                  )}
                 </div>
 
                 {featured[0].categoria && (
@@ -89,10 +97,18 @@ export default async function PortalHome() {
                     {art.titulo}
                   </h2>
                   
-                  <div className="w-full aspect-[16/9] bg-gray-100 dark:bg-gray-900 mb-4 relative overflow-hidden group-hover:opacity-90 transition-opacity">
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-gray-300 dark:text-gray-700" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
+                  <div className="w-full aspect-[16/9] bg-gray-100 dark:bg-gray-900 mb-4 relative overflow-hidden group-hover:opacity-90 transition-opacity border border-gray-200 dark:border-gray-800">
+                    {art.og_image_url ? (
+                      <img 
+                        src={art.og_image_url} 
+                        alt={art.titulo}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-gray-300 dark:text-gray-700" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      </div>
+                    )}
                   </div>
 
                   <div className="text-[11px] font-bold text-gray-800 dark:text-gray-500 uppercase tracking-widest mt-auto">
@@ -130,9 +146,17 @@ export default async function PortalHome() {
               <Link key={art.id} href={`/noticia/${art.slug}`} className="group flex flex-col items-start h-full">
                 
                 <div className="w-full aspect-[4/3] bg-gray-100 dark:bg-gray-900 overflow-hidden mb-4 border border-gray-200 dark:border-gray-800 group-hover:border-red-700 transition-colors duration-300">
-                  <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-700 transform group-hover:scale-105 transition-transform duration-500">
-                    <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  </div>
+                  {art.og_image_url ? (
+                    <img 
+                      src={art.og_image_url} 
+                      alt={art.titulo}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-700 transform group-hover:scale-105 transition-transform duration-500">
+                      <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </div>
+                  )}
                 </div>
                 
                 {art.categoria && (

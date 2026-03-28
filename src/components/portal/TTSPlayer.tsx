@@ -22,7 +22,8 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
   // Prepara o texto quando o conteúdo muda
   useEffect(() => {
     const plainText = `${title}. ${extractPlainTextFromHtml(htmlContent)}`;
-    setChunks(splitTextIntoChunks(plainText, 160));
+    // Aumentamos o tamanho de cada bloco para 600 caracteres para uma leitura mais fluida
+    setChunks(splitTextIntoChunks(plainText, 600));
   }, [htmlContent, title]);
 
   // Cleanup ao desmontar
@@ -35,11 +36,10 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
   }, [synth]);
 
   const speak = (index: number) => {
-    if (!synth || index >= chunks.length) {
-      setIsPlaying(false);
-      setCurrentChunkIndex(0);
-      return;
-    }
+    if (!synth || index >= chunks.length || !isPlaying) return;
+
+    // Cancela qualquer fala anterior para evitar sobreposição
+    synth.cancel();
 
     const utterance = new SpeechSynthesisUtterance(chunks[index]);
     utterance.lang = "pt-BR";
@@ -50,22 +50,36 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
     const ptVoice = voices.find(v => v.lang.includes("pt-BR") || v.lang.includes("pt_BR"));
     if (ptVoice) utterance.voice = ptVoice;
 
+    utterance.onstart = () => {
+      setIsLoading(false);
+    };
+
     utterance.onend = () => {
-      if (isPlaying) {
-        const nextIndex = index + 1;
-        setCurrentChunkIndex(nextIndex);
-        speak(nextIndex);
+      if (index + 1 < chunks.length) {
+        setCurrentChunkIndex(index + 1);
+      } else {
+        setIsPlaying(false);
+        setCurrentChunkIndex(0);
       }
     };
 
     utterance.onerror = (event) => {
       console.error("TTS Error:", event);
-      setIsPlaying(false);
+      if (event.error !== "interrupted") {
+        setIsPlaying(false);
+      }
     };
 
     utteranceRef.current = utterance;
     synth.speak(utterance);
   };
+
+  // Trigger para tocar o próximo bloco quando o index muda
+  useEffect(() => {
+    if (isPlaying && !isPaused) {
+      speak(currentChunkIndex);
+    }
+  }, [currentChunkIndex, isPlaying, isPaused]);
 
   const handlePlay = () => {
     if (!synth) return;
@@ -76,13 +90,9 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
       setIsPlaying(true);
     } else {
       setIsLoading(true);
-      // Pequeno delay para garantir que as vozes foram carregadas (chrome issues)
-      setTimeout(() => {
-        setIsLoading(false);
-        setIsPlaying(true);
-        setCurrentChunkIndex(0);
-        speak(0);
-      }, 100);
+      setIsPlaying(true);
+      setCurrentChunkIndex(0);
+      // O useEffect cuidará de chamar o speak(0)
     }
   };
 

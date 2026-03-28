@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useTransition } from "react";
 import { Sparkles, Save, CheckCircle2, XCircle, RotateCcw, Layout } from "lucide-react";
@@ -54,6 +54,18 @@ export function ReviewForm({ item, aiData, user }: { item: any; aiData: any; use
   return (
     <form onSubmit={handlePublish} className="space-y-8 animate-in fade-in duration-1000">
       
+      {/* Imagem da Notícia */}
+      {item.thumbnail && (
+        <div className="relative h-64 md:h-96 w-full rounded-[40px] overflow-hidden group shadow-2xl border-4 border-white">
+          <img src={item.thumbnail} alt="Preview do RSS" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 shadow-inner" />
+          <div className="absolute inset-x-0 bottom-0 py-10 px-8 bg-gradient-to-t from-gray-900 to-transparent flex items-end">
+            <span className="bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full border border-white/20 flex items-center gap-2">
+              <Layout className="w-3.5 h-3.5" /> Miniatura Original do RSS
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Botão Gatilho IA */}
       <div className="flex flex-col md:flex-row items-center justify-between p-6 bg-gray-900 rounded-[32px] text-white shadow-xl shadow-indigo-500/10 relative overflow-hidden group border border-white/10">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full -mr-32 -mt-32 blur-3xl group-hover:bg-indigo-500/20 transition-all" />

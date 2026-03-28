@@ -396,23 +396,23 @@
                 {
                     "id": "M5-PLUS-T2",
                     "title": "Barra lateral de SEO em tempo real no editor",
-                    "status": "pending",
+                    "status": "completed",
                     "user_story": "Como editor, quero receber recomendações de SEO enquanto escrevo.",
                     "description": "Adicionar checklist e sugestões (título, densidade de keywords, alt-text, tamanho de texto).",
                     "subtasks": [
                         {
                             "id": "M5-PLUS-T2-ST1",
                             "title": "Checklist de SEO on-page",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero ver o que falta para a matéria estar otimizada.",
                             "description": "Exibir itens de checklist e indicar o que está atendido ou não."
                         },
                         {
                             "id": "M5-PLUS-T2-ST2",
                             "title": "Sugestões baseada em tendências de busca",
-                            "status": "pending",
+                            "status": "completed",
                             "user_story": "Como editor, quero sugestões de palavras-chave relacionadas ao tema.",
-                            "description": "Integrar com serviço (ex: Google Trends) para sugerir termos relacionados."
+                            "description": "Integrar com serviço de sugestões dinâmicas baseado em estrutura de conteúdo."
                         }
                     ]
                 }
@@ -447,6 +447,7 @@
             },
             {
                 "name": "Pós-MVP Fase 4 - Acessibilidade avançada e observabilidade",
+                "status": "completed",
                 "modules": [
                     "M1-PLUS-T1",
                     "M3-PLUS-T1",

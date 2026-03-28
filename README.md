@@ -1,4 +1,22 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Status do Projeto: 🚀 Pós-MVP Fase 4 Concluída
+
+O projeto **Revista Gestão** encontra-se em estágio avançado de desenvolvimento pós-MVP. Abaixo, o consolidado das entregas por fase:
+
+- [x] **[Fase 1: Workflow e Taxonomia](./docs/fase1_concluida.md)** — Kanban, Categorias e Gestão de Artigos.
+- [x] **[Fase 2: DAM e Multiformato](./docs/fase2_concluida.md)** — Media Library, Podcasts e Vídeos Curtos.
+- [x] **[Fase 3: Omnichannel e SEO](./docs/fase3_concluida.md)** — Newsletters e Open Graph Dinâmico.
+- [x] **[Fase 4: Observabilidade e Inteligência](./docs/fase4_concluida.md)** — Sentry, Redis Analytics e SEO Sidepanel.
+
+---
+
+## 🛠 Tecnologias Principais
+
+- **Framework**: Next.js 16 (App Router)
+- **Database**: PostgreSQL (Prisma) + Redis (Upstash)
+- **Monitoring**: Sentry + Vercel Analytics/Speed Insights
+- **UI**: Tailwind CSS + Lucide Icons + TipTap Editor
+
+---
 
 ## Getting Started
 
@@ -6,31 +24,12 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Saiba Mais
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Consulte o [PRD Principal](./PRD_Revista_Gestao.md) para detalhes sobre a visão do produto e requisitos de negócio.

@@ -48,6 +48,7 @@ import { scrapeNews } from "../import-actions";
 import { Globe, BookOpen, Link as LinkIcon, Sparkles } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import RichTextEditor from "@/components/ui/RichTextEditor";
+import { SEOSidebar } from "./SEOSidebar";
 
 export default function ArticleForm({ categories, politicians, userRole, initialData }: ArticleFormProps) {
   const [isPending, startTransition] = useTransition();
@@ -156,6 +157,8 @@ export default function ArticleForm({ categories, politicians, userRole, initial
           </div>
 
           <div className="space-y-6">
+            <SEOSidebar title={currentTitle} resumo={currentResumo} content={currentText} />
+            
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-200/60 shadow-sm">
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-5">
                 Controle de Publicação

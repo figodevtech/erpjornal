@@ -22,7 +22,7 @@ function extractImage(item: any): string | null {
     if (Array.isArray(mediaContent) && mediaContent[0]?.$.url) return mediaContent[0].$.url;
     if (mediaContent.$?.url) return mediaContent.$.url;
   }
-  const content = item.content || item.description || "";
+  const content = (item as any).content || item.contentSnippet || "";
   const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
   if (imgMatch && imgMatch[1]) {
     if (!imgMatch[1].includes("feedburner.com") && !imgMatch[1].includes("doubleclick.net")) {
@@ -104,7 +104,7 @@ async function main() {
             titulo: item.title || "Sem título",
             slug,
             resumo: item.contentSnippet?.slice(0, 200) || "Resumo da notícia coletada via RSS.",
-            corpo_texto: item.content || item.description || "Conteúdo não disponível.",
+            corpo_texto: (item as any).content || item.contentSnippet || "Conteúdo não disponível.",
             categoria_id: category.id,
             autor_id: admin.id,
             status_id: "publicado",

@@ -23,7 +23,7 @@ export default async function Header() {
       </div>
       
       {/* 2. MAIN BAR */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-[72px]">
           
           <div className="flex-shrink-0 flex items-center">
@@ -37,7 +37,7 @@ export default async function Header() {
             </Link>
           </div>
 
-          <nav className="hidden lg:flex space-x-6">
+          <nav className="hidden lg:flex flex-1 justify-center space-x-8">
             <Link href="/regiao/nacional" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Brasil
             </Link>
@@ -57,11 +57,11 @@ export default async function Header() {
               Vídeos
             </Link>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {categories.map((cat: any) => (
+            {categories.slice(0, 5).map((cat: any) => (
               <Link 
                 key={cat.id} 
                 href={`/categoria/${cat.slug}`}
-                className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight"
+                className="text-[13px] font-bold text-gray-900 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight shrink-0"
               >
                 {cat.nome}
               </Link>

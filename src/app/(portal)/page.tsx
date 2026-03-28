@@ -136,9 +136,13 @@ export default async function PortalHome() {
                 </div>
                 
                 {art.categoria && (
-                  <span className="text-[12px] font-bold uppercase tracking-widest text-red-700 mb-2 block w-full border-b-[2px] border-red-500/10 pb-2">
-                    {art.categoria.nome}
-                  </span>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span 
+                      className="text-[11px] font-black uppercase tracking-widest text-red-700 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-sm"
+                    >
+                      {art.categoria.nome}
+                    </span>
+                  </div>
                 )}
                 
                 <h3 className="text-[22px] font-black text-red-900 dark:text-red-100 leading-[1.2] group-hover:text-red-700 transition-colors mb-3">

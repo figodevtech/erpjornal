@@ -41,12 +41,12 @@ const MenuBar = ({ editor }: { editor: any }) => {
   };
 
   return (
-    <div className="flex flex-wrap gap-1 p-2 border-b border-slate-200 bg-slate-50 rounded-t-2xl">
+    <div className="flex flex-wrap gap-1 p-2 border-b border-gray-200 bg-gray-50 rounded-t-2xl">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('bold') ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
         title="Negrito"
       >
         <Bold size={18} />
@@ -55,72 +55,72 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('italic') ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
       >
         <Italic size={18} />
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('underline') ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('underline') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
       >
         <UnderlineIcon size={18} />
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('strike') ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('strike') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
       >
         <Strikethrough size={18} />
       </button>
 
-      <div className="w-[1px] h-6 bg-slate-300 mx-1 self-center" />
+      <div className="w-[1px] h-6 bg-gray-300 mx-1 self-center" />
 
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
       >
         <Heading1 size={18} />
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
       >
         <Heading2 size={18} />
       </button>
 
-      <div className="w-[1px] h-6 bg-slate-300 mx-1 self-center" />
+      <div className="w-[1px] h-6 bg-gray-300 mx-1 self-center" />
 
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('bulletList') ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
       >
         <List size={18} />
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('orderedList') ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
       >
         <ListOrdered size={18} />
       </button>
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('blockquote') ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('blockquote') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
       >
         <Quote size={18} />
       </button>
 
-      <div className="w-[1px] h-6 bg-slate-300 mx-1 self-center" />
+      <div className="w-[1px] h-6 bg-gray-300 mx-1 self-center" />
 
       <button
         type="button"
         onClick={setLink}
-        className={`p-2 rounded hover:bg-slate-200 ${editor.isActive('link') ? 'bg-slate-200 text-indigo-600' : 'text-slate-600'}`}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('link') ? 'bg-gray-200 text-indigo-600' : 'text-gray-600'}`}
         title="Inserir Link"
       >
         <LinkIcon size={18} />
@@ -129,7 +129,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
       <div className="relative group/upload">
         <button
           type="button"
-          className="p-2 rounded hover:bg-slate-200 text-slate-600"
+          className="p-2 rounded hover:bg-gray-200 text-gray-600"
           title="Inserir Imagem"
         >
           <ImageIcon size={18} />
@@ -165,7 +165,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         onClick={() => editor.chain().focus().undo().run()}
         disabled={!editor.can().chain().focus().undo().run()}
-        className="p-2 rounded hover:bg-slate-200 text-slate-400 disabled:opacity-30"
+        className="p-2 rounded hover:bg-gray-200 text-gray-400 disabled:opacity-30"
       >
         <Undo size={18} />
       </button>
@@ -173,7 +173,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
         type="button"
         onClick={() => editor.chain().focus().redo().run()}
         disabled={!editor.can().chain().focus().redo().run()}
-        className="p-2 rounded hover:bg-slate-200 text-slate-400 disabled:opacity-30"
+        className="p-2 rounded hover:bg-gray-200 text-gray-400 disabled:opacity-30"
       >
         <Redo size={18} />
       </button>
@@ -208,7 +208,7 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-slate max-w-none focus:outline-none min-h-[350px] p-6 text-lg font-serif leading-relaxed',
+        class: 'prose prose-gray max-w-none focus:outline-none min-h-[350px] p-6 text-lg font-serif leading-relaxed',
       },
     },
   });
@@ -221,9 +221,10 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
   }, [content, editor]);
 
   return (
-    <div className="w-full bg-slate-50 border-2 border-slate-100 rounded-[24px] focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all overflow-hidden flex flex-col group">
+    <div className="w-full bg-gray-50 border-2 border-gray-100 rounded-[24px] focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all overflow-hidden flex flex-col group">
       <MenuBar editor={editor} />
       <EditorContent editor={editor} className="bg-white overflow-y-auto max-h-[600px] outline-none" />
     </div>
   );
 }
+

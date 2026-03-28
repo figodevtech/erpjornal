@@ -35,9 +35,9 @@ export function KanbanColumn({ id, label, articles }: KanbanColumnProps) {
 
   return (
     <div className="flex flex-col w-screen md:w-[280px] bg-[#f8f9ff] rounded-xl overflow-hidden shadow-sm">
-      <div className="p-4 flex items-center justify-between border-b border-slate-100 bg-white shadow-sm">
-        <h3 className="font-bold text-slate-800 text-sm flex items-center">
-          <span className="mr-2 uppercase tracking-widest text-[10px] bg-slate-100 px-2 py-0.5 rounded text-slate-500 font-bold">
+      <div className="p-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm">
+        <h3 className="font-bold text-gray-800 text-sm flex items-center">
+          <span className="mr-2 uppercase tracking-widest text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-bold">
             {articles.length}
           </span>
           {label}
@@ -45,7 +45,7 @@ export function KanbanColumn({ id, label, articles }: KanbanColumnProps) {
         {id === "pauta" && (
           <Link 
             href="/erp/artigos/novo"
-            className="p-1 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+            className="p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
           >
             <Plus className="w-4 h-4" />
           </Link>
@@ -67,11 +67,12 @@ export function KanbanColumn({ id, label, articles }: KanbanColumnProps) {
         </SortableContext>
         
         {articles.length === 0 && (
-          <div className="flex items-center justify-center h-full border-2 border-dashed border-slate-200 rounded-lg p-4">
-             <span className="text-xs text-slate-400 font-medium italic">Sem itens</span>
+          <div className="flex items-center justify-center h-full border-2 border-dashed border-gray-200 rounded-lg p-4">
+             <span className="text-xs text-gray-400 font-medium italic">Sem itens</span>
           </div>
         )}
       </div>
     </div>
   );
 }
+

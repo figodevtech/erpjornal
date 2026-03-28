@@ -52,7 +52,7 @@ function LoginForm() {
     <>
       <div className="mb-10">
         <h2 className="text-4xl font-black text-white mb-3 text-center lg:text-left">Acesse sua Conta<span className="text-red-700">.</span></h2>
-        <p className="text-slate-400 font-medium text-center lg:text-left">Insira suas credenciais para continuar.</p>
+        <p className="text-gray-400 font-medium text-center lg:text-left">Insira suas credenciais para continuar.</p>
       </div>
 
       {errMessage && (
@@ -64,14 +64,14 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
-          <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 block">Endereço de E-mail</label>
+          <label className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 block">Endereço de E-mail</label>
           <div className="relative group">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-red-700 transition-colors" />
+            <Mail className="absolute left-4 top-1/2 -trangray-y-1/2 w-5 h-5 text-gray-600 group-focus-within:text-red-700 transition-colors" />
             <input 
               type="email" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 text-white pl-12 pr-4 py-4 rounded-xl outline-none focus:border-red-700/50 transition-all font-medium placeholder:text-slate-700" 
+              className="w-full bg-gray-900 border border-gray-800 text-white pl-12 pr-4 py-4 rounded-xl outline-none focus:border-red-700/50 transition-all font-medium placeholder:text-gray-700" 
               placeholder="exemplo@revistagestao.pt"
               required
             />
@@ -80,16 +80,16 @@ function LoginForm() {
 
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <label className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 block">Chave de Acesso</label>
-            <Link href="#" className="text-slate-600 hover:text-red-700 text-xs font-bold uppercase transition-colors">Esqueceu a senha?</Link>
+            <label className="text-xs font-black uppercase tracking-[0.2em] text-gray-500 block">Chave de Acesso</label>
+            <Link href="#" className="text-gray-600 hover:text-red-700 text-xs font-bold uppercase transition-colors">Esqueceu a senha?</Link>
           </div>
           <div className="relative group">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 group-focus-within:text-red-700 transition-colors" />
+            <Lock className="absolute left-4 top-1/2 -trangray-y-1/2 w-5 h-5 text-gray-600 group-focus-within:text-red-700 transition-colors" />
             <input 
               type="password" 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 text-white pl-12 pr-4 py-4 rounded-xl outline-none focus:border-red-700/50 transition-all font-medium placeholder:text-slate-700" 
+              className="w-full bg-gray-900 border border-gray-800 text-white pl-12 pr-4 py-4 rounded-xl outline-none focus:border-red-700/50 transition-all font-medium placeholder:text-gray-700" 
               placeholder="••••••••"
               required
             />
@@ -105,7 +105,7 @@ function LoginForm() {
             <div className="w-6 h-6 border-4 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <>
-              <LogIn className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <LogIn className="w-5 h-5 group-hover:trangray-x-1 transition-transform" />
               Entrar no Sistema
             </>
           )}
@@ -117,10 +117,10 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-gray-950 flex">
       {/* Coluna Esquerda: Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-red-900/40 to-slate-950 z-10" />
+      <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-red-900/40 to-gray-950 z-10" />
         <img 
           src="https://images.unsplash.com/photo-1495020689067-958852a7765e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1469&q=80" 
           className="absolute inset-0 w-full h-full object-cover opacity-30" 
@@ -135,11 +135,11 @@ export default function LoginPage() {
             <h1 className="text-5xl font-black text-white leading-tight mb-6 max-w-md">
               A inteligência por trás do poder político.
             </h1>
-            <p className="text-slate-400 text-xl font-medium max-w-sm">
+            <p className="text-gray-400 text-xl font-medium max-w-sm">
               Sistema Centralizado de Gestão e Publicação Editorial (RG.ERP)
             </p>
           </div>
-          <div className="flex gap-8 text-slate-500 text-sm font-bold uppercase tracking-widest">
+          <div className="flex gap-8 text-gray-500 text-sm font-bold uppercase tracking-widest">
              <span>v1.0.0</span>
              <span>© 2026 REVISTA GESTÃO</span>
           </div>
@@ -157,14 +157,14 @@ export default function LoginPage() {
           <Suspense fallback={
             <div className="flex flex-col items-center justify-center space-y-4">
               <div className="w-12 h-12 border-4 border-red-700/30 border-t-red-700 rounded-full animate-spin" />
-              <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Carregando formulário...</p>
+              <p className="text-gray-500 font-bold uppercase tracking-widest text-xs">Carregando formulário...</p>
             </div>
           }>
             <LoginForm />
           </Suspense>
 
-          <div className="mt-12 pt-8 border-t border-slate-900 text-center">
-             <p className="text-slate-600 text-sm font-medium italic mb-2">
+          <div className="mt-12 pt-8 border-t border-gray-900 text-center">
+             <p className="text-gray-600 text-sm font-medium italic mb-2">
                 Acesso exclusivo para assinantes e equipe Revista Gestão.
              </p>
              <Link href="/assine" className="text-red-700 text-xs font-black uppercase tracking-[0.1em] hover:underline">Ainda não é assinante? Clique aqui</Link>
@@ -174,3 +174,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

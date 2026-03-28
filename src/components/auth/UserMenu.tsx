@@ -39,15 +39,15 @@ export default function UserMenu({ user }: UserMenuProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[100] border border-slate-200 animate-in fade-in zoom-in duration-200">
-          <div className="px-4 py-2 border-b border-slate-100 mb-1">
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Usuário</p>
-            <p className="text-sm font-bold text-slate-900 truncate">{user.name}</p>
+        <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-[100] border border-gray-200 animate-in fade-in zoom-in duration-200">
+          <div className="px-4 py-2 border-b border-gray-100 mb-1">
+            <p className="text-xs font-black text-gray-400 uppercase tracking-widest">Usuário</p>
+            <p className="text-sm font-bold text-gray-900 truncate">{user.name}</p>
           </div>
           
           <Link 
             href="/perfil" 
-            className="flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-700 transition-colors font-bold"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-700 transition-colors font-bold"
             onClick={() => setIsOpen(false)}
           >
             <UserCircle className="w-4 h-4" />
@@ -59,7 +59,7 @@ export default function UserMenu({ user }: UserMenuProps) {
               setIsOpen(false);
               signOut({ callbackUrl: "/" });
             }}
-            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-700 transition-colors font-bold border-t border-slate-100"
+            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-700 transition-colors font-bold border-t border-gray-100"
           >
             <LogOut className="w-4 h-4" />
             Sair
@@ -69,3 +69,4 @@ export default function UserMenu({ user }: UserMenuProps) {
     </div>
   );
 }
+

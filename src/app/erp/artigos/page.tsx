@@ -30,7 +30,7 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Artigos</h1>
+        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Artigos</h1>
         <div className="flex gap-3 items-center">
           <Link 
             href="/erp/artigos/kanban" 
@@ -47,14 +47,14 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
         <ArticleFilters initialSearch={search} initialStatus={status} />
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
+            <thead className="bg-gray-50 border-b border-gray-200 text-gray-600">
               <tr>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Título</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
@@ -62,17 +62,17 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Data</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-gray-100">
               {articles.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-slate-500 font-medium">
+                  <td colSpan={4} className="px-6 py-10 text-center text-gray-500 font-medium">
                     Nenhum artigo encontrado.
                   </td>
                 </tr>
               ) : (
                 articles.map((art) => (
-                  <tr key={art.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 font-medium text-slate-900">
+                  <tr key={art.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-900">
                       <Link href={`/erp/artigos/${art.id}/edit`} className="hover:text-indigo-600 hover:underline">
                         {art.titulo}
                       </Link>
@@ -81,13 +81,13 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
                         ${art.status_id === 'publicado' ? 'bg-emerald-100 text-emerald-800' : ''}
                         ${art.status_id === 'em_revisao' ? 'bg-amber-100 text-amber-800' : ''}
-                        ${art.status_id === 'rascunho' ? 'bg-slate-100 text-slate-800' : ''}
+                        ${art.status_id === 'rascunho' ? 'bg-gray-100 text-gray-800' : ''}
                       `}>
                         {art.status_id.replace("_", " ")}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-600">{art.autor?.nome || '—'}</td>
-                    <td className="px-6 py-4 text-slate-600">{art.created_at.toLocaleDateString('pt-BR')}</td>
+                    <td className="px-6 py-4 text-gray-600">{art.autor?.nome || '—'}</td>
+                    <td className="px-6 py-4 text-gray-600">{art.created_at.toLocaleDateString('pt-BR')}</td>
                   </tr>
                 ))
               )}
@@ -98,3 +98,4 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
     </div>
   );
 }
+

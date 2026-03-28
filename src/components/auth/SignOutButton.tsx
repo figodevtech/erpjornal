@@ -23,3 +23,4 @@ export default function SignOutButton({ className, children }: SignOutButtonProp
     </button>
   );
 }
+

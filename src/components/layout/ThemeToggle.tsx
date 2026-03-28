@@ -20,7 +20,7 @@ export default function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 flex items-center justify-center focus:outline-hidden focus:ring-2 focus:ring-red-700"
+      className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-700 flex items-center justify-center focus:outline-hidden focus:ring-2 focus:ring-red-700"
       aria-label="Alternar tema"
     >
       {theme === "dark" ? (
@@ -31,3 +31,4 @@ export default function ThemeToggle() {
     </button>
   );
 }
+

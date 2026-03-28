@@ -134,7 +134,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
   const activeArticle = articles.find((art) => art.id === activeId);
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 min-h-[calc(100vh-120px)] p-6 overflow-x-auto overflow-y-hidden">
+    <div className="flex flex-col h-full bg-gray-50 min-h-[calc(100vh-120px)] p-6 overflow-x-auto overflow-y-hidden">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -168,3 +168,4 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
     </div>
   );
 }
+

@@ -56,7 +56,7 @@ export default function PodcastPlayer({ audioUrl, titulo }: OriginalPodcastPlaye
   };
 
   return (
-    <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-2xl border-l-[6px] border-red-700 max-w-2xl mx-auto my-8">
+    <div className="bg-gray-900 text-white rounded-3xl p-6 shadow-2xl border-l-[6px] border-red-700 max-w-2xl mx-auto my-8">
       <audio
         ref={audioRef}
         src={audioUrl}
@@ -77,9 +77,9 @@ export default function PodcastPlayer({ audioUrl, titulo }: OriginalPodcastPlaye
             type="range"
             value={progress}
             onChange={handleProgressChange}
-            className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-700"
+            className="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-red-700"
           />
-          <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+          <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase tracking-widest">
             <span>{currentTime}</span>
             <span>{totalTime}</span>
           </div>
@@ -87,7 +87,7 @@ export default function PodcastPlayer({ audioUrl, titulo }: OriginalPodcastPlaye
 
         {/* Controls */}
         <div className="flex items-center justify-center gap-8">
-          <button className="text-slate-400 hover:text-white transition-colors" title="Retroceder 15s" 
+          <button className="text-gray-400 hover:text-white transition-colors" title="Retroceder 15s" 
             onClick={() => { if(audioRef.current) audioRef.current.currentTime -= 15; }}>
             <Rewind className="w-6 h-6" />
           </button>
@@ -103,13 +103,13 @@ export default function PodcastPlayer({ audioUrl, titulo }: OriginalPodcastPlaye
             )}
           </button>
 
-          <button className="text-slate-400 hover:text-white transition-colors" title="Avançar 15s"
+          <button className="text-gray-400 hover:text-white transition-colors" title="Avançar 15s"
             onClick={() => { if(audioRef.current) audioRef.current.currentTime += 15; }}>
             <FastForward className="w-6 h-6" />
           </button>
         </div>
 
-        <div className="flex items-center justify-center gap-2 pt-2 text-[11px] text-slate-500 font-bold uppercase tracking-widest">
+        <div className="flex items-center justify-center gap-2 pt-2 text-[11px] text-gray-500 font-bold uppercase tracking-widest">
            <Volume2 className="w-4 h-4" />
            <span>Áudio Original Revista Gestão</span>
         </div>
@@ -117,3 +117,4 @@ export default function PodcastPlayer({ audioUrl, titulo }: OriginalPodcastPlaye
     </div>
   );
 }
+

@@ -82,20 +82,20 @@ export default function AuthPortal({ session }: AuthPortalProps) {
 
       {/* DROPDOWNS */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-72 bg-white dark:bg-slate-900 rounded-xl shadow-2xl z-[100] border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in duration-200 overflow-hidden transition-colors">
+        <div className="absolute right-0 mt-3 w-72 bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-[100] border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200 overflow-hidden transition-colors">
           
           {user ? (
             /* CONTEÚDO USER MENU (LOGADO) */
             <div className="py-2">
-              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 mb-2 bg-slate-50/50 dark:bg-slate-950/30">
-                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Perfil Ativo</p>
-                <p className="text-sm font-black text-slate-950 dark:text-slate-50 truncate">{user.name}</p>
-                <p className="text-[11px] font-medium text-slate-600 dark:text-slate-400 truncate">{user.email}</p>
+              <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 mb-2 bg-gray-50/50 dark:bg-gray-950/30">
+                <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-1">Perfil Ativo</p>
+                <p className="text-sm font-black text-gray-950 dark:text-gray-50 truncate">{user.name}</p>
+                <p className="text-[11px] font-medium text-gray-600 dark:text-gray-400 truncate">{user.email}</p>
               </div>
               
               <Link 
                 href="/perfil" 
-                className="flex items-center gap-3 px-5 py-3 text-sm text-slate-800 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 transition-all font-bold"
+                className="flex items-center gap-3 px-5 py-3 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 transition-all font-bold"
                 onClick={() => setIsOpen(false)}
               >
                 <UserCircle className="w-5 h-5 opacity-50" />
@@ -105,7 +105,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
               {["admin", "editor", "reporter", "juridico"].includes(user.role) && (
                 <Link 
                   href="/erp/artigos" 
-                  className="flex items-center gap-3 px-5 py-3 text-sm text-slate-800 dark:text-slate-200 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 transition-all font-bold"
+                  className="flex items-center gap-3 px-5 py-3 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 transition-all font-bold"
                   onClick={() => setIsOpen(false)}
                 >
                   <Lock className="w-5 h-5 opacity-50" />
@@ -118,7 +118,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
                   setIsOpen(false);
                   signOut({ callbackUrl: "/" });
                 }}
-                className="flex w-full items-center gap-3 px-5 py-4 text-sm text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all font-black border-t border-slate-100 dark:border-slate-800 mt-2"
+                className="flex w-full items-center gap-3 px-5 py-4 text-sm text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all font-black border-t border-gray-100 dark:border-gray-800 mt-2"
               >
                 <LogOut className="w-5 h-5" />
                 SAIR DO PORTAL
@@ -128,8 +128,8 @@ export default function AuthPortal({ session }: AuthPortalProps) {
             /* CONTEÚDO LOGIN DROPDOWN (DESLOGADO) */
             <div className="p-6">
               <div className="mb-6 text-center">
-                <h3 className="text-lg font-black text-slate-950 dark:text-slate-50 tracking-tight">Revista Gestão</h3>
-                <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1">Acesso Exclusivo</p>
+                <h3 className="text-lg font-black text-gray-950 dark:text-gray-50 tracking-tight">Revista Gestão</h3>
+                <p className="text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1">Acesso Exclusivo</p>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-4">
@@ -141,34 +141,34 @@ export default function AuthPortal({ session }: AuthPortalProps) {
                 )}
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
+                  <label className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">E-mail</label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+                    <Mail className="absolute left-3 top-1/2 -trangray-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <input 
                       type="email" 
                       required
                       placeholder="seu@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all text-slate-950 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all text-gray-950 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-600"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center ml-1">
-                    <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Senha</label>
+                    <label className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">Senha</label>
                     <Link href="/recuperar" className="text-[10px] font-bold text-red-600 hover:text-red-700 transition-colors uppercase">Esqueci</Link>
                   </div>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+                    <Lock className="absolute left-3 top-1/2 -trangray-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
                     <input 
                       type="password" 
                       required
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all text-slate-950 dark:text-slate-50 placeholder:text-slate-400 dark:placeholder:text-slate-600"
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-600/20 focus:border-red-600 transition-all text-gray-950 dark:text-gray-50 placeholder:text-gray-400 dark:placeholder:text-gray-600"
                     />
                   </div>
                 </div>
@@ -176,7 +176,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-red-700 hover:bg-red-600 disabled:bg-slate-300 text-white font-black uppercase text-xs py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="w-full bg-red-700 hover:bg-red-600 disabled:bg-gray-300 text-white font-black uppercase text-xs py-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2"
                 >
                   {isLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -186,8 +186,8 @@ export default function AuthPortal({ session }: AuthPortalProps) {
                 </button>
               </form>
 
-              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mb-2">Não tem uma conta?</p>
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 text-center">
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">Não tem uma conta?</p>
                 <Link href="/assine" className="text-xs font-black text-red-700 hover:text-red-800 uppercase tracking-tight">Assinar Revista Gestão</Link>
               </div>
             </div>
@@ -197,3 +197,4 @@ export default function AuthPortal({ session }: AuthPortalProps) {
     </div>
   );
 }
+

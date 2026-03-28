@@ -32,7 +32,7 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={source ? "p-2 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-indigo-600 transition-all" : "flex items-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-500 transition-all shadow-md text-sm uppercase tracking-widest"}
+        className={source ? "p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-all" : "flex items-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-500 transition-all shadow-md text-sm uppercase tracking-widest"}
       >
         {source ? (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -42,9 +42,9 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 animate-in fade-in duration-300">
           <div className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in-95 duration-300">
-            <div className="bg-slate-900 p-8 text-white relative">
+            <div className="bg-gray-900 p-8 text-white relative">
               <button onClick={() => setIsOpen(false)} className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors">
                 <X className="w-6 h-6" />
               </button>
@@ -65,19 +65,19 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Nome do Veículo</label>
-                    <input name="name" defaultValue={source?.name} required placeholder="Ex: CNN Brasil" className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Nome do Veículo</label>
+                    <input name="name" defaultValue={source?.name} required placeholder="Ex: CNN Brasil" className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">URL do Feed RSS</label>
-                    <input name="feed_url" defaultValue={source?.feed_url} required placeholder="https://..." className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-mono text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">URL do Feed RSS</label>
+                    <input name="feed_url" defaultValue={source?.feed_url} required placeholder="https://..." className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-mono text-xs focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Tom de Voz</label>
-                    <select name="tone" defaultValue={source?.tone || "jornalistico"} className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Tom de Voz</label>
+                    <select name="tone" defaultValue={source?.tone || "jornalistico"} className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                       <option value="jornalistico">Jornalístico</option>
                       <option value="direto">Direto / Hard News</option>
                       <option value="opinativo">Opinativo</option>
@@ -85,15 +85,15 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Intervalo (Minutos)</label>
-                    <input name="cache_ttl" type="number" defaultValue={source?.cache_ttl || 30} className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Intervalo (Minutos)</label>
+                    <input name="cache_ttl" type="number" defaultValue={source?.cache_ttl || 30} className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Região</label>
-                    <select name="regiao" defaultValue={source?.regiao || "Nacional"} className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Região</label>
+                    <select name="regiao" defaultValue={source?.regiao || "Nacional"} className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-indigo-500 outline-none">
                       <option value="Nacional">Nacional</option>
                       <option value="Estadual">Estadual</option>
                       <option value="Municipal">Municipal</option>
@@ -101,8 +101,8 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Estado (Sigla)</label>
-                    <input name="estado" maxLength={2} defaultValue={source?.estado} placeholder="SP" className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-bold uppercase focus:ring-2 focus:ring-indigo-500 outline-none" />
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Estado (Sigla)</label>
+                    <input name="estado" maxLength={2} defaultValue={source?.estado} placeholder="SP" className="w-full bg-gray-50 border border-gray-200 rounded-2xl p-4 text-sm font-bold uppercase focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
                 </div>
               </div>
@@ -118,7 +118,7 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
                         setIsOpen(false);
                       }
                     }}
-                    className="p-4 rounded-2xl border border-slate-200 text-rose-500 hover:bg-rose-50 transition-colors"
+                    className="p-4 rounded-2xl border border-gray-200 text-rose-500 hover:bg-rose-50 transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -139,3 +139,4 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
     </>
   );
 }
+

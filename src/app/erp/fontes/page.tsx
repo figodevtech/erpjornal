@@ -38,8 +38,8 @@ export default async function FontesPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">CRM de Fontes</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">CRM de Fontes</h1>
+          <p className="text-sm text-gray-500 mt-1">
             {fontes.length} fonte{fontes.length !== 1 ? "s" : ""} cadastrada{fontes.length !== 1 ? "s" : ""}
             {!isPrivileged && " · fontes confidenciais ocultas"}
           </p>
@@ -54,10 +54,10 @@ export default async function FontesPage() {
       </div>
 
       {fontes.length === 0 ? (
-        <div className="py-32 text-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50">
-          <UserCheck className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-400">Nenhuma fonte cadastrada</h3>
-          <p className="text-slate-400 max-w-sm mx-auto mt-2 text-sm">
+        <div className="py-32 text-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50">
+          <UserCheck className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-400">Nenhuma fonte cadastrada</h3>
+          <p className="text-gray-400 max-w-sm mx-auto mt-2 text-sm">
             Cadastre contatos governamentais e jornalísticos com controle de sigilo.
           </p>
           <Link href="/erp/fontes/nova" className="inline-flex items-center gap-2 mt-6 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-500 transition-all text-sm">
@@ -73,7 +73,7 @@ export default async function FontesPage() {
               <Link
                 key={fonte.id}
                 href={`/erp/fontes/${fonte.id}`}
-                className="bg-white border border-slate-200 rounded-2xl p-6 hover:shadow-md hover:-translate-y-0.5 transition-all group space-y-4"
+                className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md hover:-trangray-y-0.5 transition-all group space-y-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
@@ -85,17 +85,17 @@ export default async function FontesPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">{fonte.nome}</h3>
+                  <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{fonte.nome}</h3>
                   {(fonte.cargo || fonte.organizacao) && (
-                    <p className="text-xs text-slate-500 mt-0.5">
+                    <p className="text-xs text-gray-500 mt-0.5">
                       {fonte.cargo}{fonte.cargo && fonte.organizacao ? " · " : ""}{fonte.organizacao}
                     </p>
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
                   <span>Por {fonte.criador.nome}</span>
-                  <span className="font-bold text-slate-500">{fonte._count.anotacoes} anotaç{fonte._count.anotacoes !== 1 ? "ões" : "ão"}</span>
+                  <span className="font-bold text-gray-500">{fonte._count.anotacoes} anotaç{fonte._count.anotacoes !== 1 ? "ões" : "ão"}</span>
                 </div>
               </Link>
             );
@@ -105,3 +105,4 @@ export default async function FontesPage() {
     </div>
   );
 }
+

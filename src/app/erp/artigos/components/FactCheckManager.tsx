@@ -28,9 +28,9 @@ export function FactCheckManager({ initialData = [] }: { initialData?: FactCheck
   };
 
   return (
-    <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 mt-8">
+    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-200 mt-8">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
+        <h3 className="text-sm font-bold text-gray-800 uppercase tracking-widest flex items-center gap-2">
           <ShieldCheck className="w-5 h-5 text-emerald-500" />
           Módulo de Fact-Checking & Evidências
         </h3>
@@ -46,18 +46,18 @@ export function FactCheckManager({ initialData = [] }: { initialData?: FactCheck
 
       <div className="space-y-4">
         {items.length === 0 ? (
-          <div className="text-center py-8 border-2 border-dashed border-slate-200 rounded-xl bg-white/50">
-            <p className="text-sm text-slate-400 italic">Nenhuma fonte ou documento anexado ainda.</p>
+          <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-xl bg-white/50">
+            <p className="text-sm text-gray-400 italic">Nenhuma fonte ou documento anexado ainda.</p>
           </div>
         ) : (
           items.map((item, index) => (
-            <div key={index} className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4 animate-in fade-in slide-in-from-top-1">
+            <div key={index} className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4 animate-in fade-in slide-in-from-top-1">
               <input type="hidden" name={`fact_check_id_${index}`} value={item.id || ""} />
               
               <div className="flex-1 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">URL da Fonte</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">URL da Fonte</label>
                     <div className="relative">
                       <input 
                         type="url" 
@@ -65,19 +65,19 @@ export function FactCheckManager({ initialData = [] }: { initialData?: FactCheck
                         value={item.fonte_url}
                         onChange={(e) => updateItem(index, "fonte_url", e.target.value)}
                         placeholder="https://exemplo.com/fonte"
-                        className="w-full text-sm p-2 bg-slate-50 border border-slate-100 rounded focus:ring-1 focus:ring-emerald-500 outline-none"
+                        className="w-full text-sm p-2 bg-gray-50 border border-gray-100 rounded focus:ring-1 focus:ring-emerald-500 outline-none"
                       />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Doc/Ref Adicional</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Doc/Ref Adicional</label>
                     <input 
                       type="text" 
                       name={`fact_check_doc_${index}`}
                       value={item.documento_url}
                       onChange={(e) => updateItem(index, "documento_url", e.target.value)}
                       placeholder="Nome do documento ou link secundário"
-                      className="w-full text-sm p-2 bg-slate-50 border border-slate-100 rounded focus:ring-1 focus:ring-emerald-500 outline-none"
+                      className="w-full text-sm p-2 bg-gray-50 border border-gray-100 rounded focus:ring-1 focus:ring-emerald-500 outline-none"
                     />
                   </div>
                 </div>
@@ -85,12 +85,12 @@ export function FactCheckManager({ initialData = [] }: { initialData?: FactCheck
 
               <div className="flex items-end gap-3 min-w-[150px]">
                 <div className="flex-1 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Veracidade</label>
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Veracidade</label>
                   <select 
                     name={`fact_check_status_${index}`}
                     value={item.status_verificacao}
                     onChange={(e) => updateItem(index, "status_verificacao", e.target.value)}
-                    className="w-full text-xs p-2 bg-white border border-slate-200 rounded font-medium focus:ring-1 focus:ring-emerald-500 outline-none"
+                    className="w-full text-xs p-2 bg-white border border-gray-200 rounded font-medium focus:ring-1 focus:ring-emerald-500 outline-none"
                   >
                     <option value="verificado">Verificado</option>
                     <option value="suspeito">Suspeito</option>
@@ -116,3 +116,4 @@ export function FactCheckManager({ initialData = [] }: { initialData?: FactCheck
     </div>
   );
 }
+

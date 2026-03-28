@@ -23,10 +23,10 @@ export default async function VideosPage() {
             <span className="w-2.5 h-2.5 bg-red-700 rounded-full animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-700">Multiformatos</span>
           </div>
-          <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-slate-900 leading-[0.85] mb-8">
+          <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-gray-900 leading-[0.85] mb-8">
             RG<span className="text-red-700">.</span>CURTOS
           </h1>
-          <p className="text-slate-500 mt-10 text-xl md:text-2xl max-w-2xl mx-auto font-medium leading-relaxed tracking-tight">
+          <p className="text-gray-500 mt-10 text-xl md:text-2xl max-w-2xl mx-auto font-medium leading-relaxed tracking-tight">
             A política brasileira em doses rápidas. Bastidores, análises e fatos em menos de 60 segundos.
           </p>
         </div>
@@ -36,7 +36,7 @@ export default async function VideosPage() {
            {["Todos", "Eleições 2026", "Economia", "Bastidores", "Entrevistas"].map((cat, idx) => (
              <button 
                key={idx} 
-               className={`px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 ${idx === 0 ? "bg-slate-900 border-slate-900 text-white shadow-xl scale-105" : "bg-white border-slate-100 text-slate-400 hover:border-red-700/30 hover:text-red-700"}`}
+               className={`px-8 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap border-2 ${idx === 0 ? "bg-gray-900 border-gray-900 text-white shadow-xl scale-105" : "bg-white border-gray-100 text-gray-400 hover:border-red-700/30 hover:text-red-700"}`}
              >
                {cat}
              </button>
@@ -46,17 +46,17 @@ export default async function VideosPage() {
         {/* Content Section */}
         <div className="flex flex-col gap-16">
           
-          <div className="flex items-center justify-between border-b-4 border-slate-900/5 pb-6">
+          <div className="flex items-center justify-between border-b-4 border-gray-900/5 pb-6">
              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center text-white shadow-2xl rotate-3">
+                <div className="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center text-white shadow-2xl rotate-3">
                   <TrendingUp className="w-7 h-7" />
                 </div>
-                <h2 className="text-3xl font-black tracking-tighter text-slate-900 uppercase">Em Alta Agora</h2>
+                <h2 className="text-3xl font-black tracking-tighter text-gray-900 uppercase">Em Alta Agora</h2>
              </div>
              <div className="hidden md:flex gap-2">
                 <div className="w-2 h-2 rounded-full bg-red-700" />
-                <div className="w-2 h-2 rounded-full bg-slate-200" />
-                <div className="w-2 h-2 rounded-full bg-slate-200" />
+                <div className="w-2 h-2 rounded-full bg-gray-200" />
+                <div className="w-2 h-2 rounded-full bg-gray-200" />
              </div>
           </div>
 
@@ -69,10 +69,10 @@ export default async function VideosPage() {
           </div>
 
           {videos.length === 0 && (
-            <div className="py-40 text-center bg-white rounded-[56px] border-4 border-dashed border-slate-100 shadow-inner">
-              <Film className="w-20 h-20 text-slate-100 mx-auto mb-8 animate-bounce duration-1000" />
-              <h3 className="text-3xl font-black text-slate-300 tracking-tighter uppercase">Silêncio no Set...</h3>
-              <p className="text-slate-400 mt-4 text-lg font-medium italic">Estamos preparando os próximos vídeos curtos. Fique ligado!</p>
+            <div className="py-40 text-center bg-white rounded-[56px] border-4 border-dashed border-gray-100 shadow-inner">
+              <Film className="w-20 h-20 text-gray-100 mx-auto mb-8 animate-bounce duration-1000" />
+              <h3 className="text-3xl font-black text-gray-300 tracking-tighter uppercase">Silêncio no Set...</h3>
+              <p className="text-gray-400 mt-4 text-lg font-medium italic">Estamos preparando os próximos vídeos curtos. Fique ligado!</p>
             </div>
           )}
         </div>
@@ -84,13 +84,13 @@ export default async function VideosPage() {
              { title: "Fato ou Fake", desc: "Checagem rápida de boatos e declarações polêmicas em formato visual.", icon: <ShieldCheck className="w-6 h-6" /> },
              { title: "Exclusivo RG", desc: "Imagens inéditas e flagras dos bastidores do poder em Brasília.", icon: <Zap className="w-6 h-6" /> }
            ].map((item, i) => (
-             <div key={i} className="p-10 bg-white rounded-[40px] border-2 border-slate-50 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all cursor-default group overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 rounded-full -mr-16 -mt-16 group-hover:bg-red-50 transition-colors" />
+             <div key={i} className="p-10 bg-white rounded-[40px] border-2 border-gray-50 shadow-sm hover:shadow-2xl hover:-trangray-y-2 transition-all cursor-default group overflow-hidden relative">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-full -mr-16 -mt-16 group-hover:bg-red-50 transition-colors" />
                 <div className="w-14 h-14 bg-red-700 rounded-[20px] flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform shadow-lg relative z-10">
                   {item.icon}
                 </div>
-                <h4 className="text-2xl font-black text-slate-900 mb-3 tracking-tighter uppercase relative z-10">{item.title}</h4>
-                <p className="text-slate-500 text-sm font-medium leading-relaxed relative z-10">
+                <h4 className="text-2xl font-black text-gray-900 mb-3 tracking-tighter uppercase relative z-10">{item.title}</h4>
+                <p className="text-gray-500 text-sm font-medium leading-relaxed relative z-10">
                   {item.desc}
                 </p>
              </div>
@@ -101,3 +101,4 @@ export default async function VideosPage() {
     </main>
   );
 }
+

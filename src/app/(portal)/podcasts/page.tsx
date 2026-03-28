@@ -17,8 +17,8 @@ export default async function PodcastsPage() {
     <main className="max-w-4xl mx-auto px-4 py-12 md:py-20 animate-in fade-in duration-700">
       <div className="mb-16 text-center">
         <span className="text-[11px] font-black uppercase tracking-[0.3em] text-red-700 mb-3 block">Multiformatos</span>
-        <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-slate-900 leading-none">RG<span className="text-red-700">.</span>Podcasts</h1>
-        <p className="text-slate-500 mt-6 text-lg max-w-xl mx-auto font-medium">As análises de bastidores que você já lê, agora para ouvir em qualquer lugar.</p>
+        <h1 className="text-5xl md:text-7xl font-black tracking-tighter text-gray-900 leading-none">RG<span className="text-red-700">.</span>Podcasts</h1>
+        <p className="text-gray-500 mt-6 text-lg max-w-xl mx-auto font-medium">As análises de bastidores que você já lê, agora para ouvir em qualquer lugar.</p>
       </div>
 
       <div className="space-y-6">
@@ -26,10 +26,10 @@ export default async function PodcastsPage() {
           <Link
             key={ep.id}
             href={`/podcasts/${ep.slug}`}
-            className="group flex flex-col md:flex-row gap-6 p-6 bg-white border-b-2 md:border-b-0 md:rounded-3xl md:border-2 border-slate-100 hover:border-red-700/30 hover:bg-slate-50 transition-all"
+            className="group flex flex-col md:flex-row gap-6 p-6 bg-white border-b-2 md:border-b-0 md:rounded-3xl md:border-2 border-gray-100 hover:border-red-700/30 hover:bg-gray-50 transition-all"
           >
             {/* Capa */}
-            <div className="w-full md:w-32 h-32 md:rounded-2xl bg-slate-900 flex items-center justify-center shrink-0 overflow-hidden relative shadow-lg">
+            <div className="w-full md:w-32 h-32 md:rounded-2xl bg-gray-900 flex items-center justify-center shrink-0 overflow-hidden relative shadow-lg">
                {ep.capa_url ? (
                  <img src={ep.capa_url} alt={ep.titulo} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                ) : (
@@ -45,33 +45,33 @@ export default async function PodcastsPage() {
                  <span className="text-[10px] font-black uppercase tracking-widest text-red-700 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full">
                     S{Math.floor(Math.random()*10) + 1}E{Math.floor(Math.random()*20) + 1}
                  </span>
-                 <span className="text-slate-300">·</span>
-                 <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1 uppercase tracking-widest">
+                 <span className="text-gray-300">·</span>
+                 <span className="text-[10px] font-bold text-gray-400 flex items-center gap-1 uppercase tracking-widest">
                     <Clock className="w-3 h-3" /> {Math.floor((ep.duracao || 0) / 60)} MIN
                  </span>
-                 <span className="text-slate-300">·</span>
-                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                 <span className="text-gray-300">·</span>
+                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
                     {new Date(ep.data_pub).toLocaleDateString("pt-BR", { day:'numeric', month:'long' })}
                  </span>
                </div>
-               <h2 className="text-xl md:text-2xl font-black text-slate-900 group-hover:tracking-tight transition-all mb-2 leading-tight">
+               <h2 className="text-xl md:text-2xl font-black text-gray-900 group-hover:tracking-tight transition-all mb-2 leading-tight">
                  {ep.titulo}
                </h2>
-               <p className="text-sm text-slate-500 line-clamp-2 md:line-clamp-1 leading-relaxed">
+               <p className="text-sm text-gray-500 line-clamp-2 md:line-clamp-1 leading-relaxed">
                  {ep.descricao}
                </p>
             </div>
 
             <div className="self-end md:self-center">
-               <div className="w-12 h-12 rounded-full border-2 border-slate-100 flex items-center justify-center group-hover:border-red-700 group-hover:bg-red-700 transition-all">
-                  <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-white" />
+               <div className="w-12 h-12 rounded-full border-2 border-gray-100 flex items-center justify-center group-hover:border-red-700 group-hover:bg-red-700 transition-all">
+                  <ChevronRight className="w-6 h-6 text-gray-300 group-hover:text-white" />
                </div>
             </div>
           </Link>
         ))}
 
         {episodes.length === 0 && (
-          <div className="py-20 text-center text-slate-400 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+          <div className="py-20 text-center text-gray-400 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
              <h3 className="text-xl font-bold">Nenhum episódio disponível</h3>
              <p className="mt-2 text-sm">Estamos preparando as próximas análises. Volte em breve.</p>
           </div>
@@ -80,3 +80,4 @@ export default async function PodcastsPage() {
     </main>
   );
 }
+

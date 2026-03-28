@@ -12,53 +12,53 @@ export default async function NovaFontePage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
-        <Link href="/erp/fontes" className="text-slate-400 hover:text-slate-900 bg-white hover:bg-slate-100 p-2 rounded-full shadow-sm transition-all border border-slate-200">
+        <Link href="/erp/fontes" className="text-gray-400 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-full shadow-sm transition-all border border-gray-200">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Nova Fonte</h1>
-          <p className="text-sm text-slate-500 mt-1">Cadastre um contato jornalístico ou governamental.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Nova Fonte</h1>
+          <p className="text-sm text-gray-500 mt-1">Cadastre um contato jornalístico ou governamental.</p>
         </div>
       </div>
 
-      <form action={saveSource} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
+      <form action={saveSource} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
               Nome <span className="text-rose-500">*</span>
             </label>
             <input type="text" name="nome" required placeholder="Ex: João Silva"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Cargo</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Cargo</label>
             <input type="text" name="cargo" placeholder="Ex: Secretário de Estado"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Organização</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Organização</label>
             <input type="text" name="organizacao" placeholder="Ex: Prefeitura de SP"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Email</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Email</label>
             <input type="email" name="email" placeholder="contato@exemplo.gov.br"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Telefone</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Telefone</label>
             <input type="tel" name="telefone" placeholder="(11) 9 9999-9999"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all" />
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nível de Sigilo</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nível de Sigilo</label>
             <select name="nivel_sigilo" defaultValue="publico"
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
               <option value="publico">🟢 Público — Visível a todos os repórteres</option>
               <option value="reservado">🟡 Reservado — Apenas editores e admin</option>
               <option value="confidencial">🔴 Confidencial — Apenas admin</option>
@@ -66,17 +66,17 @@ export default async function NovaFontePage() {
           </div>
 
           <div className="md:col-span-2">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Notas Gerais</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">Notas Gerais</label>
             <textarea name="notas" rows={3} placeholder="Informações adicionais sobre a fonte..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none" />
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none" />
           </div>
         </div>
 
-        <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
+        <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
           <button type="submit" className="bg-indigo-600 text-white font-bold px-6 py-3 rounded-xl hover:bg-indigo-500 transition-all text-sm shadow-md">
             Cadastrar Fonte
           </button>
-          <Link href="/erp/fontes" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+          <Link href="/erp/fontes" className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors">
             Cancelar
           </Link>
         </div>
@@ -84,3 +84,4 @@ export default async function NovaFontePage() {
     </div>
   );
 }
+

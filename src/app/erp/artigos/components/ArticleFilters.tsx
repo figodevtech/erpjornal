@@ -30,21 +30,21 @@ export default function ArticleFilters({ initialSearch, initialStatus }: { initi
   return (
     <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 items-end">
       <div className="flex-1 w-full">
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">Buscar por Título</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">Buscar por Título</label>
         <input 
           type="text" 
           value={search} 
           onChange={(e) => setSearch(e.target.value)} 
-          className="w-full border-slate-300 rounded-lg shadow-sm p-2.5 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow outline-none text-sm placeholder-slate-400" 
+          className="w-full border-gray-300 rounded-lg shadow-sm p-2.5 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow outline-none text-sm placeholder-gray-400" 
           placeholder="Digite a palavra-chave da matéria..." 
         />
       </div>
       <div className="w-full sm:w-56">
-        <label className="block text-sm font-medium text-slate-700 mb-1.5">Filtrar por Status</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">Filtrar por Status</label>
         <select 
           value={status} 
           onChange={(e) => setStatus(e.target.value)} 
-          className="w-full border-slate-300 rounded-lg shadow-sm p-2.5 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow outline-none text-sm bg-white"
+          className="w-full border-gray-300 rounded-lg shadow-sm p-2.5 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow outline-none text-sm bg-white"
         >
           <option value="">Todos os status</option>
           <option value="rascunho">Rascunho</option>
@@ -55,10 +55,11 @@ export default function ArticleFilters({ initialSearch, initialStatus }: { initi
       <button 
         type="submit" 
         disabled={isPending}
-        className="w-full sm:w-auto bg-slate-900 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm focus:ring-2 focus:ring-slate-900 focus:ring-offset-1"
+        className="w-full sm:w-auto bg-gray-900 text-white font-medium px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed shadow-sm focus:ring-2 focus:ring-gray-900 focus:ring-offset-1"
       >
         {isPending ? "Aplicando..." : "Filtrar"}
       </button>
     </form>
   );
 }
+

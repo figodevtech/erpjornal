@@ -16,7 +16,7 @@ function LicenseBadge({ tipo_licenca }: { tipo_licenca: string | null }) {
     ? "bg-green-50 text-green-700 border-green-200"
     : tipo_licenca === "Pago"
     ? "bg-amber-50 text-amber-700 border-amber-200"
-    : "bg-slate-50 text-slate-500 border-slate-200";
+    : "bg-gray-50 text-gray-500 border-gray-200";
   return (
     <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border ${color}`}>
       {tipo_licenca || "Não definido"}
@@ -39,14 +39,14 @@ export default async function MidiaPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Biblioteca de Mídia</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Biblioteca de Mídia</h1>
+          <p className="text-sm text-gray-500 mt-1">
             {medias.length} ativo{medias.length !== 1 ? "s" : ""} cadastrado{medias.length !== 1 ? "s" : ""}
           </p>
         </div>
         <Link
           href="/erp/midia/novo"
-          className="flex items-center gap-2 bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-rose-500 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 text-sm"
+          className="flex items-center gap-2 bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-rose-500 transition-all shadow-md hover:shadow-lg hover:-trangray-y-0.5 text-sm"
         >
           <Plus className="w-4 h-4" />
           Novo Ativo
@@ -55,10 +55,10 @@ export default async function MidiaPage() {
 
       {/* Grid */}
       {medias.length === 0 ? (
-        <div className="py-32 text-center rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50/50">
-          <Upload className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-slate-400">Nenhuma mídia cadastrada</h3>
-          <p className="text-slate-400 max-w-sm mx-auto mt-2 text-sm">
+        <div className="py-32 text-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50">
+          <Upload className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-400">Nenhuma mídia cadastrada</h3>
+          <p className="text-gray-400 max-w-sm mx-auto mt-2 text-sm">
             Adicione imagens, vídeos e documentos com metadados de licença e direitos autorais.
           </p>
           <Link
@@ -78,10 +78,10 @@ export default async function MidiaPage() {
             return (
               <div
                 key={media.id}
-                className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group"
+                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group"
               >
                 {/* Preview */}
-                <div className="h-40 bg-slate-100 flex items-center justify-center relative overflow-hidden">
+                <div className="h-40 bg-gray-100 flex items-center justify-center relative overflow-hidden">
                   {media.tipo === "image" && media.url ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -105,20 +105,20 @@ export default async function MidiaPage() {
                 <div className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-bold text-slate-900 text-sm leading-tight">{media.nome}</p>
-                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mt-0.5">{media.tipo}</p>
+                      <p className="font-bold text-gray-900 text-sm leading-tight">{media.nome}</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mt-0.5">{media.tipo}</p>
                     </div>
                     <LicenseBadge tipo_licenca={media.tipo_licenca} />
                   </div>
 
                   {media.fonte && (
-                    <p className="text-xs text-slate-500">
-                      <span className="font-bold text-slate-400">Fonte:</span> {media.fonte}
+                    <p className="text-xs text-gray-500">
+                      <span className="font-bold text-gray-400">Fonte:</span> {media.fonte}
                     </p>
                   )}
                   {media.direitos_autorais && (
-                    <p className="text-xs text-slate-500">
-                      <span className="font-bold text-slate-400">© </span> {media.direitos_autorais}
+                    <p className="text-xs text-gray-500">
+                      <span className="font-bold text-gray-400">© </span> {media.direitos_autorais}
                     </p>
                   )}
 
@@ -129,8 +129,8 @@ export default async function MidiaPage() {
                     </div>
                   )}
 
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400">
+                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                    <span className="text-[10px] text-gray-400">
                       {new Date(media.created_at).toLocaleDateString("pt-BR")}
                     </span>
                     <Link
@@ -149,3 +149,4 @@ export default async function MidiaPage() {
     </div>
   );
 }
+

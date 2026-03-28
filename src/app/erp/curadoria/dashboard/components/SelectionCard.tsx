@@ -38,33 +38,33 @@ export function SelectionCard({ item }: { item: any }) {
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-[32px] overflow-hidden flex flex-col hover:shadow-xl transition-all group group relative shadow-sm">
-      <div className="h-44 bg-slate-100 relative overflow-hidden shrink-0 pointer-events-none">
+    <div className="bg-white border border-gray-200 rounded-[32px] overflow-hidden flex flex-col hover:shadow-xl transition-all group group relative shadow-sm">
+      <div className="h-44 bg-gray-100 relative overflow-hidden shrink-0 pointer-events-none">
         {item.thumbnail ? (
           <img src={item.thumbnail} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-300">
+          <div className="w-full h-full flex items-center justify-center text-gray-300">
              <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
           </div>
         )}
         <div className="absolute top-4 left-4">
-           <span className="bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg border border-white/10">
+           <span className="bg-gray-900/80 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg border border-white/10">
              {item.source.name}
            </span>
         </div>
       </div>
 
       <div className="p-6 flex flex-col flex-1">
-        <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+        <div className="flex items-center gap-3 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
            <span className="flex items-center gap-1 whitespace-nowrap"><Clock className="w-3 h-3" /> {new Date(item.pub_date).toLocaleDateString('pt-BR')}</span>
-           <span className="flex items-center gap-1 line-clamp-1"><User className="w-3 h-3 text-slate-300" /> {item.original_author}</span>
+           <span className="flex items-center gap-1 line-clamp-1"><User className="w-3 h-3 text-gray-300" /> {item.original_author}</span>
         </div>
 
-        <h3 className="text-xl font-black text-slate-900 leading-tight mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">
+        <h3 className="text-xl font-black text-gray-900 leading-tight mb-3 group-hover:text-indigo-600 transition-colors line-clamp-2">
           {item.original_title}
         </h3>
 
-        <p className="text-sm text-slate-500 font-medium mb-6 line-clamp-3 leading-relaxed">
+        <p className="text-sm text-gray-500 font-medium mb-6 line-clamp-3 leading-relaxed">
           {item.description?.replace(/<[^>]*>?/gm, '')}
         </p>
 
@@ -73,7 +73,7 @@ export function SelectionCard({ item }: { item: any }) {
             <button
               onClick={handleSelect}
               disabled={loading}
-              className="flex-1 bg-slate-900 text-white font-black uppercase tracking-widest py-4 rounded-2xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 text-xs shadow-lg active:scale-[0.98] disabled:opacity-50"
+              className="flex-1 bg-gray-900 text-white font-black uppercase tracking-widest py-4 rounded-2xl hover:bg-gray-800 transition-all flex items-center justify-center gap-2 text-xs shadow-lg active:scale-[0.98] disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4 text-indigo-400" />
               Selecionar p/ Reescrita
@@ -81,7 +81,7 @@ export function SelectionCard({ item }: { item: any }) {
             <button
               onClick={handleReject}
               disabled={loading}
-              className="px-5 py-4 border border-slate-200 rounded-2xl text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 disabled:opacity-50"
+              className="px-5 py-4 border border-gray-200 rounded-2xl text-gray-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-100 transition-all active:scale-95 disabled:opacity-50"
             >
                <X className="w-5 h-5" />
             </button>
@@ -91,7 +91,7 @@ export function SelectionCard({ item }: { item: any }) {
             href={item.original_link} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="w-full py-2 flex items-center justify-center gap-2 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors"
+            className="w-full py-2 flex items-center justify-center gap-2 text-[10px] font-black text-gray-400 uppercase tracking-widest hover:text-indigo-600 transition-colors"
           >
             <ExternalLink className="w-3.5 h-3.5" /> Ver Original
           </a>
@@ -100,3 +100,4 @@ export function SelectionCard({ item }: { item: any }) {
     </div>
   );
 }
+

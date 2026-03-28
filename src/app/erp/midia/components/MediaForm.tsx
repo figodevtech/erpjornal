@@ -61,7 +61,7 @@ export default function MediaForm({ initialData }: MediaFormProps) {
     : "";
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 space-y-6">
+    <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 space-y-6">
       {initialData?.id && (
         <input type="hidden" name="id" value={initialData.id} />
       )}
@@ -69,7 +69,7 @@ export default function MediaForm({ initialData }: MediaFormProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* URL */}
         <div className="md:col-span-2">
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
             URL do arquivo <span className="text-rose-500">*</span>
           </label>
           <input
@@ -78,13 +78,13 @@ export default function MediaForm({ initialData }: MediaFormProps) {
             required
             defaultValue={initialData?.url}
             placeholder="https://cdn.exemplo.com/foto.jpg"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
           />
         </div>
 
         {/* Nome */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
             Nome do ativo <span className="text-rose-500">*</span>
           </label>
           <input
@@ -93,20 +93,20 @@ export default function MediaForm({ initialData }: MediaFormProps) {
             required
             defaultValue={initialData?.nome}
             placeholder="Ex: Foto do Plenário 2024"
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
           />
         </div>
 
         {/* Tipo */}
         <div>
-          <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
             Tipo <span className="text-rose-500">*</span>
           </label>
           <select
             name="tipo"
             required
             defaultValue={initialData?.tipo || "image"}
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
           >
             <option value="image">Imagem</option>
             <option value="video">Vídeo</option>
@@ -116,20 +116,20 @@ export default function MediaForm({ initialData }: MediaFormProps) {
         </div>
 
         {/* Separador: Metadados de Licença */}
-        <div className="md:col-span-2 pt-2 border-t border-slate-100">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+        <div className="md:col-span-2 pt-2 border-t border-gray-100">
+          <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
             <span className="w-4 h-4 rounded-full bg-rose-100 text-rose-600 inline-flex items-center justify-center text-[10px]">©</span>
             Direitos e Licença
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 Tipo de Licença
               </label>
               <select
                 name="tipo_licenca"
                 defaultValue={initialData?.tipo_licenca || ""}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
               >
                 <option value="">Não definido</option>
                 <option value="Livre">Livre (Domínio Público)</option>
@@ -141,18 +141,18 @@ export default function MediaForm({ initialData }: MediaFormProps) {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 Data de Expiração da Licença
               </label>
               <input
                 type="date"
                 name="data_expiracao"
                 defaultValue={formatedExpiration}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 Direitos Autorais
               </label>
               <input
@@ -160,11 +160,11 @@ export default function MediaForm({ initialData }: MediaFormProps) {
                 name="direitos_autorais"
                 defaultValue={initialData?.direitos_autorais || ""}
                 placeholder="Ex: © João Silva 2024"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">
+              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
                 Fonte / Origem
               </label>
               <input
@@ -172,15 +172,15 @@ export default function MediaForm({ initialData }: MediaFormProps) {
                 name="fonte"
                 defaultValue={initialData?.fonte || ""}
                 placeholder="Ex: Agência Brasil, Reuters"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
               />
             </div>
           </div>
         </div>
         {/* IA Tags (M2-PLUS-T4-ST2) */}
-        <div className="md:col-span-2 pt-6 border-t border-slate-100">
+        <div className="md:col-span-2 pt-6 border-t border-gray-100">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-500" />
               Tags Sugeridas por IA
             </h3>
@@ -195,12 +195,12 @@ export default function MediaForm({ initialData }: MediaFormProps) {
             </button>
           </div>
           
-          <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-slate-50 rounded-xl border border-slate-200 border-dashed">
+          <div className="flex flex-wrap gap-2 min-h-[40px] p-3 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
             {tags.length === 0 && (
-              <p className="text-[11px] text-slate-400 italic">Nenhuma tag sugerida ainda. Clique em gerar para começar.</p>
+              <p className="text-[11px] text-gray-400 italic">Nenhuma tag sugerida ainda. Clique em gerar para começar.</p>
             )}
             {tags.map(tag => (
-              <span key={tag} className="inline-flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm">
+              <span key={tag} className="inline-flex items-center gap-1.5 bg-white border border-gray-200 text-gray-600 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm">
                 {tag}
                 <button 
                   type="button" 
@@ -216,7 +216,7 @@ export default function MediaForm({ initialData }: MediaFormProps) {
       </div>
 
       {/* Ações */}
-      <div className="flex items-center gap-4 pt-4 border-t border-slate-100">
+      <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
         <button
           type="submit"
           disabled={isPending}
@@ -226,7 +226,7 @@ export default function MediaForm({ initialData }: MediaFormProps) {
         </button>
         <Link
           href="/erp/midia"
-          className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
+          className="text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
         >
           Cancelar
         </Link>
@@ -234,3 +234,4 @@ export default function MediaForm({ initialData }: MediaFormProps) {
     </form>
   );
 }
+

@@ -23,11 +23,11 @@ export default async function ArticlesKanbanPage() {
   return (
     <div className="flex flex-col h-screen overflow-hidden">
       {/* Editorial Header */}
-      <div className="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link 
             href="/erp/artigos"
-            className="p-2 hover:bg-slate-50 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-2 hover:bg-gray-50 rounded-full text-gray-400 hover:text-gray-600 transition-colors"
           >
             <MoveLeft className="w-5 h-5" />
           </Link>
@@ -35,7 +35,7 @@ export default async function ArticlesKanbanPage() {
             <h1 className="text-2xl font-serif font-bold text-[#002045]">
               Editorial Workflow
             </h1>
-            <p className="text-xs text-slate-400 font-sans tracking-tight uppercase font-medium">
+            <p className="text-xs text-gray-400 font-sans tracking-tight uppercase font-medium">
               Gestão Editorial de Matérias
             </p>
           </div>
@@ -61,3 +61,4 @@ export default async function ArticlesKanbanPage() {
     </div>
   );
 }
+

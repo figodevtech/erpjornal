@@ -65,3 +65,4 @@ export const NewsletterTemplate: React.FC<Readonly<NewsletterTemplateProps>> = (
     </p>
   </div>
 );
+

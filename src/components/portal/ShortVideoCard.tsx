@@ -72,7 +72,7 @@ export default function ShortVideoCard({ video }: ShortVideoCardProps) {
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
       whileInView={{ opacity: 1, scale: 1 }}
-      className="relative group h-[500px] w-full md:w-[280px] bg-slate-900 rounded-[32px] overflow-hidden shadow-2xl border-2 border-slate-100/10 shrink-0"
+      className="relative group h-[500px] w-full md:w-[280px] bg-gray-900 rounded-[32px] overflow-hidden shadow-2xl border-2 border-gray-100/10 shrink-0"
       onMouseEnter={() => setShowControls(true)}
       onMouseLeave={() => setShowControls(false)}
     >
@@ -94,7 +94,7 @@ export default function ShortVideoCard({ video }: ShortVideoCardProps) {
             <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" /> News
           </span>
           {video.duracao && (
-            <span className="text-[10px] font-black text-slate-300 flex items-center gap-1 uppercase tracking-widest bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-md">
+            <span className="text-[10px] font-black text-gray-300 flex items-center gap-1 uppercase tracking-widest bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-md">
               <Clock className="w-3 h-3" /> {video.duracao}s
             </span>
           )}
@@ -103,7 +103,7 @@ export default function ShortVideoCard({ video }: ShortVideoCardProps) {
            {video.titulo}
         </h3>
         {video.descricao && (
-          <p className="text-slate-300 text-xs line-clamp-2 font-medium opacity-90 leading-relaxed">
+          <p className="text-gray-300 text-xs line-clamp-2 font-medium opacity-90 leading-relaxed">
             {video.descricao}
           </p>
         )}
@@ -146,3 +146,4 @@ export default function ShortVideoCard({ video }: ShortVideoCardProps) {
     </motion.div>
   );
 }
+

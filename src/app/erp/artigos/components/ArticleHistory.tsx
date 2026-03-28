@@ -47,14 +47,14 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
     const changes = diff.diffWords(oldText, newText);
     
     return (
-      <div className="bg-white p-4 rounded border border-slate-200 font-sans text-sm leading-relaxed whitespace-pre-wrap">
+      <div className="bg-white p-4 rounded border border-gray-200 font-sans text-sm leading-relaxed whitespace-pre-wrap">
         {changes.map((part, index) => (
           <span
             key={index}
             className={`${
               part.added ? "bg-emerald-100 text-emerald-800" :
               part.removed ? "bg-red-100 text-red-800 line-through" :
-              "text-slate-700"
+              "text-gray-700"
             }`}
           >
             {part.value}
@@ -65,10 +65,10 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
   };
 
   return (
-    <div className="mt-8 border-t border-slate-200 pt-8">
+    <div className="mt-8 border-t border-gray-200 pt-8">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-slate-600 hover:text-[#002045] font-semibold transition-colors"
+        className="flex items-center gap-2 text-gray-600 hover:text-[#002045] font-semibold transition-colors"
       >
         <History className="w-5 h-5" />
         Histórico de Versões
@@ -76,13 +76,13 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
       </button>
 
       {isOpen && (
-        <div className="mt-4 bg-slate-50 rounded-xl p-4 border border-slate-100 animate-in fade-in slide-in-from-top-2">
+        <div className="mt-4 bg-gray-50 rounded-xl p-4 border border-gray-100 animate-in fade-in slide-in-from-top-2">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#002045]"></div>
             </div>
           ) : versions.length === 0 ? (
-            <p className="text-center py-8 text-slate-400 italic">Nenhuma versão anterior encontrada.</p>
+            <p className="text-center py-8 text-gray-400 italic">Nenhuma versão anterior encontrada.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-1 space-y-2 max-h-[400px] overflow-y-auto pr-2">
@@ -93,14 +93,14 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
                     className={`w-full text-left p-3 rounded-lg border transition-all ${
                       selectedVersionId === version.id
                         ? "bg-white border-[#002045] shadow-sm ring-1 ring-[#002045]"
-                        : "bg-white/50 border-slate-200 hover:border-slate-300"
+                        : "bg-white/50 border-gray-200 hover:border-gray-300"
                     }`}
                   >
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] uppercase font-bold tracking-widest text-[#002045]">
                         {format(new Date(version.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                       </span>
-                      <span className="text-xs font-medium text-slate-600 truncate">
+                      <span className="text-xs font-medium text-gray-600 truncate">
                         {version.mudancas_resumo || "Alteração genérica"}
                       </span>
                       <span className={`text-[9px] w-fit px-1.5 py-0.5 rounded font-bold uppercase ${
@@ -113,31 +113,31 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
                 ))}
               </div>
 
-              <div className="md:col-span-2 bg-white rounded-lg border border-slate-200 p-6 flex flex-col gap-4">
+              <div className="md:col-span-2 bg-white rounded-lg border border-gray-200 p-6 flex flex-col gap-4">
                 {selectedVersion ? (
                   <>
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                      <h4 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                      <h4 className="font-serif font-bold text-lg text-gray-900 flex items-center gap-2">
                         <FileDiff className="w-5 h-5 text-indigo-500" />
                         Comparativo de Texto
                       </h4>
                       <button 
                         onClick={() => setSelectedVersionId(null)}
-                        className="p-1 hover:bg-slate-100 rounded-full"
+                        className="p-1 hover:bg-gray-100 rounded-full"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                     
                     <div className="space-y-4">
-                      <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">
+                      <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
                         Mudanças detectadas (Vs Atual):
                       </p>
                       {renderDiff(selectedVersion.corpo_texto, currentContent)}
                     </div>
                   </>
                 ) : (
-                  <div className="h-full flex flex-col items-center justify-center text-slate-400 py-12">
+                  <div className="h-full flex flex-col items-center justify-center text-gray-400 py-12">
                     <History className="w-12 h-12 mb-4 opacity-20" />
                     <p className="text-sm">Selecione uma versão à esquerda para comparar com o rascunho atual.</p>
                   </div>
@@ -150,3 +150,4 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
     </div>
   );
 }
+

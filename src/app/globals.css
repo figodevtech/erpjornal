@@ -3,12 +3,12 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #030712; /* Slate-950 (Muito Escuro) */
+  --foreground: #0a0a0a; /* gray-950 (Preto Neutro) */
 }
 
 .dark {
-  --background: #020617; /* Slate-950/Black (Profundo) */
-  --foreground: #f8fafc; /* Slate-50 (Praticamente Branco) */
+  --background: #0a0a0a; /* gray-950 (Preto Neutro) */
+  --foreground: #f5f5f5; /* gray-50 (Branco Suave) */
 }
 
 @theme inline {
@@ -26,3 +26,4 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+

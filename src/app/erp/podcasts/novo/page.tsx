@@ -12,12 +12,12 @@ export default async function NovoPodcastPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
-        <Link href="/erp/podcasts" className="text-slate-400 hover:text-slate-900 bg-white hover:bg-slate-100 p-2 rounded-full shadow-sm transition-all border border-slate-200">
+        <Link href="/erp/podcasts" className="text-gray-400 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-full shadow-sm transition-all border border-gray-200">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Novo Episódio</h1>
-          <p className="text-sm text-slate-500 mt-1">Configure o título, áudio e metadados do podcast.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Novo Episódio</h1>
+          <p className="text-sm text-gray-500 mt-1">Configure o título, áudio e metadados do podcast.</p>
         </div>
       </div>
 
@@ -25,3 +25,4 @@ export default async function NovoPodcastPage() {
     </div>
   );
 }
+

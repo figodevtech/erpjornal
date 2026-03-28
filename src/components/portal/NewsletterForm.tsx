@@ -63,7 +63,7 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
               placeholder="Seu melhor e-mail"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-12 px-6 rounded-full bg-white border-2 border-slate-100 focus:border-red-700 outline-none font-medium transition-all"
+              className="w-full h-12 px-6 rounded-full bg-white border-2 border-gray-100 focus:border-red-700 outline-none font-medium transition-all"
             />
          </div>
          <button 
@@ -78,7 +78,7 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
   }
 
   return (
-    <div className="bg-slate-900 dark:bg-slate-900/40 rounded-[40px] p-8 md:p-12 relative overflow-hidden shadow-2xl border-l-[8px] border-red-700 transition-colors">
+    <div className="bg-gray-900 dark:bg-gray-900/40 rounded-[40px] p-8 md:p-12 relative overflow-hidden shadow-2xl border-l-[8px] border-red-700 transition-colors">
       <div className="absolute top-0 right-0 w-64 h-64 bg-red-700/20 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
       
       <div className="relative z-10">
@@ -86,10 +86,10 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
           <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500">Exclusivo Revista Gestão</span>
         </div>
-        <h3 className="text-3xl md:text-4xl font-black text-white dark:text-slate-50 tracking-tighter mb-4 leading-none uppercase">
+        <h3 className="text-3xl md:text-4xl font-black text-white dark:text-gray-50 tracking-tighter mb-4 leading-none uppercase">
           A política antes de virar <span className="text-red-700">notícia</span>.
         </h3>
-        <p className="text-slate-200 dark:text-slate-300 text-lg mb-8 max-w-lg font-medium">
+        <p className="text-gray-200 dark:text-gray-300 text-lg mb-8 max-w-lg font-medium">
           Receba bastidores exclusivos e análises profundas no seu e-mail toda manhã.
         </p>
 
@@ -101,7 +101,7 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-14 px-8 rounded-2xl bg-white/5 border-2 border-white/10 text-white placeholder:text-slate-500 focus:border-red-700 outline-none font-bold transition-all"
+              className="w-full h-14 px-8 rounded-2xl bg-white/5 border-2 border-white/10 text-white placeholder:text-gray-500 focus:border-red-700 outline-none font-bold transition-all"
             />
           </div>
           <button 
@@ -113,10 +113,11 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
           </button>
         </form>
         
-        <p className="mt-6 text-[10px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest flex items-center gap-2">
+        <p className="mt-6 text-[10px] text-gray-400 dark:text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
           <CheckCircle2 className="w-3 h-3 text-red-600" /> Sem spam. Apenas política levada a sério.
         </p>
       </div>
     </div>
   );
 }
+

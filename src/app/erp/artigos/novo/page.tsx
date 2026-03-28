@@ -24,7 +24,7 @@ export default async function NovoArtigoPage() {
       <div className="flex items-center gap-4">
         <Link 
           href="/erp/artigos" 
-          className="text-slate-400 hover:text-slate-900 bg-white hover:bg-slate-100 p-2 rounded-full shadow-sm transition-all border border-slate-200"
+          className="text-gray-400 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-full shadow-sm transition-all border border-gray-200"
           aria-label="Voltar para a listagem"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -32,8 +32,8 @@ export default async function NovoArtigoPage() {
           </svg>
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Nova Matéria</h1>
-          <p className="text-sm text-slate-500 mt-1">Preencha os dados e escolha o fluxo de publicação.</p>
+          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Nova Matéria</h1>
+          <p className="text-sm text-gray-500 mt-1">Preencha os dados e escolha o fluxo de publicação.</p>
         </div>
       </div>
 
@@ -41,3 +41,4 @@ export default async function NovoArtigoPage() {
     </div>
   );
 }
+

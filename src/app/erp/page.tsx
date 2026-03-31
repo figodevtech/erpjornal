@@ -2,6 +2,8 @@ import { getEditorialStats } from "@/app/actions/dashboard";
 import { FileText, Eye, Clock, CheckCircle, TrendingUp, Newspaper } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function ERPDashboardPage() {
   const stats = await getEditorialStats();
 

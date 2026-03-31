@@ -149,7 +149,7 @@ export default async function PortalHome() {
             {recent.map((art) => (
               <Link key={art.id} href={`/noticia/${art.slug}`} className="group flex flex-col items-start h-full">
                 
-                <div className="w-full aspect-[4/3] bg-gray-100 dark:bg-gray-900 overflow-hidden mb-4 border border-gray-200 dark:border-gray-800 group-hover:border-red-700 transition-colors duration-300">
+                <div className="w-full aspect-[4/3] bg-gray-100 dark:bg-gray-900 overflow-hidden mb-4 relative border border-gray-200 dark:border-gray-800 group-hover:border-red-700 transition-colors duration-300">
                   {art.og_image_url ? (
                     <Image 
                       src={art.og_image_url} 

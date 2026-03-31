@@ -42,7 +42,6 @@ const sentryBuildOptions = {
   
   // Esconde sourcemaps originais no código final servido
   hideSourceMaps: true,
-  disableLogger: true,
 };
 
 export default withSentryConfig(nextConfig, sentryBuildOptions);

@@ -22,11 +22,11 @@ export default async function Header() {
           <AuthPortal session={session} />
         </div>
       </div>
-      
+
       {/* 2. MAIN BAR */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-[72px]">
-          
+
           <div className="flex-shrink-0 flex items-center">
             <Link href="/" className="group flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-red-700/50 rounded-lg p-1" aria-label="Revista Gestão - Início">
               <div className="w-10 h-10 bg-red-700 text-white flex items-center justify-center font-black text-2xl tracking-tighter" aria-hidden="true">
@@ -45,12 +45,6 @@ export default async function Header() {
             <Link href="/regiao/internacional" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
               Mundo
             </Link>
-            <Link href="/regiao/sp" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
-              São Paulo
-            </Link>
-            <Link href="/politica" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
-              Política
-            </Link>
             <Link href="/podcasts" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
               Podcasts
             </Link>
@@ -59,8 +53,8 @@ export default async function Header() {
             </Link>
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {categories.slice(0, 5).map((cat: any) => (
-              <Link 
-                key={cat.id} 
+              <Link
+                key={cat.id}
                 href={`/categoria/${cat.slug}`}
                 className="text-[13px] font-bold text-gray-900 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight shrink-0"
               >

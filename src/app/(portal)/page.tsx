@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Image from "next/image"; 
 import NewsletterForm from "@/components/portal/NewsletterForm";
 
@@ -48,10 +47,13 @@ export default async function PortalHome() {
                 
                 <div className="w-full aspect-video bg-gray-200 dark:bg-gray-800 mb-5 relative overflow-hidden transition-all duration-500 border border-gray-200 dark:border-gray-800">
                   {featured[0].og_image_url ? (
-                    <img 
+                    <Image 
                       src={featured[0].og_image_url} 
                       alt={featured[0].titulo}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 800px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      priority
                     />
                   ) : (
                     <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 flex items-center justify-center group-hover:scale-105 transition-transform duration-700">
@@ -99,10 +101,12 @@ export default async function PortalHome() {
                   
                   <div className="w-full aspect-[16/9] bg-gray-100 dark:bg-gray-900 mb-4 relative overflow-hidden group-hover:opacity-90 transition-opacity border border-gray-200 dark:border-gray-800">
                     {art.og_image_url ? (
-                      <img 
+                      <Image 
                         src={art.og_image_url} 
                         alt={art.titulo}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 400px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">
@@ -147,10 +151,12 @@ export default async function PortalHome() {
                 
                 <div className="w-full aspect-[4/3] bg-gray-100 dark:bg-gray-900 overflow-hidden mb-4 border border-gray-200 dark:border-gray-800 group-hover:border-red-700 transition-colors duration-300">
                   {art.og_image_url ? (
-                    <img 
+                    <Image 
                       src={art.og_image_url} 
                       alt={art.titulo}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                      fill
+                      sizes="(max-width: 768px) 100vw, 300px"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-700 transform group-hover:scale-105 transition-transform duration-500">

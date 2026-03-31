@@ -1,6 +1,7 @@
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { MapPin, ArrowRight, Calendar, Globe } from "lucide-react";
 
 const stateNames: Record<string, string> = {
@@ -91,9 +92,14 @@ export default async function RegionalPage({ params }: { params: { slug: string 
             className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-trangray-y-1"
           >
             {artigo.og_image_url && (
-               <div className="aspect-video w-full overflow-hidden">
-                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={artigo.og_image_url} alt={artigo.titulo} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+               <div className="aspect-video w-full overflow-hidden relative">
+                <Image 
+                  src={artigo.og_image_url} 
+                  alt={artigo.titulo} 
+                  fill
+                  sizes="(max-width: 768px) 100vw, 400px"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                />
                </div>
             )}
             <div className="p-6 flex-1 flex flex-col justify-between space-y-4">

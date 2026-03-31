@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import AuthPortal from "@/components/auth/AuthPortal";
 import ThemeToggle from "./ThemeToggle";
+import SearchBar from "./SearchBar";
 
 export default async function Header() {
   const session = await getServerSession(authOptions);
@@ -68,12 +69,8 @@ export default async function Header() {
             ))}
           </nav>
 
-          <div className="flex items-center space-x-4">
-            <button className="text-gray-900 dark:text-gray-100 hover:text-red-700 transition-colors p-2 focus-visible:ring-2 focus-visible:ring-red-700 rounded-full outline-none" aria-label="Pesquisar">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={3} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M16.65 16.65A7.5 7.5 0 1110.5 3a7.5 7.5 0 016.15 13.65z" />
-              </svg>
-            </button>
+          <div className="flex items-center space-x-2">
+            <SearchBar />
             <div className="md:hidden">
               <AuthPortal session={session} />
             </div>

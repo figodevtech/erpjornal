@@ -226,8 +226,8 @@ model RSSSource {
   regiao       String?
   estado       String?
   last_harvest DateTime?
-  is_active    Boolean      @default(true)
   created_at   DateTime     @default(now())
+  is_active    Boolean      @default(true)
   items        RSSItemRaw[]
 }
 

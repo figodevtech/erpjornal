@@ -7,6 +7,22 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.glbimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 's2-g1.glbimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      }
+    ],
+  },
 };
 
 // Configurações do Sentry para automatizar sourcemaps e report de build

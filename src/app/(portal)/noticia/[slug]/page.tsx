@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
+import Image from "next/image";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { Lock, Crown } from "lucide-react";
@@ -165,10 +166,13 @@ export default async function NoticiaPage({ params }: PageProps) {
         {/* Hero Image */}
         <figure className="w-full aspect-video md:aspect-[21/9] bg-gray-100 dark:bg-gray-900 mb-12 relative border border-gray-300 dark:border-gray-800 overflow-hidden group transition-all">
           {article.og_image_url ? (
-            <img 
+            <Image 
               src={article.og_image_url} 
               alt={article.titulo}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
+              fill
+              sizes="(max-width: 768px) 100vw, 1000px"
+              className="object-cover group-hover:scale-105 transition-transform duration-1000"
+              priority
             />
           ) : (
             <div className="absolute inset-0 bg-gray-100/50 dark:bg-gray-900/50 flex items-center justify-center text-gray-400 dark:text-gray-700">

@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
+import Image from "next/image";
 
 export const revalidate = 60;
 
@@ -47,7 +48,13 @@ export default async function CategoriaPage(props: PageProps) {
   const articles = await prisma.article.findMany({
     where: whereClause,
     orderBy: { data_publicacao: "desc" },
-    include: {
+    select: {
+      id: true,
+      titulo: true,
+      slug: true,
+      resumo: true,
+      og_image_url: true,
+      data_publicacao: true,
       autor: { select: { nome: true } }
     }
   });
@@ -87,9 +94,19 @@ export default async function CategoriaPage(props: PageProps) {
                   {/* Thumb / Fallback (Square edges, classic news feel) */}
                   <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden mb-4 relative border border-gray-200 transition-colors group-hover:border-red-700">
                     <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent z-10"></div>
-                    <div className="absolute inset-0 flex items-center justify-center text-gray-300 transform group-hover:scale-105 transition-transform duration-500">
-                      <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2v12a2 2 0 002 2z" /></svg>
-                    </div>
+                    {art.og_image_url ? (
+                      <Image 
+                        src={art.og_image_url} 
+                        alt={art.titulo}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 400px"
+                        className="object-cover group-hover:scale-105 transition-transform duration-700"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center text-gray-300 transform group-hover:scale-105 transition-transform duration-500">
+                        <svg className="w-12 h-12" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2v12a2 2 0 002 2z" /></svg>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2 mb-3 w-full border-b-[2px] border-red-500/10 pb-2">

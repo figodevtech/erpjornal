@@ -47,8 +47,15 @@ export class SearchService {
     // 0. Cache via Redis
     const cacheKey = `search:v2:${Buffer.from(JSON.stringify(options)).toString('base64')}`;
     try {
-      const cached = await redis.get(cacheKey);
-      if (cached) return cached as { results: SearchResult[]; total: number };
+      const cached = await redis.get(cacheKey) as any;
+      if (cached) {
+        // Reidrata datas que foram serializadas como string pelo JSON
+        const rehydrated = (cached.results || []).map((r: any) => ({
+          ...r,
+          date: r.date ? new Date(r.date) : undefined,
+        }));
+        return { results: rehydrated, total: cached.total };
+      }
     } catch (e) {
       console.warn("Redis search cache error:", e);
     }
@@ -100,16 +107,26 @@ export class SearchService {
       status_id: ArticleStatus.publicado,
     };
 
+    // OR de texto apenas quando houver query
     if (query) {
       where.OR = [
         { titulo: { contains: query, mode: "insensitive" } },
         { resumo: { contains: query, mode: "insensitive" } },
-        // Removido corpo_texto do filtro para evitar scans pesados
       ];
     }
 
+    // Filtro por categoria (slug)
     if (options.category) where.categoria = { slug: options.category };
-    if (options.author) where.autor_id = options.author;
+
+    // Filtro por autor: aceita tanto UUID (id) quanto nome parcial
+    if (options.author) {
+      const isUUID = /^[0-9a-f-]{36}$/i.test(options.author);
+      if (isUUID) {
+        where.autor_id = options.author;
+      } else {
+        where.autor = { nome: { contains: options.author, mode: "insensitive" } };
+      }
+    }
 
     // Processamento de período (dateRange)
     let startDate = options.startDate;
@@ -139,6 +156,7 @@ export class SearchService {
         resumo: true,
         og_image_url: true,
         data_publicacao: true,
+        visualizacoes: true,
         categoria: { select: { nome: true } },
         autor: { select: { nome: true } }
       },
@@ -149,13 +167,16 @@ export class SearchService {
 
     return articles.map((art) => {
       let score = 0;
-      const lowerTitle = art.titulo.toLowerCase();
-      const lowerQuery = query.toLowerCase();
-
-      // Cálculo de score
-      if (lowerTitle.includes(lowerQuery)) score += 30;
-      if (lowerTitle.startsWith(lowerQuery)) score += 20; 
-      if (art.resumo?.toLowerCase().includes(lowerQuery)) score += 15;
+      if (query) {
+        const lowerTitle = art.titulo.toLowerCase();
+        const lowerQuery = query.toLowerCase();
+        if (lowerTitle.includes(lowerQuery)) score += 30;
+        if (lowerTitle.startsWith(lowerQuery)) score += 20;
+        if (art.resumo?.toLowerCase().includes(lowerQuery)) score += 15;
+      } else {
+        // Sem query: ordena por visualizações / frescor
+        score = art.visualizacoes ?? 0;
+      }
 
       // Boost de frescor (20%)
       if (art.data_publicacao && art.data_publicacao > fortyEightHoursAgo) {

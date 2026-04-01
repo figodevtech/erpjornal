@@ -35,7 +35,7 @@ export default function SearchBar() {
   // Debounce e Busca
   useEffect(() => {
     const performSearch = async () => {
-      if (query.trim().length < 2) {
+      if (query.trim().length < 3) {
         setResults([]);
         return;
       }
@@ -45,11 +45,11 @@ export default function SearchBar() {
         setResults(searchCache.current[query.trim()]);
         return;
       }
-
+ 
       // 2. Cancela request anterior
       if (abortControllerRef.current) abortControllerRef.current.abort();
       abortControllerRef.current = new AbortController();
-
+ 
       setIsLoading(true);
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}&limit=8`, {
@@ -70,8 +70,8 @@ export default function SearchBar() {
         setIsLoading(false);
       }
     };
-
-    const timer = setTimeout(performSearch, 150);
+ 
+    const timer = setTimeout(performSearch, 300);
     return () => {
       clearTimeout(timer);
       if (abortControllerRef.current) abortControllerRef.current.abort();

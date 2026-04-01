@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 interface FilterOption {
   id: string;
   nome: string;
+  slug?: string;
   count?: number;
 }
 
@@ -119,9 +120,9 @@ export default function SearchFilters({ categories, authors }: SearchFiltersProp
             {categories.map((cat) => (
               <button
                 key={cat.id}
-                onClick={() => updateFilters({ category: currentCategory === cat.slug ? "" : cat.slug })}
+                onClick={() => updateFilters({ category: currentCategory === (cat.slug || "") ? "" : (cat.slug || "") })}
                 className={`flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-bold transition-all ${
-                  currentCategory === cat.slug 
+                  currentCategory === (cat.slug || "") 
                     ? "text-red-700 bg-red-50 dark:bg-red-900/10" 
                     : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}

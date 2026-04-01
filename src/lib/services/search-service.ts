@@ -271,7 +271,7 @@ export class SearchService {
    * Sugestões rápidas para o Autocomplete (Placeholders/Search-as-you-type)
    */
   static async getSuggestions(query: string): Promise<string[]> {
-    if (query.length < 2) return [];
+    if (query.length < 3) return [];
 
     const suggestions = await prisma.article.findMany({
       where: {

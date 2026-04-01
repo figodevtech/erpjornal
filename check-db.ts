@@ -1,17 +1,23 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+import { PrismaClient } from '@prisma/client'
 
-async function check() {
-  const articles = await prisma.article.findMany({
-    select: { status_id: true, titulo: true },
-    take: 10
-  });
-  console.log("ARTICLES SCAN:", articles);
-  
-  const users = await prisma.user.findMany({ select: { id: true, nome: true }, take: 5 });
-  console.log("USERS SCAN:", users);
-  
-  await prisma.$disconnect();
+const prisma = new PrismaClient()
+
+async function main() {
+  try {
+    const result = await prisma.$queryRaw`
+      SELECT 
+        count(*) as active_connections,
+        (SELECT setting::int FROM pg_settings WHERE name = 'max_connections') as max_allowed
+      FROM pg_stat_activity 
+      WHERE datname = 'postgres'
+    `
+    console.log('--- Database Status ---')
+    console.log(result)
+  } catch (e) {
+    console.error('Error checking connections:', e)
+  } finally {
+    await prisma.$disconnect()
+  }
 }
 
-check();
+main()

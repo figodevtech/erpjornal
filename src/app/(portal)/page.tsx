@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { ArticleStatus } from "@/lib/types/article-status";
 import Link from "next/link";
 import Image from "next/image"; 
 import NewsletterForm from "@/components/portal/NewsletterForm";
@@ -8,7 +9,7 @@ export const revalidate = 60;
 export default async function PortalHome() {
   const articles = await prisma.article.findMany({
     where: {
-      status_id: "publicado",
+      status_id: ArticleStatus.publicado,
       data_publicacao: { lte: new Date() }
     },
     orderBy: { data_publicacao: "desc" },

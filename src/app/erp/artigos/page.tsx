@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { ArticleStatus } from "@/lib/types/article-status";
 import ArticleFilters from "./components/ArticleFilters";
 import Link from "next/link";
 
@@ -18,7 +19,7 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
     whereClause.titulo = { contains: search, mode: "insensitive" };
   }
   if (status) {
-    whereClause.status_id = status;
+    whereClause.status_id = status as ArticleStatus;
   }
 
   const articles = await prisma.article.findMany({
@@ -79,11 +80,11 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                        ${art.status_id === 'publicado' ? 'bg-emerald-100 text-emerald-800' : ''}
-                        ${art.status_id === 'em_revisao' ? 'bg-amber-100 text-amber-800' : ''}
-                        ${art.status_id === 'rascunho' ? 'bg-gray-100 text-gray-800' : ''}
+                        ${art.status_id === ArticleStatus.publicado ? 'bg-emerald-100 text-emerald-800' : ''}
+                        ${art.status_id === ArticleStatus.revisao ? 'bg-amber-100 text-amber-800' : ''}
+                        ${art.status_id === ArticleStatus.pauta ? 'bg-gray-100 text-gray-800' : ''}
                       `}>
-                        {art.status_id.replace("_", " ")}
+                        {art.status_id}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600">{art.autor?.nome || '—'}</td>

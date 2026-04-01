@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { ArticleStatus } from "@/lib/types/article-status";
+import { redis, redisKeys } from "@/lib/redis";
+import { globalRateLimit, getIP } from "@/lib/ratelimit";
 
 export async function GET(request: Request) {
   try {
+    // --- RATE LIMIT GLOBAL ---
+    const ip = getIP(request);
+    const { success } = await globalRateLimit.limit(ip);
+    if (!success) return NextResponse.json({ error: "Rate limit exceeded" }, { status: 429 });
+    // -------------------------
+
     const { searchParams } = new URL(request.url);
     
     // Tratamento de paginação padrão
@@ -15,11 +24,26 @@ export async function GET(request: Request) {
 
     // Apenas listamos matérias oficiais que já chegaram no horário configurado
     const whereClause: Prisma.ArticleWhereInput = {
-      status_id: "publicado",
+      status_id: ArticleStatus.publicado,
       data_publicacao: {
         lte: new Date(),
       },
     };
+
+    // --- CAMADA DE CACHE REDIS ---
+    const cacheKey = redisKeys.articlesList(page, limit, categorySlug || undefined);
+    
+    try {
+      const cachedData = await redis.get(cacheKey);
+      if (cachedData) {
+        console.log(`[Cache Hit] Articles list for key: ${cacheKey}`);
+        return NextResponse.json(cachedData);
+      }
+    } catch (cacheError) {
+      console.error("Redis Cache Error:", cacheError);
+      // Continua para o banco se o Redis falhar
+    }
+    // ----------------------------
 
     // Filtro relacional opcional para páginas de categoria específica
     if (categorySlug) {
@@ -63,7 +87,7 @@ export async function GET(request: Request) {
       prisma.article.count({ where: whereClause }),
     ]);
 
-    return NextResponse.json({
+    const responseData = {
       data: articles,
       meta: {
         total: totalCount,
@@ -71,7 +95,16 @@ export async function GET(request: Request) {
         limit,
         totalPages: Math.ceil(totalCount / limit),
       },
-    });
+    };
+
+    // Salva no cache por 5 minutos (300s) para reduzir carga no banco
+    try {
+      await redis.set(cacheKey, responseData, { ex: 300 });
+    } catch (cacheError) {
+      console.error("Failed to set Redis cache:", cacheError);
+    }
+
+    return NextResponse.json(responseData);
   } catch (error) {
     console.error("GET /api/articles error:", error);
     return NextResponse.json(

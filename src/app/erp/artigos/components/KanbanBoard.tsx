@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ArticleStatus } from "@/lib/types/article-status";
 import {
   DndContext,
   DragOverlay,
@@ -28,7 +29,7 @@ interface Article {
   titulo: string;
   autor?: { nome: string } | null;
   categoria?: { nome: string; cor?: string | null } | null;
-  status_id: string;
+  status_id: ArticleStatus;
   created_at: Date;
 }
 
@@ -47,12 +48,12 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
     })
   );
 
-  const findColumn = (id: string) => {
+  const findColumn = (id: string): ArticleStatus | null => {
     if (COLUMNS.some((col) => col.id === id)) {
-      return id;
+      return id as ArticleStatus;
     }
     const article = articles.find((art) => art.id === id);
-    return article ? article.status_id : null;
+    return article ? (article.status_id as ArticleStatus) : null;
   };
 
   const onDragStart = (event: DragStartEvent) => {
@@ -92,7 +93,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
       }
 
       const updated = [...prev];
-      updated[activeIndex] = { ...updated[activeIndex], status_id: overColumn };
+      updated[activeIndex] = { ...updated[activeIndex], status_id: overColumn as ArticleStatus };
       return arrayMove(updated, activeIndex, newIndex);
     });
   };
@@ -119,7 +120,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
       // Persist status change
       if (article && overColumn !== initialArticles.find(a => a.id === activeId)?.status_id) {
         try {
-          await updateArticleStatus(activeId, overColumn);
+          await updateArticleStatus(activeId, overColumn as ArticleStatus);
           toast.success("Status atualizado com sucesso!");
         } catch (error) {
           toast.error(`Falha ao atualizar: ${(error as Error).message}`);

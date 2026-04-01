@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { ArticleStatus } from "@/lib/types/article-status";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
@@ -41,7 +42,7 @@ export default async function CategoriaPage(props: PageProps) {
   // Monta Where condicional
   const whereClause: Prisma.ArticleWhereInput = {
     categoria_id: category.id,
-    status_id: "publicado",
+    status_id: ArticleStatus.publicado,
     data_publicacao: { lte: new Date() }
   };
   

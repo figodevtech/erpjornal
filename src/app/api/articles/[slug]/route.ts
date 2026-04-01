@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ArticleStatus } from "@/lib/types/article-status";
 
 export async function GET(
   request: Request,
@@ -17,7 +18,7 @@ export async function GET(
     const article = await prisma.article.findFirst({
       where: {
         slug,
-        status_id: "publicado",
+        status_id: ArticleStatus.publicado,
         data_publicacao: {
           lte: new Date(),
         },

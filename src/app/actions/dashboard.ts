@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { ArticleStatus } from "@/lib/types/article-status";
 import { redis, redisKeys } from "@/lib/redis";
 import logger from "@/lib/logger";
 
@@ -28,9 +29,9 @@ export async function getEditorialStats(): Promise<DashboardStats> {
     // Nota: No schema, o campo é status_id (String).
     const [total, draft, published, archived] = await Promise.all([
       prisma.article.count(),
-      prisma.article.count({ where: { status_id: "rascunho" } }),
-      prisma.article.count({ where: { status_id: "publicado" } }), 
-      prisma.article.count({ where: { status_id: "arquivado" } }),
+      prisma.article.count({ where: { status_id: ArticleStatus.pauta } }),
+      prisma.article.count({ where: { status_id: ArticleStatus.publicado } }), 
+      prisma.article.count({ where: { status_id: ArticleStatus.arquivado } }),
     ]);
 
     // 2. Ranking de Audiência no Redis

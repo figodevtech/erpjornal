@@ -47,9 +47,13 @@ export default function ArticleFilters({ initialSearch, initialStatus }: { initi
           className="w-full border-gray-300 rounded-lg shadow-sm p-2.5 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow outline-none text-sm bg-white"
         >
           <option value="">Todos os status</option>
-          <option value="rascunho">Rascunho</option>
-          <option value="em_revisao">Em Revisão</option>
+          <option value="pauta">Pauta</option>
+          <option value="apuracao">Apuração</option>
+          <option value="redacao">Redação</option>
+          <option value="revisao">Revisão</option>
+          <option value="juridico">Jurídico</option>
           <option value="publicado">Publicado</option>
+          <option value="arquivado">Arquivado</option>
         </select>
       </div>
       <button 

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { KanbanBoard } from "../components/KanbanBoard";
+import { ArticleStatus } from "@/lib/types/article-status";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -55,7 +56,7 @@ export default async function ArticlesKanbanPage() {
         <KanbanBoard initialArticles={articles.map(a => ({
           ...a,
           created_at: a.created_at,
-          status_id: a.status_id || "pauta"
+          status_id: (a.status_id as ArticleStatus) || ArticleStatus.pauta
         }))} />
       </div>
     </div>

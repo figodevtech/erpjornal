@@ -1,4 +1,5 @@
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
+import { ArticleStatus } from "@/lib/types/article-status";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { UserCircle, Calendar, ArrowRight, MapPin } from "lucide-react";
@@ -11,7 +12,7 @@ export default async function PoliticoProfilePage({ params }: { params: { id: st
     where: { id },
     include: {
       artigos: {
-        where: { status_id: "publicado" },
+        where: { status_id: ArticleStatus.publicado },
         orderBy: { created_at: "desc" },
         include: { categoria: true }
       }

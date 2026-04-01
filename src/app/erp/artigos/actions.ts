@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { ArticleStatus } from "@/lib/types/article-status";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -53,7 +54,7 @@ export async function saveArticle(formData: FormData) {
     slug,
     resumo,
     corpo_texto,
-    status_id: finalStatus,
+    status_id: finalStatus as ArticleStatus,
     categoria_id: categoria_id || null,
     legal_notes,
     legal_status,
@@ -136,7 +137,7 @@ export async function saveArticle(formData: FormData) {
   redirect("/erp/artigos");
 }
 
-export async function updateArticleStatus(id: string, newStatus: string) {
+export async function updateArticleStatus(id: string, newStatus: ArticleStatus) {
   const session = await getServerSession(authOptions);
   if (!session?.user) throw new Error("Não autorizado");
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
+import { ArticleStatus } from "@/lib/types/article-status";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { KanbanCard } from "./KanbanCard";
 import { Plus } from "lucide-react";
@@ -18,7 +19,7 @@ export const COLUMNS = [
 interface Article {
   id: string;
   titulo: string;
-  status_id: string;
+  status_id: ArticleStatus;
   autor?: { nome: string } | null;
   categoria?: { nome: string; cor?: string | null } | null;
   created_at: Date;

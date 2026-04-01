@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { ArticleStatus } from "@/lib/types/article-status";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,7 +34,9 @@ export default async function RegionalPage({ params }: { params: { slug: string 
   
   let title = "Notícias Regionais";
   let description = "Acompanhe as notícias políticas da sua região.";
-  const whereClause: { status_id: string; regiao?: string; estado?: string } = { status_id: "publicado" };
+  const whereClause: { status_id: ArticleStatus; regiao?: string; estado?: string } = { 
+    status_id: ArticleStatus.publicado 
+  };
 
   if (slug === "nacional") {
     title = "Notícias Nacionais";

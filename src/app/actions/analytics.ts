@@ -14,13 +14,15 @@ export async function incrementArticleViews(articleId: string) {
   try {
     const key = redisKeys.articleViews(articleId);
     
-    // 1. Incrementa no Redis (Atômico e Rápido)
-    const newCount = await redis.incr(key);
+    // REDIS PIPELINE: Reduz latência de rede agrupando comandos
+    const pipeline = redis.pipeline();
+    pipeline.incr(key);
+    pipeline.zadd(redisKeys.popularArticles, { score: 1, member: articleId }); // Incrementa score no Sorted Set
+    
+    const results = await pipeline.exec();
+    const newCount = results[0] as number;
 
-    // 2. Atualiza o Ranking do Sorted Set
-    await redis.zadd(redisKeys.popularArticles, { score: newCount, member: articleId });
-
-    logger.info({ articleId, count: newCount }, "Article view incremented [Redis]");
+    logger.info({ articleId, count: newCount }, "Article view incremented [Redis Pipeline]");
     
     return newCount;
   } catch (error) {
@@ -58,25 +60,45 @@ export async function getPopularArticles(limit: number = 5) {
     const topIds = await redis.zrange<string[]>(redisKeys.popularArticles, 0, limit - 1, { rev: true });
 
     if (!topIds || topIds.length === 0) {
-      // Fallback: busca por visualizações no banco se Redis estiver vazio
+      // FALLBACK OTIMIZADO: Evita Overfetching selecionando apenas campos leves
       return await prisma.article.findMany({
         where: { status_id: "publicado" },
         orderBy: { visualizacoes: "desc" },
         take: limit,
-        include: { categoria: true }
+        select: {
+          id: true,
+          titulo: true,
+          slug: true,
+          resumo: true,
+          data_publicacao: true,
+          og_image_url: true,
+          categoria: {
+            select: { nome: true, slug: true, cor: true }
+          }
+        }
       });
     }
 
     // Busca os dados completos no banco preservando a ordem do Redis
     const articles = await prisma.article.findMany({
       where: { id: { in: topIds }, status_id: "publicado" },
-      include: { categoria: true }
+      select: {
+        id: true,
+        titulo: true,
+        slug: true,
+        resumo: true,
+        data_publicacao: true,
+        og_image_url: true,
+        categoria: {
+          select: { nome: true, slug: true, cor: true }
+        }
+      }
     });
 
     // Ordena de volta conforme o topIds
     return articles.sort((a, b) => topIds.indexOf(a.id) - topIds.indexOf(b.id));
   } catch (error) {
-    console.error("Erro ao buscar populares no Redis:", error);
+    logger.error({ error }, "Erro ao buscar populares no Redis");
     return [];
   }
 }

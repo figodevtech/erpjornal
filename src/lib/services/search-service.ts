@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
+import { ArticleStatus } from "@/lib/types/article-status";
 
 export type SearchResultType = "noticia" | "autor" | "categoria" | "politico" | "podcast" | "video";
 
@@ -52,14 +53,15 @@ export class SearchService {
       console.warn("Redis search cache error:", e);
     }
 
-    // 1. Buscas Sequenciais (Resiliência contra Pool Limit: 1)
-    // Buscas sucessivas evitam o timeout P2024 (10 segundos de espera)
-    const articles = await this.searchArticles(cleanQuery, options);
-    const categories = await this.searchCategories(cleanQuery);
-    const authors = await this.searchAuthors(cleanQuery);
-    const politicians = await this.searchPoliticians(cleanQuery);
-    const podcasts = await this.searchPodcasts(cleanQuery);
-    const videos = await this.searchVideos(cleanQuery);
+    // 1. Buscas em Paralelo (Explora o Pool de Conexões do Prisma)
+    const [articles, categories, authors, politicians, podcasts, videos] = await Promise.all([
+      this.searchArticles(cleanQuery, options),
+      this.searchCategories(cleanQuery),
+      this.searchAuthors(cleanQuery),
+      this.searchPoliticians(cleanQuery),
+      this.searchPodcasts(cleanQuery),
+      this.searchVideos(cleanQuery)
+    ]);
 
     // 2. Unificar e Rankear
     let allResults: SearchResult[] = [
@@ -95,14 +97,14 @@ export class SearchService {
   private static async searchArticles(query: string, options: SearchOptions): Promise<SearchResult[]> {
     const now = new Date();
     const where: any = {
-      status_id: "publicado",
+      status_id: ArticleStatus.publicado,
     };
 
     if (query) {
       where.OR = [
         { titulo: { contains: query, mode: "insensitive" } },
         { resumo: { contains: query, mode: "insensitive" } },
-        { corpo_texto: { contains: query, mode: "insensitive" } },
+        // Removido corpo_texto do filtro para evitar scans pesados
       ];
     }
 
@@ -130,8 +132,17 @@ export class SearchService {
 
     const articles = await prisma.article.findMany({
       where,
-      include: { categoria: true, autor: true },
-      take: 50, // Limite para ranking em memória
+      select: {
+        id: true,
+        titulo: true,
+        slug: true,
+        resumo: true,
+        og_image_url: true,
+        data_publicacao: true,
+        categoria: { select: { nome: true } },
+        autor: { select: { nome: true } }
+      },
+      take: 50,
     });
 
     const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
@@ -143,9 +154,8 @@ export class SearchService {
 
       // Cálculo de score
       if (lowerTitle.includes(lowerQuery)) score += 30;
-      if (lowerTitle.startsWith(lowerQuery)) score += 20; // Exact match at start
+      if (lowerTitle.startsWith(lowerQuery)) score += 20; 
       if (art.resumo?.toLowerCase().includes(lowerQuery)) score += 15;
-      if (art.corpo_texto.toLowerCase().includes(lowerQuery)) score += 5;
 
       // Boost de frescor (20%)
       if (art.data_publicacao && art.data_publicacao > fortyEightHoursAgo) {
@@ -275,7 +285,7 @@ export class SearchService {
 
     const suggestions = await prisma.article.findMany({
       where: {
-        status_id: "publicado",
+        status_id: ArticleStatus.publicado,
         titulo: { contains: query, mode: "insensitive" },
       },
       take: 8,

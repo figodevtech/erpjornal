@@ -8,6 +8,18 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum ArticleStatus {
+  pauta
+  apuracao
+  redacao
+  revisao
+  juridico
+  publicado
+  arquivado
+  rascunho
+  em_revisao
+}
+
 model Role {
   id         String @id @default(uuid())
   nome       String @unique
@@ -45,7 +57,7 @@ model Article {
   editor_id        String?
   revisor_id       String?
   categoria_id     String?
-  status_id        String           @default("rascunho")
+  status_id        ArticleStatus    @default(pauta)
   data_publicacao  DateTime?
   visualizacoes    Int              @default(0)
   og_image_url     String?
@@ -71,6 +83,9 @@ model Article {
   fact_checks      FactCheck[]
   fonte_notas      SourceNote[]
   politicos        Politician[]     @relation("ArticlePoliticians")
+
+  @@index([status_id, data_publicacao])
+  @@index([categoria_id])
 }
 
 model Politician {
@@ -103,7 +118,7 @@ model ArticleVersion {
   titulo          String
   resumo          String?
   corpo_texto     String
-  status_id       String
+  status_id       ArticleStatus
   user_id         String?
   mudancas_resumo String?
   created_at      DateTime @default(now())

@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { ArticleStatus } from "@/lib/types/article-status";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://revistagestao.com.br";
@@ -29,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 2. Busca de artigos indexáveis (Publicados)
   const articles = await prisma.article.findMany({
     where: {
-      status_id: "publicado",
+      status_id: ArticleStatus.publicado,
       data_publicacao: { lte: new Date() },
     },
     select: {

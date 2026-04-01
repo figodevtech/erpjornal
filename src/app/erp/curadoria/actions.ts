@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { ArticleStatus } from "@/lib/types/article-status";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
@@ -300,7 +301,7 @@ export async function approveAndPublish(itemId: string, finalData: any) {
       corpo_texto: finalData.corpo_texto,
       categoria_id: category?.id,
       autor_id: session.user.id,
-      status_id: "publicado",
+      status_id: ArticleStatus.publicado,
       is_premium: false,
       publish_channels: ["portal"],
       og_image_url: item.thumbnail, // Propaga a imagem do RSS para o artigo

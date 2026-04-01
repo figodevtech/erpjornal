@@ -16,5 +16,6 @@ export const redisKeys = {
   articleViews: (id: string) => `article:${id}:views`,
   popularArticles: "portal:popular_articles",
   categoryCache: (slug: string) => `category:${slug}:cache`,
+  articlesList: (page: number, limit: number, category?: string) => `articles:list:${page}:${limit}:${category || 'all'}`,
   globalStats: "portal:stats",
 };

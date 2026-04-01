@@ -43,7 +43,7 @@ export default async function CategoriaPage(props: PageProps) {
   const whereClause: Prisma.ArticleWhereInput = {
     categoria_id: category.id,
     status_id: ArticleStatus.publicado,
-    data_publicacao: { lte: new Date() }
+    data_publicacao: { lte: new Date(Date.now() + 60000) }
   };
   
   const articles = await prisma.article.findMany({

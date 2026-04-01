@@ -37,11 +37,14 @@ export async function saveArticle(formData: FormData) {
     finalStatus = "em_revisao";
   }
 
-  let data_publicacao = finalStatus === "publicado" ? new Date() : null;
-  if (finalStatus === "publicado" && rawDate) {
-    const parsedDate = new Date(rawDate);
-    if (!isNaN(parsedDate.getTime())) {
-      data_publicacao = parsedDate;
+  let data_publicacao: Date | null = null;
+  if (finalStatus === "publicado") {
+    if (rawDate) {
+      const parsedDate = new Date(rawDate);
+      data_publicacao = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
+    } else {
+      // Se já estava publicado, mantém a data original, senão define como agora
+      data_publicacao = null; // Será tratado no update/create
     }
   }
 
@@ -88,11 +91,19 @@ export async function saveArticle(formData: FormData) {
       throw new Error("Você não tem permissão para editar este artigo.");
     }
     
+    // Determina a data final de publicação
+    let finalPublishDate = data_publicacao;
+    if (finalStatus === "publicado" && !finalPublishDate) {
+      finalPublishDate = (existing as any).data_publicacao || new Date();
+    } else if (finalStatus !== "publicado") {
+      finalPublishDate = null;
+    }
+
     await prisma.article.update({
       where: { id },
       data: {
         ...data,
-        data_publicacao: data_publicacao || existing.data_publicacao,
+        data_publicacao: finalPublishDate,
         fact_checks: {
           deleteMany: {},
           create: factChecks
@@ -114,6 +125,7 @@ export async function saveArticle(formData: FormData) {
     const novoArtigo = await prisma.article.create({
       data: {
         ...data,
+        data_publicacao: finalStatus === "publicado" ? (data_publicacao || new Date()) : null,
         autor_id: session.user.id,
         fact_checks: {
           create: factChecks
@@ -134,6 +146,9 @@ export async function saveArticle(formData: FormData) {
   }
 
   revalidatePath("/erp/artigos");
+  revalidatePath("/");
+  revalidatePath("/noticia/[slug]", "page");
+  revalidatePath("/categoria/[slug]", "page");
   redirect("/erp/artigos");
 }
 
@@ -148,7 +163,8 @@ export async function updateArticleStatus(id: string, newStatus: ArticleStatus) 
       autor_id: true,
       titulo: true,
       resumo: true,
-      corpo_texto: true
+      corpo_texto: true,
+      data_publicacao: true
     }
   });
 
@@ -177,7 +193,9 @@ export async function updateArticleStatus(id: string, newStatus: ArticleStatus) 
     where: { id },
     data: { 
       status_id: newStatus,
-      data_publicacao: newStatus === "publicado" ? new Date() : null
+      data_publicacao: newStatus === "publicado" 
+        ? (article.data_publicacao || new Date()) 
+        : null
     }
   });
 
@@ -191,6 +209,9 @@ export async function updateArticleStatus(id: string, newStatus: ArticleStatus) 
 
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
+  revalidatePath("/");
+  revalidatePath("/noticia/[slug]", "page");
+  revalidatePath("/categoria/[slug]", "page");
 }
 
 export async function updateArticleAuthor(articleId: string, newAuthorId: string) {

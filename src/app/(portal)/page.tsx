@@ -10,9 +10,12 @@ export default async function PortalHome() {
   const articles = await prisma.article.findMany({
     where: {
       status_id: ArticleStatus.publicado,
-      data_publicacao: { lte: new Date() }
+      data_publicacao: { lte: new Date(Date.now() + 60000) } // Margem de 1 min para evitar atrasos de sync
     },
-    orderBy: { data_publicacao: "desc" },
+    orderBy: [
+      { data_publicacao: "desc" },
+      { created_at: "desc" }
+    ],
     take: 15,
     select: {
       id: true,

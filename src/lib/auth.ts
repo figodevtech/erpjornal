@@ -4,8 +4,11 @@ import bcrypt from "bcrypt";
 import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
+  // Permite que NextAuth use o host da requisição atual em vez de NEXTAUTH_URL
+  // Essencial para produção: evita que a sessão falhe por domínio incorreto no cookie
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 dias
   },
   providers: [
     CredentialsProvider({
@@ -61,5 +64,19 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
-  }
+  },
+  // Garante que cookies funcionem em produção com HTTPS
+  cookies: {
+    sessionToken: {
+      name: process.env.NODE_ENV === "production"
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
 };

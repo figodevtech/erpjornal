@@ -35,18 +35,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // Tela vazia apenas quando não há nenhum parâmetro de busca/filtro
   if (!query && !author && !category) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-32 text-center animate-in fade-in slide-in-from-bottom-5">
-        <div className="w-24 h-24 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-gray-200 dark:border-gray-800">
-          <Search className="w-10 h-10 text-gray-300" strokeWidth={1} />
+      <main className="w-full bg-white dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 py-32 text-center animate-in fade-in slide-in-from-bottom-5">
+          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-gray-200 dark:border-gray-800">
+            <Search className="w-10 h-10 text-gray-300" strokeWidth={1} />
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-gray-100 tracking-tighter uppercase leading-none mb-6">
+            Explore o acervo da <br />
+            <span className="text-red-700">Revista Gestão</span>
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-medium">
+            Busque por notícias, temas, articulistas, políticos e tendências que moldam o Brasil e o Mundo.
+          </p>
         </div>
-        <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-gray-100 tracking-tighter uppercase leading-none mb-6">
-          Explore o acervo da <br />
-          <span className="text-red-700">Revista Gestão</span>
-        </h1>
-        <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-medium">
-          Busque por notícias, temas, articulistas, políticos e tendências que moldam o Brasil e o Mundo.
-        </p>
-      </div>
+      </main>
     );
   }
 
@@ -87,9 +89,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     : null;
 
   return (
-    <main className="w-full bg-white dark:bg-gray-950 min-h-screen">
+    <main className="w-full bg-white dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-300">
       {/* Header Contextual */}
-      <div className="bg-gray-50 dark:bg-gray-900/30 border-b border-gray-200 dark:border-gray-800 py-10">
+      <div className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6">
             <Link href="/">Home</Link>

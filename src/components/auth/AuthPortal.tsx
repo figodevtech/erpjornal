@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { signIn, signOut } from "next-auth/react";
+import { signIn, signOut, getSession } from "next-auth/react";
 import { UserCircle, LogOut, LogIn, Mail, Lock, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -47,7 +47,15 @@ export default function AuthPortal({ session }: AuthPortalProps) {
         setError("E-mail ou senha incorretos.");
       } else {
         setIsOpen(false);
-        router.refresh();
+        // Busca sessão atualizada para redirecionar com base no papel do usuário
+        const session = await getSession();
+        const role = session?.user?.role;
+        const editorialRoles = ["admin", "editor", "reporter", "juridico"];
+        if (role && editorialRoles.includes(role)) {
+          router.push("/erp/artigos");
+        } else {
+          router.refresh();
+        }
       }
     } catch (err) {
       setError("Ocorreu um erro ao tentar entrar.");

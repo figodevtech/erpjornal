@@ -5,10 +5,15 @@ import { authOptions } from "@/lib/auth";
 import AuthPortal from "@/components/auth/AuthPortal";
 import ThemeToggle from "./ThemeToggle";
 import SearchBar from "./SearchBar";
+import { isModuleEnabled } from "@/lib/config/modules";
+
 
 export default async function Header() {
   const session = await getServerSession(authOptions);
   const categories = await getCachedCategories();
+
+  const podcastsEnabled = isModuleEnabled("podcasts");
+  const videosEnabled = isModuleEnabled("videos");
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-950 shadow-sm border-b-[4px] border-red-700 transition-colors duration-300">
@@ -45,12 +50,16 @@ export default async function Header() {
             <Link href="/regiao/internacional" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
               Mundo
             </Link>
-            <Link href="/podcasts" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
-              Podcasts
-            </Link>
-            <Link href="/videos" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
-              Vídeos
-            </Link>
+            {podcastsEnabled && (
+              <Link href="/podcasts" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight">
+                Podcasts
+              </Link>
+            )}
+            {videosEnabled && (
+              <Link href="/videos" className="text-[14px] font-black text-gray-950 dark:text-gray-100 hover:text-red-700 hover:underline underline-offset-4 decoration-2 decoration-red-700 transition-all uppercase tracking-tight focus-visible:text-red-700 outline-none">
+                Vídeos
+              </Link>
+            )}
             {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
             {categories.slice(0, 5).map((cat: any) => (
               <Link

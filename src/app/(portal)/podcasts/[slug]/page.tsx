@@ -1,18 +1,25 @@
-﻿import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import PodcastPlayer from "@/components/portal/PodcastPlayer";
 import Link from "next/link";
 import { ArrowLeft, Share2 } from "lucide-react";
+import { isModuleEnabled } from "@/lib/config/modules";
+
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
+  if (!isModuleEnabled("podcasts")) return { title: "Página Não Encontrada" };
   const ep = (await (prisma as any).podcastEpisode.findUnique({ where: { slug: params.slug } }));
   if (!ep) return { title: "Episódio Não Encontrado" };
   return { title: `${ep.titulo} | Podcast RG`, description: ep.descricao };
 }
 
 export default async function EpisodePage({ params }: { params: { slug: string } }) {
+  if (!isModuleEnabled("podcasts")) {
+    notFound();
+  }
   const ep = (await (prisma as any).podcastEpisode.findUnique({ where: { slug: params.slug } }));
   if (!ep || ep.status !== "published") notFound();
+
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-12 md:py-20 animate-in fade-in slide-in-from-bottom-6 duration-700">

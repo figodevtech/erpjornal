@@ -1,17 +1,24 @@
 import { prisma } from "@/lib/prisma";
 import ShortVideoCard from "@/components/portal/ShortVideoCard";
 import { Film, TrendingUp, PlayCircle, Zap, ShieldCheck } from "lucide-react";
+import { isModuleEnabled } from "@/lib/config/modules";
+import { notFound } from "next/navigation";
 
 export const metadata = {
   title: "RG.Curtos | Vídeos Rápidos de Política",
   description: "Assista aos bastidores e análises rápidas da política nacional em formato de vídeos curtos.",
 };
 
+
 export default async function VideosPage() {
+  if (!isModuleEnabled("videos")) {
+    notFound();
+  }
   const videos = await (prisma as any).shortVideo.findMany({
     where: { status: "published" },
     orderBy: { data_pub: "desc" },
   });
+
 
   return (
     <main className="min-h-screen bg-[#fafafa] py-12 md:py-24 animate-in fade-in slide-in-from-bottom-4 duration-1000">

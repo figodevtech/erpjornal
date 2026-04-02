@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Mic, Play, Clock, ChevronRight } from "lucide-react";
+import { isModuleEnabled } from "@/lib/config/modules";
+import { notFound } from "next/navigation";
+
 
 export const metadata = {
   title: "Podcasts | Revista Gestão",
@@ -8,10 +11,15 @@ export const metadata = {
 };
 
 export default async function PodcastsPage() {
+  if (!isModuleEnabled("podcasts")) {
+    notFound();
+  }
+
   const episodes = await (prisma as any).podcastEpisode.findMany({
     where: { status: "published" },
     orderBy: { data_pub: "desc" },
   });
+
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-12 md:py-20 animate-in fade-in duration-700">

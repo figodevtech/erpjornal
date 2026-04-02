@@ -52,7 +52,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
         const role = session?.user?.role;
         const editorialRoles = ["admin", "editor", "reporter", "juridico"];
         if (role && editorialRoles.includes(role)) {
-          router.push("/erp/artigos");
+          router.push("/erp");
         } else {
           router.refresh();
         }
@@ -121,7 +121,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
 
               {["admin", "editor", "reporter", "juridico"].includes(user.role) && (
                 <Link 
-                  href="/erp/artigos" 
+                  href="/erp" 
                   className="flex items-center gap-3 px-5 py-3 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 transition-all font-bold"
                   onClick={() => setIsOpen(false)}
                 >

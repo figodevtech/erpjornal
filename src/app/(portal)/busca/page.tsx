@@ -57,6 +57,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     author,
     sortBy: sortBy as any,
     dateRange: dateRange as any,
+    type: ["noticia"],
     limit: 100,
   });
 

@@ -14,17 +14,21 @@ export async function incrementArticleViews(articleId: string) {
   try {
     const key = redisKeys.articleViews(articleId);
     
-    // REDIS PIPELINE: Reduz latência de rede agrupando comandos
     const pipeline = redis.pipeline();
     pipeline.incr(key);
-    pipeline.zadd(redisKeys.popularArticles, { score: 1, member: articleId }); // Incrementa score no Sorted Set
+    pipeline.zincrby(redisKeys.popularArticles, 1, articleId);
     
-    const results = await pipeline.exec();
-    const newCount = results[0] as number;
+    const [results] = await Promise.all([
+      pipeline.exec(),
+      prisma.article.update({
+        where: { id: articleId },
+        data: { visualizacoes: { increment: 1 } }
+      })
+    ]);
 
-    logger.info({ articleId, count: newCount }, "Article view incremented [Redis Pipeline]");
-    
-    return newCount;
+    const newCount = results[0] as any;
+    logger.info({ articleId, count: newCount }, "Article view incremented [Redis + Postgres]");
+    return typeof newCount === 'number' ? newCount : (newCount[1] ?? 0);
   } catch (error) {
     logger.error({ articleId, error }, "Failed to increment article views");
     return null;

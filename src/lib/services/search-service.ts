@@ -60,14 +60,16 @@ export class SearchService {
       console.warn("Redis search cache error:", e);
     }
 
-    // 1. Buscas em Paralelo (Explora o Pool de Conexões do Prisma)
+    // 1. Buscas em Paralelo - Ativar apenas os tipos solicitados para economizar recursos e não poluir resultados
+    const searchTypes = options.type || ["noticia", "autor", "categoria", "politico", "podcast", "video"];
+    
     const [articles, categories, authors, politicians, podcasts, videos] = await Promise.all([
-      this.searchArticles(cleanQuery, options),
-      this.searchCategories(cleanQuery),
-      this.searchAuthors(cleanQuery),
-      this.searchPoliticians(cleanQuery),
-      this.searchPodcasts(cleanQuery),
-      this.searchVideos(cleanQuery)
+      searchTypes.includes("noticia") ? this.searchArticles(cleanQuery, options) : Promise.resolve([]),
+      searchTypes.includes("categoria") ? this.searchCategories(cleanQuery) : Promise.resolve([]),
+      searchTypes.includes("autor") ? this.searchAuthors(cleanQuery) : Promise.resolve([]),
+      searchTypes.includes("politico") ? this.searchPoliticians(cleanQuery) : Promise.resolve([]),
+      searchTypes.includes("podcast") ? this.searchPodcasts(cleanQuery) : Promise.resolve([]),
+      searchTypes.includes("video") ? this.searchVideos(cleanQuery) : Promise.resolve([])
     ]);
 
     // 2. Unificar e Rankear
@@ -147,6 +149,15 @@ export class SearchService {
       if (options.endDate) where.data_publicacao.lte = options.endDate;
     }
 
+    // Ordenação no banco para garantir que pegamos os Corretos no 'take'
+    const orderBy: any = {};
+    if (options.sortBy === "newest") {
+      orderBy.data_publicacao = "desc";
+    } else {
+      // Por padrão ou "relevance" (vistas)
+      orderBy.visualizacoes = "desc";
+    }
+
     const articles = await prisma.article.findMany({
       where,
       select: {
@@ -160,27 +171,35 @@ export class SearchService {
         categoria: { select: { nome: true } },
         autor: { select: { nome: true } }
       },
-      take: 50,
+      orderBy,
+      take: 100, // Aumentado para melhor rankeamento em memória depois
     });
 
     const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
 
     return articles.map((art) => {
       let score = 0;
+      const views = art.visualizacoes ?? 0;
+
       if (query) {
         const lowerTitle = art.titulo.toLowerCase();
         const lowerQuery = query.toLowerCase();
-        if (lowerTitle.includes(lowerQuery)) score += 30;
-        if (lowerTitle.startsWith(lowerQuery)) score += 20;
-        if (art.resumo?.toLowerCase().includes(lowerQuery)) score += 15;
+        
+        let matchScore = 0;
+        if (lowerTitle.includes(lowerQuery)) matchScore += 1000;
+        if (lowerTitle.startsWith(lowerQuery)) matchScore += 500;
+        if (art.resumo?.toLowerCase().includes(lowerQuery)) matchScore += 200;
+        
+        // "Relevantes são as mais vistas" - views é o fator base, matchScore é o boost de busca
+        score = views + matchScore;
       } else {
-        // Sem query: ordena por visualizações / frescor
-        score = art.visualizacoes ?? 0;
+        // Sem query: puramente visualizações
+        score = views;
       }
 
-      // Boost de frescor (20%)
+      // Boost de frescor (Cair no topo se for muito recente, mas sem quebrar as vistas)
       if (art.data_publicacao && art.data_publicacao > fortyEightHoursAgo) {
-        score *= 1.2;
+        score += (score * 0.2); // +20% para novidades
       }
 
       return {

@@ -20,6 +20,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'imagens.ebc.com.br',
+      },
+      {
+        protocol: 'https',
+        hostname: 'agenciabrasil.ebc.com.br',
       }
     ],
   },

@@ -11,13 +11,13 @@ interface Version {
   id: string;
   titulo: string;
   resumo: string | null;
-  corpo_texto: string;
-  status_id: string;
-  mudancas_resumo: string | null;
-  created_at: string; // From JSON.stringify
+  corpoTexto: string;
+  status: string;
+  resumoMudancas: string | null;
+  criadoEm: string; // From JSON.stringify
 }
 
-export function ArticleHistory({ articleId, currentContent }: { articleId: string, currentContent: string }) {
+export function ArticleHistory({ artigoId, currentContent }: { artigoId: string, currentContent: string }) {
   const [versions, setVersions] = useState<Version[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -27,7 +27,7 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
     async function loadVersions() {
       try {
         setLoading(true);
-        const data = await getArticleVersions(articleId);
+        const data = await getArticleVersions(artigoId);
         setVersions(data);
       } catch (error) {
         console.error("Erro ao carregar histórico:", error);
@@ -39,7 +39,7 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
     if (isOpen && versions.length === 0) {
       loadVersions();
     }
-  }, [isOpen, versions.length, articleId]);
+  }, [isOpen, versions.length, artigoId]);
 
   const selectedVersion = versions.find(v => v.id === selectedVersionId);
 
@@ -98,15 +98,15 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
                   >
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] uppercase font-bold tracking-widest text-[#002045]">
-                        {format(new Date(version.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        {format(new Date(version.criadoEm), "dd/MM/yyyy HH:mm", { locale: ptBR })}
                       </span>
                       <span className="text-xs font-medium text-gray-600 truncate">
-                        {version.mudancas_resumo || "Alteração genérica"}
+                        {version.resumoMudancas || "Alteração genérica"}
                       </span>
                       <span className={`text-[9px] w-fit px-1.5 py-0.5 rounded font-bold uppercase ${
-                        version.status_id === 'publicado' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
+                        version.status === 'publicado' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
                       }`}>
-                        {version.status_id}
+                        {version.status}
                       </span>
                     </div>
                   </button>
@@ -133,7 +133,7 @@ export function ArticleHistory({ articleId, currentContent }: { articleId: strin
                       <p className="text-xs text-gray-400 font-medium uppercase tracking-wider">
                         Mudanças detectadas (Vs Atual):
                       </p>
-                      {renderDiff(selectedVersion.corpo_texto, currentContent)}
+                      {renderDiff(selectedVersion.corpoTexto, currentContent)}
                     </div>
                   </>
                 ) : (

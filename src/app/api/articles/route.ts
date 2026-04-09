@@ -23,15 +23,15 @@ export async function GET(request: Request) {
     const skip = (page - 1) * limit;
 
     // Apenas listamos matérias oficiais que já chegaram no horário configurado
-    const whereClause: Prisma.ArticleWhereInput = {
-      status_id: ArticleStatus.publicado,
-      data_publicacao: {
+    const whereClause: Prisma.ArtigoWhereInput = {
+      status: ArticleStatus.publicado,
+      dataPublicacao: {
         lte: new Date(),
       },
     };
 
     // --- CAMADA DE CACHE REDIS ---
-    const cacheKey = redisKeys.articlesList(page, limit, categorySlug || undefined);
+    const cacheKey = redisKeys.artigosList(page, limit, categorySlug || undefined);
     
     try {
       const cachedData = await redis.get(cacheKey);
@@ -53,11 +53,11 @@ export async function GET(request: Request) {
     }
 
     // Processamento paralelo otimizado para não gargalar I/O
-    const [articles, totalCount] = await Promise.all([
-      prisma.article.findMany({
+    const [artigos, totalCount] = await Promise.all([
+      prisma.artigo.findMany({
         where: whereClause,
         orderBy: {
-          data_publicacao: "desc",
+          dataPublicacao: "desc",
         },
         skip,
         take: limit,
@@ -66,9 +66,9 @@ export async function GET(request: Request) {
           titulo: true,
           slug: true,
           resumo: true,
-          data_publicacao: true,
+          dataPublicacao: true,
           visualizacoes: true,
-          og_image_url: true,
+          urlImagemOg: true,
           categoria: {
             select: {
               id: true,
@@ -84,11 +84,11 @@ export async function GET(request: Request) {
           },
         },
       }),
-      prisma.article.count({ where: whereClause }),
+      prisma.artigo.count({ where: whereClause }),
     ]);
 
     const responseData = {
-      data: articles,
+      data: artigos,
       meta: {
         total: totalCount,
         page,
@@ -106,7 +106,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(responseData);
   } catch (error) {
-    console.error("GET /api/articles error:", error);
+    console.error("GET /api/artigos error:", error);
     return NextResponse.json(
       { error: "Erro interno ao processar listagem de artigos." },
       { status: 500 }

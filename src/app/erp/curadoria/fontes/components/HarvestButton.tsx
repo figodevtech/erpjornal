@@ -13,7 +13,13 @@ export function HarvestButton({ sourceId }: { sourceId: string }) {
     setLoading(true);
     try {
       const res = await harvestFeed(sourceId, limit);
-      toast.success(`${res.count} novos itens coletados! (Limite: ${limit})`);
+      if (res.count > 0) {
+        toast.success(`${res.count} novos itens coletados. (Limite: ${limit})`);
+      } else {
+        toast.info(
+          "Nenhum item novo foi importado. Isso acontece quando o feed ja foi lido antes ou nao expoe itens com link/guid valido."
+        );
+      }
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -22,7 +28,7 @@ export function HarvestButton({ sourceId }: { sourceId: string }) {
   }
 
   return (
-    <div className="flex items-center bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden h-[42px]">
+    <div className="flex h-[42px] items-center overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
       <div className="bg-gray-50 px-3 h-full flex items-center border-r border-gray-100">
         <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Limite</span>
       </div>
@@ -40,10 +46,11 @@ export function HarvestButton({ sourceId }: { sourceId: string }) {
       <button
         onClick={handleHarvest}
         disabled={loading}
-        title="Disparar Coleta"
-        className="px-4 h-full text-indigo-600 hover:bg-slate-900 hover:text-white transition-all active:bg-indigo-700 disabled:opacity-50 flex items-center justify-center"
+        title="Coletar agora"
+        className="flex h-full items-center justify-center gap-2 px-4 text-[10px] font-black uppercase tracking-widest text-indigo-600 transition-all hover:bg-slate-900 hover:text-white active:bg-indigo-700 disabled:opacity-50"
       >
         <RefreshCcw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+        <span>Coletar</span>
       </button>
     </div>
   );

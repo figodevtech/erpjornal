@@ -20,9 +20,9 @@ export default function TrendingSearches({ onSelect }: TrendingSearchesProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/articles/trending")
+    fetch("/api/artigos/trending")
       .then((r) => r.json())
-      .then((data) => setTrending(data.articles || []))
+      .then((data) => setTrending(data.artigos || []))
       .catch(() => setTrending([]))
       .finally(() => setLoading(false));
   }, []);
@@ -54,20 +54,20 @@ export default function TrendingSearches({ onSelect }: TrendingSearchesProps) {
         </h3>
       </div>
       <div className="flex flex-col gap-0.5 px-2">
-        {trending.map((article) => (
+        {trending.map((artigo) => (
           <Link
-            key={article.slug}
-            href={`/noticia/${article.slug}`}
-            onClick={() => onSelect(article.titulo)}
+            key={artigo.slug}
+            href={`/noticia/${artigo.slug}`}
+            onClick={() => onSelect(artigo.titulo)}
             className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 transition-colors group"
           >
             <TrendingUp className="w-3.5 h-3.5 text-red-700 flex-shrink-0" />
             <span className="text-[13px] font-bold text-gray-700 dark:text-gray-300 group-hover:text-red-700 transition-colors line-clamp-1 flex-1">
-              {article.titulo}
+              {artigo.titulo}
             </span>
             <span className="flex items-center gap-1 text-[10px] text-gray-400 font-bold flex-shrink-0">
               <Eye className="w-3 h-3" />
-              {article.visualizacoes.toLocaleString("pt-BR")}
+              {artigo.visualizacoes.toLocaleString("pt-BR")}
             </span>
           </Link>
         ))}

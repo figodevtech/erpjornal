@@ -11,8 +11,10 @@
 export function extractPlainTextFromHtml(html: string): string {
     if (!html) return "";
 
+    let clean = sanitizeHtmlForRender(html);
+
     // 1. Substitui tags comuns de bloco por quebra de linha para manter a pausabilidade natural
-    let clean = html
+    clean = clean
         .replace(/<\/p>/g, "\n\n")
         .replace(/<\/h1>|<\/h2>|<\/h3>|<\/h4>/g, ".\n\n")
         .replace(/<br\s*\/?>/g, "\n");
@@ -41,6 +43,20 @@ export function extractPlainTextFromHtml(html: string): string {
         .map(line => line.trim())
         .filter(line => line.length > 0)
         .join('\n\n');
+}
+
+export function sanitizeHtmlForRender(html: string): string {
+    if (!html) return "";
+
+    return html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
+        .replace(/\son\w+="[^"]*"/gi, "")
+        .replace(/\son\w+='[^']*'/gi, "")
+        .replace(/\sstyle="[^"]*"/gi, "")
+        .replace(/\sstyle='[^']*'/gi, "")
+        .replace(/\sclass="[^"]*"/gi, "")
+        .replace(/\sclass='[^']*'/gi, "");
 }
 
 /**

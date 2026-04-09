@@ -8,13 +8,13 @@ export const revalidate = 3600;
 export async function GET() {
   try {
     // Vercel Perf. Rule (Section 2 - Payload): Selecionar apenas campos estritamente necessários
-    const categories = await prisma.category.findMany({
+    const categories = await prisma.categoria.findMany({
       select: {
         id: true,
         nome: true,
         slug: true,
         cor: true,
-        parent_id: true,
+        categoriaPaiId: true,
       },
       orderBy: {
         nome: "asc"

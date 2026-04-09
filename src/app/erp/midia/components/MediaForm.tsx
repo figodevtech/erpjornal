@@ -11,19 +11,19 @@ interface MediaFormProps {
     url: string;
     nome: string;
     tipo: string;
-    mimetype?: string | null;
+    mimeType?: string | null;
     tamanho?: number | null;
-    direitos_autorais?: string | null;
-    tipo_licenca?: string | null;
+    direitosAutorais?: string | null;
+    tipoLicenca?: string | null;
     fonte?: string | null;
-    data_expiracao?: Date | null;
-    tags_ia?: unknown;
+    dataExpiracao?: Date | null;
+    tagsIa?: unknown;
   };
 }
 
 export default function MediaForm({ initialData }: MediaFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [tags, setTags] = useState<string[]>(initialData?.tags_ia as string[] || []);
+  const [tags, setTags] = useState<string[]>(initialData?.tagsIa as string[] || []);
   const [isSuggesting, setIsSuggesting] = useState(false);
 
   async function handleSuggestTags() {
@@ -51,13 +51,13 @@ export default function MediaForm({ initialData }: MediaFormProps) {
     const formData = new FormData(form);
     
     // Adiciona as tags ao formData
-    formData.append("tags_ia", JSON.stringify(tags));
+    formData.append("tagsIa", JSON.stringify(tags));
     
     startTransition(() => saveMedia(formData));
   }
 
-  const formatedExpiration = initialData?.data_expiracao
-    ? new Date(initialData.data_expiracao).toISOString().slice(0, 10)
+  const formatedExpiration = initialData?.dataExpiracao
+    ? new Date(initialData.dataExpiracao).toISOString().slice(0, 10)
     : "";
 
   return (
@@ -127,8 +127,8 @@ export default function MediaForm({ initialData }: MediaFormProps) {
                 Tipo de Licença
               </label>
               <select
-                name="tipo_licenca"
-                defaultValue={initialData?.tipo_licenca || ""}
+                name="tipoLicenca"
+                defaultValue={initialData?.tipoLicenca || ""}
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
               >
                 <option value="">Não definido</option>
@@ -146,7 +146,7 @@ export default function MediaForm({ initialData }: MediaFormProps) {
               </label>
               <input
                 type="date"
-                name="data_expiracao"
+                name="dataExpiracao"
                 defaultValue={formatedExpiration}
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
               />
@@ -157,8 +157,8 @@ export default function MediaForm({ initialData }: MediaFormProps) {
               </label>
               <input
                 type="text"
-                name="direitos_autorais"
-                defaultValue={initialData?.direitos_autorais || ""}
+                name="direitosAutorais"
+                defaultValue={initialData?.direitosAutorais || ""}
                 placeholder="Ex: © João Silva 2024"
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-rose-500 outline-none transition-all"
               />

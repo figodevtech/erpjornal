@@ -1,21 +1,26 @@
 "use server";
 
+import { exigirPermissao } from "@/lib/auth";
+
 export async function scrapeNews(url: string) {
+  await exigirPermissao("artigos:criar");
+
   try {
-    const res = await fetch(url, { 
+    const res = await fetch(url, {
       headers: { "User-Agent": "RevistaGestao-Bot/1.0" },
-      next: { revalidate: 0 }
+      next: { revalidate: 0 },
     });
-    
+
     if (!res.ok) throw new Error("Falha ao acessar URL");
     const html = await res.text();
 
-    // Regex simples para capturar metadados (fallback se não houver DOM parser no servidor Next básico)
-    const titleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) || 
-                       html.match(/<title>([^<]+)<\/title>/i);
-                       
-    const descMatch = html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i) || 
-                      html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i);
+    const titleMatch =
+      html.match(/<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i) ||
+      html.match(/<title>([^<]+)<\/title>/i);
+
+    const descMatch =
+      html.match(/<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i) ||
+      html.match(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/i);
 
     const urlObj = new URL(url);
     const domain = urlObj.hostname.replace("www.", "");

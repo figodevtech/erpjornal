@@ -18,7 +18,7 @@ export const getCachedCategories = unstable_cache(
     }
 
     // 2. Fallback para Database
-    const categories = await prisma.category.findMany({
+    const categories = await prisma.categoria.findMany({
       select: {
         id: true,
         nome: true,

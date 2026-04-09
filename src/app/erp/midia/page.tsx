@@ -1,114 +1,119 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Image, Plus, Film, FileText, AlertTriangle, Upload } from "lucide-react";
+import { AlertTriangle, FileText, Film, Image, Plus, Upload } from "lucide-react";
+
+import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 function MediaTypeIcon({ tipo }: { tipo: string }) {
-  if (tipo === "video") return <Film className="w-6 h-6 text-purple-500" />;
-  if (tipo === "document") return <FileText className="w-6 h-6 text-blue-500" />;
-  return <Image className="w-6 h-6 text-rose-500" />;
+  if (tipo === "video") return <Film className="h-6 w-6 text-purple-500" />;
+  if (tipo === "document") return <FileText className="h-6 w-6 text-blue-500" />;
+  return <Image className="h-6 w-6 text-rose-500" />;
 }
 
-function LicenseBadge({ tipo_licenca }: { tipo_licenca: string | null }) {
-  const color = tipo_licenca === "Livre"
-    ? "bg-green-50 text-green-700 border-green-200"
-    : tipo_licenca === "Pago"
-    ? "bg-amber-50 text-amber-700 border-amber-200"
-    : "bg-gray-50 text-gray-500 border-gray-200";
+function LicenseBadge({ tipoLicenca }: { tipoLicenca: string | null }) {
+  const color =
+    tipoLicenca === "Livre"
+      ? "bg-green-50 text-green-700 border-green-200"
+      : tipoLicenca === "Pago"
+        ? "bg-amber-50 text-amber-700 border-amber-200"
+        : "bg-gray-50 text-gray-500 border-gray-200";
   return (
-    <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded border ${color}`}>
-      {tipo_licenca || "Não definido"}
+    <span className={`rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${color}`}>
+      {tipoLicenca || "Nao definido"}
     </span>
   );
 }
 
 export default async function MidiaPage() {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/api/auth/signin");
+  const session = await exigirAlgumaPermissao(["midia:ler", "midia:criar", "midia:editar"]);
+  const podeCriar = temPermissao(session, "midia:criar");
+  const podeEditar = temPermissao(session, "midia:editar");
 
-  const medias = await prisma.media.findMany({
-    orderBy: { created_at: "desc" },
+  const medias = await prisma.midia.findMany({
+    orderBy: { criadoEm: "desc" },
   });
 
   const hoje = new Date();
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Biblioteca de Mídia</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {medias.length} ativo{medias.length !== 1 ? "s" : ""} cadastrado{medias.length !== 1 ? "s" : ""}
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Biblioteca de Midia</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {medias.length} ativo{medias.length !== 1 ? "s" : ""} cadastrado
+            {medias.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Link
-          href="/erp/midia/novo"
-          className="flex items-center gap-2 bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-rose-500 transition-all shadow-md hover:shadow-lg hover:-trangray-y-0.5 text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Novo Ativo
-        </Link>
-      </div>
-
-      {/* Grid */}
-      {medias.length === 0 ? (
-        <div className="py-32 text-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50">
-          <Upload className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-400">Nenhuma mídia cadastrada</h3>
-          <p className="text-gray-400 max-w-sm mx-auto mt-2 text-sm">
-            Adicione imagens, vídeos e documentos com metadados de licença e direitos autorais.
-          </p>
+        {podeCriar && (
           <Link
             href="/erp/midia/novo"
-            className="inline-flex items-center gap-2 mt-6 bg-rose-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-rose-500 transition-all text-sm"
+            className="flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-rose-500"
           >
-            <Plus className="w-4 h-4" /> Adicionar primeiro ativo
+            <Plus className="h-4 w-4" />
+            Novo Ativo
           </Link>
+        )}
+      </div>
+
+      {medias.length === 0 ? (
+        <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50 py-32 text-center">
+          <Upload className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+          <h3 className="text-xl font-bold text-gray-400">Nenhuma midia cadastrada</h3>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-gray-400">
+            Adicione imagens, videos e documentos com metadados de licenca e direitos autorais.
+          </p>
+          {podeCriar && (
+            <Link
+              href="/erp/midia/novo"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-rose-600 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-rose-500"
+            >
+              <Plus className="h-4 w-4" /> Adicionar primeiro ativo
+            </Link>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {medias.map((media) => {
-            const expirado = media.data_expiracao && new Date(media.data_expiracao) < hoje;
-            const expiraEmBreve = media.data_expiracao && !expirado &&
-              new Date(media.data_expiracao) < new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000);
+            const expirado = media.dataExpiracao && new Date(media.dataExpiracao) < hoje;
+            const expiraEmBreve =
+              media.dataExpiracao &&
+              !expirado &&
+              new Date(media.dataExpiracao) < new Date(hoje.getTime() + 30 * 24 * 60 * 60 * 1000);
 
             return (
               <div
                 key={media.id}
-                className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group"
+                className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all hover:shadow-md"
               >
-                {/* Preview */}
-                <div className="h-40 bg-gray-100 flex items-center justify-center relative overflow-hidden">
+                <div className="relative flex h-40 items-center justify-center overflow-hidden bg-gray-100">
                   {media.tipo === "image" && media.url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={media.url}
                       alt={media.nome}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
                     <MediaTypeIcon tipo={media.tipo} />
                   )}
                   {expirado && (
-                    <div className="absolute inset-0 bg-red-900/60 flex items-center justify-center">
-                      <span className="text-white font-black text-xs uppercase tracking-widest flex items-center gap-1">
-                        <AlertTriangle className="w-4 h-4" /> Licença Expirada
+                    <div className="absolute inset-0 flex items-center justify-center bg-red-900/60">
+                      <span className="flex items-center gap-1 text-xs font-black uppercase tracking-widest text-white">
+                        <AlertTriangle className="h-4 w-4" /> Licenca Expirada
                       </span>
                     </div>
                   )}
                 </div>
 
-                {/* Info */}
-                <div className="p-4 space-y-3">
+                <div className="space-y-3 p-4">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="font-bold text-gray-900 text-sm leading-tight">{media.nome}</p>
-                      <p className="text-[10px] text-gray-400 uppercase font-bold tracking-wider mt-0.5">{media.tipo}</p>
+                      <p className="text-sm font-bold leading-tight text-gray-900">{media.nome}</p>
+                      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                        {media.tipo}
+                      </p>
                     </div>
-                    <LicenseBadge tipo_licenca={media.tipo_licenca} />
+                    <LicenseBadge tipoLicenca={media.tipoLicenca} />
                   </div>
 
                   {media.fonte && (
@@ -116,29 +121,31 @@ export default async function MidiaPage() {
                       <span className="font-bold text-gray-400">Fonte:</span> {media.fonte}
                     </p>
                   )}
-                  {media.direitos_autorais && (
+                  {media.direitosAutorais && (
                     <p className="text-xs text-gray-500">
-                      <span className="font-bold text-gray-400">© </span> {media.direitos_autorais}
+                      <span className="font-bold text-gray-400">©</span> {media.direitosAutorais}
                     </p>
                   )}
 
-                  {(expiraEmBreve) && (
-                    <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-[11px] font-bold px-2.5 py-1.5 rounded-lg border border-amber-200">
-                      <AlertTriangle className="w-3.5 h-3.5" />
-                      Expira em: {new Date(media.data_expiracao!).toLocaleDateString("pt-BR")}
+                  {expiraEmBreve && (
+                    <div className="flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-bold text-amber-700">
+                      <AlertTriangle className="h-3.5 w-3.5" />
+                      Expira em: {new Date(media.dataExpiracao!).toLocaleDateString("pt-BR")}
                     </div>
                   )}
 
-                  <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                  <div className="flex items-center justify-between border-t border-gray-100 pt-3">
                     <span className="text-[10px] text-gray-400">
-                      {new Date(media.created_at).toLocaleDateString("pt-BR")}
+                      {new Date(media.criadoEm).toLocaleDateString("pt-BR")}
                     </span>
-                    <Link
-                      href={`/erp/midia/${media.id}/editar`}
-                      className="text-xs font-bold text-rose-600 hover:text-rose-700 transition-colors"
-                    >
-                      Editar
-                    </Link>
+                    {podeEditar && (
+                      <Link
+                        href={`/erp/midia/${media.id}/editar`}
+                        className="text-xs font-bold text-rose-600 transition-colors hover:text-rose-700"
+                      >
+                        Editar
+                      </Link>
+                    )}
                   </div>
                 </div>
               </div>
@@ -149,4 +156,3 @@ export default async function MidiaPage() {
     </div>
   );
 }
-

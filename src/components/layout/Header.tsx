@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCachedCategories } from "@/lib/data/categories";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { obterSessao } from "@/lib/auth";
+
 import AuthPortal from "@/components/auth/AuthPortal";
 import ThemeToggle from "./ThemeToggle";
 import SearchBar from "./SearchBar";
@@ -9,7 +9,7 @@ import { isModuleEnabled } from "@/lib/config/modules";
 
 
 export default async function Header() {
-  const session = await getServerSession(authOptions);
+  const session = await obterSessao();
   const categories = await getCachedCategories();
 
   const podcastsEnabled = isModuleEnabled("podcasts");

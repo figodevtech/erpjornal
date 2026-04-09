@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { ArticleStatus } from "@/lib/types/article-status";
 
-const CACHE_KEY = "trending:articles:v1";
+const CACHE_KEY = "trending:artigos:v1";
 const CACHE_TTL = 300; // 5 minutos
 
 export async function GET() {
@@ -12,10 +12,10 @@ export async function GET() {
     const cached = await redis.get(CACHE_KEY).catch(() => null);
     if (cached) return NextResponse.json(cached);
 
-    const articles = await prisma.article.findMany({
+    const artigos = await prisma.artigo.findMany({
       where: {
-        status_id: ArticleStatus.publicado,
-        data_publicacao: { lte: new Date() },
+        status: ArticleStatus.publicado,
+        dataPublicacao: { lte: new Date() },
         visualizacoes: { gt: 0 },
       },
       orderBy: { visualizacoes: "desc" },
@@ -29,7 +29,7 @@ export async function GET() {
     });
 
     const response = {
-      articles: articles.map((a) => ({
+      artigos: artigos.map((a) => ({
         slug: a.slug,
         titulo: a.titulo,
         visualizacoes: a.visualizacoes,
@@ -42,6 +42,6 @@ export async function GET() {
     return NextResponse.json(response);
   } catch (error) {
     console.error("Trending API error:", error);
-    return NextResponse.json({ articles: [] });
+    return NextResponse.json({ artigos: [] });
   }
 }

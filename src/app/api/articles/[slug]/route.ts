@@ -15,11 +15,11 @@ export async function GET(
     }
 
     // Busca detalhada apenas de matéria pública
-    const article = await prisma.article.findFirst({
+    const artigo = await prisma.artigo.findFirst({
       where: {
         slug,
-        status_id: ArticleStatus.publicado,
-        data_publicacao: {
+        status: ArticleStatus.publicado,
+        dataPublicacao: {
           lte: new Date(),
         },
       },
@@ -27,11 +27,11 @@ export async function GET(
         id: true,
         titulo: true,
         resumo: true,
-        corpo_texto: true,
+        corpoTexto: true,
         slug: true,
-        data_publicacao: true,
+        dataPublicacao: true,
         visualizacoes: true,
-        og_image_url: true,
+        urlImagemOg: true,
         categoria: {
           select: {
             nome: true,
@@ -47,20 +47,20 @@ export async function GET(
       }
     });
 
-    if (!article) {
+    if (!artigo) {
       return NextResponse.json({ error: "Matéria não encontrada ou indisponível" }, { status: 404 });
     }
 
     // Incrementa contagem de views de forma Background fire-and-forget (não-bloqueante na requisição principal)
-    prisma.article.update({
-      where: { id: article.id },
+    prisma.artigo.update({
+      where: { id: artigo.id },
       data: { visualizacoes: { increment: 1 } }
     }).catch(err => console.error("Falha silenciosa ao incrementar view da matéria:", err));
 
-    return NextResponse.json(article);
+    return NextResponse.json(artigo);
 
   } catch (error) {
-    console.error("GET /api/articles/[slug] error:", error);
+    console.error("GET /api/artigos/[slug] error:", error);
     return NextResponse.json({ error: "Erro interno no servidor ao consumir a matéria" }, { status: 500 });
   }
 }

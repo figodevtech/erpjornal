@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Moon, Sun, Monitor, ChevronDown } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/app/providers";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -26,7 +26,7 @@ export default function ThemeToggle() {
     return <div className="w-24 h-8 bg-gray-800/50 animate-pulse rounded-lg" />;
   }
 
-  const options = [
+  const options: Array<{ id: "light" | "dark" | "system"; label: string; icon: typeof Sun }> = [
     { id: "light", label: "Claro", icon: Sun },
     { id: "dark", label: "Escuro", icon: Moon },
     { id: "system", label: "Sistema", icon: Monitor },
@@ -38,7 +38,7 @@ export default function ThemeToggle() {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 text-gray-300 hover:text-white transition-all bg-transparent p-1 focus:outline-none group h-8 rounded-lg"
+        className="flex items-center gap-2 hover:text-white transition-all bg-transparent p-1 focus:outline-none group h-8 rounded-lg"
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="Selecionar tema"
@@ -49,16 +49,21 @@ export default function ThemeToggle() {
             {currentOption.label}
           </span>
         </div>
-        <ChevronDown 
-          className={`w-3.5 h-3.5 text-gray-500 group-hover:text-white transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+        <ChevronDown
+          className={`w-3.5 h-3.5 text-gray-500 group-hover:text-white transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {/* DROPDOWN CUSTOMIZADO (ESTILO LOGIN) */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-40 bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-[100] border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200 overflow-hidden transition-colors py-2">
+        <div className="absolute right-0 mt-3 w-40 bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-100 border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200 overflow-hidden transition-colors py-2">
           <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800 mb-1">
-            <p className="text-[9px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Tema Visual</p>
+            <p
+              className="text-[9px] font-black text-gnpx prisma generate
+ray-400 dark:text-gray-500 uppercase tracking-widest"
+            >
+              Tema Visual
+            </p>
           </div>
           {options.map((opt) => (
             <button
@@ -73,7 +78,7 @@ export default function ThemeToggle() {
                   : "text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-white"
               }`}
             >
-              <opt.icon className={`h-3.5 w-3.5 ${theme === opt.id ? 'text-white' : 'text-red-700 opacity-60'}`} />
+              <opt.icon className={`h-3.5 w-3.5 ${theme === opt.id ? "text-white" : "text-red-700 opacity-60"}`} />
               {opt.label}
             </button>
           ))}
@@ -82,4 +87,3 @@ export default function ThemeToggle() {
     </div>
   );
 }
-

@@ -63,7 +63,7 @@ export class SearchService {
     // 1. Buscas em Paralelo - Ativar apenas os tipos solicitados para economizar recursos e não poluir resultados
     const searchTypes = options.type || ["noticia", "autor", "categoria", "politico", "podcast", "video"];
     
-    const [articles, categories, authors, politicians, podcasts, videos] = await Promise.all([
+    const [artigos, categories, authors, politicians, podcasts, videos] = await Promise.all([
       searchTypes.includes("noticia") ? this.searchArticles(cleanQuery, options) : Promise.resolve([]),
       searchTypes.includes("categoria") ? this.searchCategories(cleanQuery) : Promise.resolve([]),
       searchTypes.includes("autor") ? this.searchAuthors(cleanQuery) : Promise.resolve([]),
@@ -74,7 +74,7 @@ export class SearchService {
 
     // 2. Unificar e Rankear
     let allResults: SearchResult[] = [
-      ...articles,
+      ...artigos,
       ...categories,
       ...authors,
       ...politicians,
@@ -106,7 +106,7 @@ export class SearchService {
   private static async searchArticles(query: string, options: SearchOptions): Promise<SearchResult[]> {
     const now = new Date();
     const where: any = {
-      status_id: ArticleStatus.publicado,
+      status: ArticleStatus.publicado,
     };
 
     // OR de texto apenas quando houver query
@@ -124,7 +124,7 @@ export class SearchService {
     if (options.author) {
       const isUUID = /^[0-9a-f-]{36}$/i.test(options.author);
       if (isUUID) {
-        where.autor_id = options.author;
+        where.autorId = options.author;
       } else {
         where.autor = { nome: { contains: options.author, mode: "insensitive" } };
       }
@@ -144,29 +144,29 @@ export class SearchService {
     }
 
     if (startDate || options.endDate) {
-      where.data_publicacao = {};
-      if (startDate) where.data_publicacao.gte = startDate;
-      if (options.endDate) where.data_publicacao.lte = options.endDate;
+      where.dataPublicacao = {};
+      if (startDate) where.dataPublicacao.gte = startDate;
+      if (options.endDate) where.dataPublicacao.lte = options.endDate;
     }
 
     // Ordenação no banco para garantir que pegamos os Corretos no 'take'
     const orderBy: any = {};
     if (options.sortBy === "newest") {
-      orderBy.data_publicacao = "desc";
+      orderBy.dataPublicacao = "desc";
     } else {
       // Por padrão ou "relevance" (vistas)
       orderBy.visualizacoes = "desc";
     }
 
-    const articles = await prisma.article.findMany({
+    const artigos = await prisma.artigo.findMany({
       where,
       select: {
         id: true,
         titulo: true,
         slug: true,
         resumo: true,
-        og_image_url: true,
-        data_publicacao: true,
+        urlImagemOg: true,
+        dataPublicacao: true,
         visualizacoes: true,
         categoria: { select: { nome: true } },
         autor: { select: { nome: true } }
@@ -177,7 +177,7 @@ export class SearchService {
 
     const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
 
-    return articles.map((art) => {
+    return artigos.map((art) => {
       let score = 0;
       const views = art.visualizacoes ?? 0;
 
@@ -198,7 +198,7 @@ export class SearchService {
       }
 
       // Boost de frescor (Cair no topo se for muito recente, mas sem quebrar as vistas)
-      if (art.data_publicacao && art.data_publicacao > fortyEightHoursAgo) {
+      if (art.dataPublicacao && art.dataPublicacao > fortyEightHoursAgo) {
         score += (score * 0.2); // +20% para novidades
       }
 
@@ -208,11 +208,11 @@ export class SearchService {
         title: art.titulo,
         subtitle: art.resumo || undefined,
         slug: art.slug,
-        image: art.og_image_url || undefined,
-        date: art.data_publicacao || undefined,
+        image: art.urlImagemOg || undefined,
+        date: art.dataPublicacao || undefined,
         metadata: {
           categoria: art.categoria?.nome,
-          autor: art.autor.nome,
+          autor: art.autor.nome || undefined,
         },
         score,
       };
@@ -220,7 +220,7 @@ export class SearchService {
   }
 
   private static async searchCategories(query: string): Promise<SearchResult[]> {
-    const categories = await prisma.category.findMany({
+    const categories = await prisma.categoria.findMany({
       where: { nome: { contains: query, mode: "insensitive" } },
       take: 5,
     });
@@ -235,10 +235,10 @@ export class SearchService {
   }
 
   private static async searchAuthors(query: string): Promise<SearchResult[]> {
-    const authors = await prisma.user.findMany({
+    const authors = await prisma.usuario.findMany({
       where: {
         nome: { contains: query, mode: "insensitive" },
-        articles_authored: { some: {} } // Somente quem tem artigos
+        artigosAutor: { some: {} } // Somente quem tem artigos
       },
       take: 5,
     });
@@ -246,14 +246,14 @@ export class SearchService {
     return authors.map((auth) => ({
       id: auth.id,
       type: "autor",
-      title: auth.nome,
+      title: auth.nome || "Autor",
       slug: auth.id, // Auth não tem slug no DB atual, usaremos ID ou nome slugificado
       score: 35,
     }));
   }
 
   private static async searchPoliticians(query: string): Promise<SearchResult[]> {
-    const politicians = await prisma.politician.findMany({
+    const politicians = await prisma.politico.findMany({
       where: { nome: { contains: query, mode: "insensitive" } },
       take: 5,
     });
@@ -263,7 +263,7 @@ export class SearchService {
       type: "politico",
       title: p.nome,
       slug: p.id,
-      image: p.foto_url || undefined,
+      image: p.urlFoto || undefined,
       metadata: {
         partido: p.partido || undefined,
       },
@@ -272,7 +272,7 @@ export class SearchService {
   }
 
   private static async searchPodcasts(query: string): Promise<SearchResult[]> {
-    const episodes = await prisma.podcastEpisode.findMany({
+    const episodes = await prisma.episodioPodcast.findMany({
       where: {
         OR: [
           { titulo: { contains: query, mode: "insensitive" } },
@@ -287,15 +287,15 @@ export class SearchService {
       type: "podcast",
       title: ep.titulo,
       slug: ep.slug,
-      image: ep.capa_url || undefined,
-      date: ep.data_pub,
+      image: ep.urlCapa || undefined,
+      date: ep.dataPub,
       metadata: { duracao: ep.duracao || undefined },
       score: 15,
     }));
   }
 
   private static async searchVideos(query: string): Promise<SearchResult[]> {
-    const videos = await prisma.shortVideo.findMany({
+    const videos = await prisma.videoCurto.findMany({
       where: {
         OR: [
           { titulo: { contains: query, mode: "insensitive" } },
@@ -310,8 +310,8 @@ export class SearchService {
       type: "video",
       title: v.titulo,
       slug: v.slug,
-      image: v.capa_url || undefined,
-      date: v.data_pub,
+      image: v.urlCapa || undefined,
+      date: v.dataPub,
       metadata: { duracao: v.duracao || undefined },
       score: 15,
     }));
@@ -323,9 +323,9 @@ export class SearchService {
   static async getSuggestions(query: string): Promise<string[]> {
     if (query.length < 3) return [];
 
-    const suggestions = await prisma.article.findMany({
+    const suggestions = await prisma.artigo.findMany({
       where: {
-        status_id: ArticleStatus.publicado,
+        status: ArticleStatus.publicado,
         titulo: { contains: query, mode: "insensitive" },
       },
       take: 8,

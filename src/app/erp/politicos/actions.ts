@@ -1,9 +1,13 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+import { exigirPermissao } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+
 export async function upsertPolitician(formData: FormData) {
+  await exigirPermissao("politicos:gerir");
+
   const id = formData.get("id") as string | null;
   const nome = formData.get("nome") as string;
   const cargo = formData.get("cargo") as string;
@@ -12,7 +16,7 @@ export async function upsertPolitician(formData: FormData) {
   const estado = formData.get("estado") as string;
   const biografia = formData.get("biografia") as string;
 
-  if (!nome) throw new Error("O nome é obrigatório.");
+  if (!nome) throw new Error("O nome e obrigatorio.");
 
   const data = {
     nome,
@@ -24,21 +28,23 @@ export async function upsertPolitician(formData: FormData) {
   };
 
   if (id) {
-    await prisma.politician.update({ where: { id }, data });
+    await prisma.politico.update({ where: { id }, data });
   } else {
-    await prisma.politician.create({ data });
+    await prisma.politico.create({ data });
   }
 
   revalidatePath("/erp/politicos");
 }
 
 export async function deletePolitician(id: string) {
-  await prisma.politician.delete({ where: { id } });
+  await exigirPermissao("politicos:gerir");
+  await prisma.politico.delete({ where: { id } });
   revalidatePath("/erp/politicos");
 }
 
 export async function getPoliticians() {
-  return await prisma.politician.findMany({
-    orderBy: { nome: "asc" }
+  await exigirPermissao("politicos:gerir");
+  return prisma.politico.findMany({
+    orderBy: { nome: "asc" },
   });
 }

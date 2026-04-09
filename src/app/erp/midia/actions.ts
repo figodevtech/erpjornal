@@ -1,61 +1,67 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+import { exigirAlgumaPermissao, exigirPermissao } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function suggestMediaTags(nome: string, tipo: string) {
-  // Simulação de IA: em produção chamaria Gemini/Vision API
+  await exigirAlgumaPermissao(["midia:criar", "midia:editar"]);
+
   const lowerNome = nome.toLowerCase();
-  const tags = ["Revista Gestão", "Mídia Oficial", tipo];
-  
-  if (lowerNome.includes("plenário") || lowerNome.includes("câmara")) tags.push("Legislativo", "Política", "Parlamento");
-  if (lowerNome.includes("votação") || lowerNome.includes("urna")) tags.push("Democracia", "Eleições");
-  if (lowerNome.includes("governo") || lowerNome.includes("ministro")) tags.push("Executivo", "Governo Federal");
-  
+  const tags = ["Revista Gestao", "Midia Oficial", tipo];
+
+  if (lowerNome.includes("plenario") || lowerNome.includes("camara")) {
+    tags.push("Legislativo", "Politica", "Parlamento");
+  }
+  if (lowerNome.includes("votacao") || lowerNome.includes("urna")) {
+    tags.push("Democracia", "Eleicoes");
+  }
+  if (lowerNome.includes("governo") || lowerNome.includes("ministro")) {
+    tags.push("Executivo", "Governo Federal");
+  }
+
   return Array.from(new Set(tags));
 }
 
 export async function saveMedia(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) throw new Error("Não autorizado");
-
   const id = formData.get("id") as string | null;
+  await (id ? exigirPermissao("midia:editar") : exigirPermissao("midia:criar"));
+
   const url = formData.get("url") as string;
   const nome = formData.get("nome") as string;
   const tipo = formData.get("tipo") as string;
-  const mimetype = formData.get("mimetype") as string || null;
+  const mimeType = (formData.get("mimeType") as string) || null;
   const tamanhoRaw = formData.get("tamanho") as string;
   const tamanho = tamanhoRaw ? parseInt(tamanhoRaw) : null;
-  const direitos_autorais = formData.get("direitos_autorais") as string || null;
-  const tipo_licenca = formData.get("tipo_licenca") as string || null;
-  const fonte = formData.get("fonte") as string || null;
-  const dataExpiracaoRaw = formData.get("data_expiracao") as string;
-  const data_expiracao = dataExpiracaoRaw ? new Date(dataExpiracaoRaw) : null;
-  const tags_ia_raw = formData.get("tags_ia") as string; // JSON string from hidden field or input
-  const tags_ia = tags_ia_raw ? JSON.parse(tags_ia_raw) : null;
+  const direitosAutorais = (formData.get("direitosAutorais") as string) || null;
+  const tipoLicenca = (formData.get("tipoLicenca") as string) || null;
+  const fonte = (formData.get("fonte") as string) || null;
+  const dataExpiracaoRaw = formData.get("dataExpiracao") as string;
+  const dataExpiracao = dataExpiracaoRaw ? new Date(dataExpiracaoRaw) : null;
+  const tagsIaRaw = formData.get("tagsIa") as string;
+  const tagsIa = tagsIaRaw ? JSON.parse(tagsIaRaw) : null;
 
-  if (!url || !nome || !tipo) throw new Error("Campos obrigatórios ausentes");
+  if (!url || !nome || !tipo) throw new Error("Campos obrigatorios ausentes");
 
   const data = {
     url,
     nome,
     tipo,
-    mimetype,
+    mimeType,
     tamanho,
-    direitos_autorais,
-    tipo_licenca,
+    direitosAutorais,
+    tipoLicenca,
     fonte,
-    data_expiracao,
-    tags_ia,
+    dataExpiracao,
+    tagsIa,
   };
 
   if (id) {
-    await prisma.media.update({ where: { id }, data });
+    await prisma.midia.update({ where: { id }, data });
   } else {
-    await prisma.media.create({ data });
+    await prisma.midia.create({ data });
   }
 
   revalidatePath("/erp/midia");

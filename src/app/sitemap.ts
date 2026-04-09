@@ -28,30 +28,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   // 2. Busca de artigos indexáveis (Publicados)
-  const articles = await prisma.article.findMany({
+  const artigos = await prisma.artigo.findMany({
     where: {
-      status_id: ArticleStatus.publicado,
-      data_publicacao: { lte: new Date() },
+      status: ArticleStatus.publicado,
+      dataPublicacao: { lte: new Date() },
     },
     select: {
       slug: true,
-      updated_at: true,
+      atualizadoEm: true,
     },
     orderBy: {
-      data_publicacao: "desc",
+      dataPublicacao: "desc",
     },
     take: 5000, 
   });
 
-  const articlePgs: MetadataRoute.Sitemap = articles.map((art) => ({
+  const artigoPgs: MetadataRoute.Sitemap = artigos.map((art) => ({
     url: `${baseUrl}/noticia/${art.slug}`,
-    lastModified: art.updated_at,
+    lastModified: art.atualizadoEm,
     changeFrequency: "weekly",
     priority: 0.8,
   }));
 
   // 3. Busca de Categorias
-  const categories = await prisma.category.findMany({
+  const categories = await prisma.categoria.findMany({
     select: { slug: true }
   });
 
@@ -63,26 +63,26 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // 4. Políticos (Perfil individual)
-  const politicians = await prisma.politician.findMany({
-    select: { id: true, updated_at: true }
+  const politicians = await prisma.politico.findMany({
+    select: { id: true, atualizadoEm: true }
   });
 
   const politicianPgs: MetadataRoute.Sitemap = politicians.map((pol) => ({
     url: `${baseUrl}/politicos/${pol.id}`,
-    lastModified: pol.updated_at,
+    lastModified: pol.atualizadoEm,
     changeFrequency: "weekly",
     priority: 0.9,
   }));
 
   // 5. Podcast Episodes
-  const podcasts = await prisma.podcastEpisode.findMany({
+  const podcasts = await prisma.episodioPodcast.findMany({
     where: { status: 'published' },
-    select: { slug: true, updated_at: true }
+    select: { slug: true, atualizadoEm: true }
   });
 
   const podcastPgs: MetadataRoute.Sitemap = podcasts.map((pod) => ({
     url: `${baseUrl}/podcasts/${pod.slug}`,
-    lastModified: pod.updated_at,
+    lastModified: pod.atualizadoEm,
     changeFrequency: "monthly",
     priority: 0.7,
   }));
@@ -91,7 +91,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...standardPgs, 
     ...categoryPgs, 
     ...politicianPgs, 
-    ...articlePgs,
+    ...artigoPgs,
     ...podcastPgs
   ];
 }

@@ -9,17 +9,17 @@ import { User, Calendar, Tag } from "lucide-react";
 interface Article {
   id: string;
   titulo: string;
-  status_id: string;
+  status: string;
   autor?: { nome: string } | null;
   categoria?: { nome: string; cor?: string | null } | null;
-  created_at: Date;
+  criadoEm: Date;
 }
 
 interface KanbanCardProps {
-  article: Article;
+  artigo: Article;
 }
 
-export function KanbanCard({ article }: KanbanCardProps) {
+export function KanbanCard({ artigo }: KanbanCardProps) {
   const {
     attributes,
     listeners,
@@ -27,7 +27,7 @@ export function KanbanCard({ article }: KanbanCardProps) {
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: article.id });
+  } = useSortable({ id: artigo.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -43,35 +43,35 @@ export function KanbanCard({ article }: KanbanCardProps) {
       {...attributes}
       {...listeners}
       className={`bg-white rounded-lg p-4 shadow-sm group hover:shadow-md transition-all cursor-grab active:cursor-grabbing border-l-4 ${
-        article.categoria?.cor ? `border-[${article.categoria.cor}]` : "border-gray-200"
+        artigo.categoria?.cor ? `border-[${artigo.categoria.cor}]` : "border-gray-200"
       }`}
     >
       <div className="space-y-3">
-        {article.categoria && (
+        {artigo.categoria && (
           <div 
             className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider"
             style={{ 
-              backgroundColor: article.categoria.cor + '20' || '#f1f5f9',
-              color: article.categoria.cor || '#475569' 
+              backgroundColor: artigo.categoria.cor + '20' || '#f1f5f9',
+              color: artigo.categoria.cor || '#475569' 
             }}
           >
             <Tag className="w-2 h-2 mr-1" />
-            {article.categoria.nome}
+            {artigo.categoria.nome}
           </div>
         )}
         
         <h4 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 font-serif">
-          {article.titulo}
+          {artigo.titulo}
         </h4>
         
         <div className="flex flex-col gap-1.5 mt-2">
           <div className="flex items-center text-[11px] text-gray-500 font-medium">
             <User className="w-3 h-3 mr-1" />
-            {article.autor?.nome || "Sem autor"}
+            {artigo.autor?.nome || "Sem autor"}
           </div>
           <div className="flex items-center text-[11px] text-gray-500">
             <Calendar className="w-3 h-3 mr-1" />
-            {format(new Date(article.created_at), "dd/MM/yyyy", { locale: ptBR })}
+            {format(new Date(artigo.criadoEm), "dd/MM/yyyy", { locale: ptBR })}
           </div>
         </div>
       </div>

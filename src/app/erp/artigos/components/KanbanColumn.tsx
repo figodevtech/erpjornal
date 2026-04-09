@@ -19,19 +19,19 @@ export const COLUMNS = [
 interface Article {
   id: string;
   titulo: string;
-  status_id: ArticleStatus;
+  status: ArticleStatus;
   autor?: { nome: string } | null;
   categoria?: { nome: string; cor?: string | null } | null;
-  created_at: Date;
+  criadoEm: Date;
 }
 
 interface KanbanColumnProps {
   id: string;
   label: string;
-  articles: Article[];
+  artigos: Article[];
 }
 
-export function KanbanColumn({ id, label, articles }: KanbanColumnProps) {
+export function KanbanColumn({ id, label, artigos }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({ id });
 
   return (
@@ -39,7 +39,7 @@ export function KanbanColumn({ id, label, articles }: KanbanColumnProps) {
       <div className="p-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm">
         <h3 className="font-bold text-gray-800 text-sm flex items-center">
           <span className="mr-2 uppercase tracking-widest text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-bold">
-            {articles.length}
+            {artigos.length}
           </span>
           {label}
         </h3>
@@ -59,15 +59,15 @@ export function KanbanColumn({ id, label, articles }: KanbanColumnProps) {
       >
         <SortableContext
           id={id}
-          items={articles.map((a) => a.id)}
+          items={artigos.map((a) => a.id)}
           strategy={verticalListSortingStrategy}
         >
-          {articles.map((article) => (
-            <KanbanCard key={article.id} article={article} />
+          {artigos.map((artigo) => (
+            <KanbanCard key={artigo.id} artigo={artigo} />
           ))}
         </SortableContext>
         
-        {articles.length === 0 && (
+        {artigos.length === 0 && (
           <div className="flex items-center justify-center h-full border-2 border-dashed border-gray-200 rounded-lg p-4">
              <span className="text-xs text-gray-400 font-medium italic">Sem itens</span>
           </div>

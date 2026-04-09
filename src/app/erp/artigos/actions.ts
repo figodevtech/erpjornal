@@ -1,147 +1,162 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+import { exigirAlgumaPermissao, exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 
 export async function saveArticle(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) throw new Error("Não autorizado");
-
   const id = formData.get("id") as string | null;
+  const session = id
+    ? await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"])
+    : await exigirPermissao("artigos:criar");
+
   const titulo = formData.get("titulo") as string;
   const slug = formData.get("slug") as string;
   const resumo = formData.get("resumo") as string;
-  const corpo_texto = formData.get("corpo_texto") as string;
-  const categoria_id = formData.get("categoria_id") as string;
-  const status_id = formData.get("status_id") as string;
-  const legal_notes = formData.get("legal_notes") as string || null;
-  const legal_status = formData.get("legal_status") as string || "pendente";
-  const rawDate = formData.get("data_publicacao") as string;
-  const publish_channels = formData.getAll("publish_channels") as string[];
-  const source_url = formData.get("source_url") as string || null;
-  const external_author = formData.get("external_author") as string || null;
+  const corpoTexto = formData.get("corpoTexto") as string;
+  const categoriaId = formData.get("categoriaId") as string;
+  const status = formData.get("status") as string;
+  const observacoesLegais = (formData.get("observacoesLegais") as string) || null;
+  const statusLegal = (formData.get("statusLegal") as string) || "pendente";
+  const rawDate = formData.get("dataPublicacao") as string;
+  const canaisPublicacao = formData.getAll("canaisPublicacao") as string[];
+  const urlFonte = (formData.get("urlFonte") as string) || null;
+  const autorExterno = (formData.get("autorExterno") as string) || null;
 
-  if (!titulo || !slug || !corpo_texto) {
-    throw new Error("Campos obrigatórios ausentes");
+  if (!titulo || !slug || !corpoTexto) {
+    throw new Error("Campos obrigatorios ausentes");
   }
 
   const role = session.user.role;
-  let finalStatus = status_id;
+  const podePublicar = temPermissao(session, "artigos:publicar");
+  const podeEditar = temPermissao(session, "artigos:editar");
+  let finalStatus = status;
 
-  // RBAC no Backend: Reporter só salva rascunho ou manda pra revisão.
-  if (status_id === "publicado" && role !== "admin" && role !== "editor") {
+  if (status === "publicado" && !podePublicar) {
     finalStatus = "em_revisao";
   }
 
-  let data_publicacao: Date | null = null;
+  let dataPublicacao: Date | null = null;
   if (finalStatus === "publicado") {
     if (rawDate) {
       const parsedDate = new Date(rawDate);
-      data_publicacao = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
+      dataPublicacao = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
     } else {
-      // Se já estava publicado, mantém a data original, senão define como agora
-      data_publicacao = null; // Será tratado no update/create
+      dataPublicacao = null;
     }
   }
 
-  const regiao = formData.get("regiao") as string || "Nacional";
-  const estadoRaw = formData.get("estado") as string || "";
+  const regiao = (formData.get("regiao") as string) || "Nacional";
+  const estadoRaw = (formData.get("estado") as string) || "";
   const estado = estadoRaw.toUpperCase().slice(0, 2) || null;
 
   const data = {
     titulo,
     slug,
     resumo,
-    corpo_texto,
-    status_id: finalStatus as ArticleStatus,
-    categoria_id: categoria_id || null,
-    legal_notes,
-    legal_status,
-    data_publicacao,
+    corpoTexto,
+    status: finalStatus as ArticleStatus,
+    categoriaId: categoriaId || null,
+    observacoesLegais,
+    statusLegal,
+    dataPublicacao,
     regiao,
     estado,
-    publish_channels,
-    source_url,
-    external_author,
+    canaisPublicacao,
+    urlFonte,
+    autorExterno,
   };
 
-  const factChecksCount = parseInt(formData.get("fact_checks_count") as string || "0");
+  const factChecksCount = parseInt((formData.get("checagensFato_count") as string) || "0");
   const factChecks = [];
   for (let i = 0; i < factChecksCount; i++) {
-    const fonte_url = formData.get(`fact_check_url_${i}`) as string;
-    const documento_url = formData.get(`fact_check_doc_${i}`) as string;
-    const status_verificacao = formData.get(`fact_check_status_${i}`) as string;
-    if (fonte_url || documento_url) {
-      factChecks.push({ fonte_url, documento_url, status_verificacao });
+    const urlFonteChecagem = formData.get(`fact_check_url_${i}`) as string;
+    const urlDocumento = formData.get(`fact_check_doc_${i}`) as string;
+    const statusVerificacao = formData.get(`fact_check_status_${i}`) as string;
+    if (urlFonteChecagem || urlDocumento) {
+      factChecks.push({ urlFonte: urlFonteChecagem, urlDocumento, statusVerificacao });
     }
   }
 
-  const politicoIds = formData.getAll("politico_ids") as string[];
+  const politicoIds = formData.getAll("politicoIds") as string[];
 
   if (id) {
-    const existing = await prisma.article.findUnique({ where: { id } });
-    if (!existing) throw new Error("Artigo não encontrado");
-    
-    // Validando edição: Repórter não pode alterar artigo alheio
-    if (role === "reporter" && existing.autor_id !== session.user.id) {
-      throw new Error("Você não tem permissão para editar este artigo.");
+    if (!podeEditar && !podePublicar) {
+      throw new Error("Voce nao tem permissao para editar este artigo.");
     }
-    
-    // Determina a data final de publicação
-    let finalPublishDate = data_publicacao;
+
+    const existing = await prisma.artigo.findUnique({ where: { id } });
+    if (!existing) throw new Error("Artigo nao encontrado");
+
+    if (role === "reporter" && existing.autorId !== session.user.id) {
+      throw new Error("Voce nao tem permissao para editar este artigo.");
+    }
+
+    let finalPublishDate = dataPublicacao;
     if (finalStatus === "publicado" && !finalPublishDate) {
-      finalPublishDate = (existing as any).data_publicacao || new Date();
+      finalPublishDate = existing.dataPublicacao || new Date();
     } else if (finalStatus !== "publicado") {
       finalPublishDate = null;
     }
 
-    await prisma.article.update({
+    await prisma.artigo.update({
       where: { id },
       data: {
         ...data,
-        data_publicacao: finalPublishDate,
-        fact_checks: {
+        dataPublicacao: finalPublishDate,
+        checagensFato: {
           deleteMany: {},
-          create: factChecks
+          create: factChecks,
         },
-        politicos: {
-          set: politicoIds.map(pid => ({ id: pid }))
-        }
-      }
+        artigosPoliticos: {
+          deleteMany: {},
+          create: politicoIds.map((politicoId) => ({
+            politico: {
+              connect: { id: politicoId },
+            },
+          })),
+        },
+      },
     });
 
-    await prisma.actionLog.create({
+    await prisma.logAcao.create({
       data: {
-        user_id: session.user.id,
-        acao: finalStatus === "publicado" && existing.status_id !== "publicado" ? "PUBLICACAO" : "EDICAO",
-        article_id: id,
-      }
+        usuarioId: session.user.id,
+        acao:
+          finalStatus === "publicado" && existing.status !== "publicado"
+            ? "PUBLICACAO"
+            : "EDICAO",
+        artigoId: id,
+      },
     });
   } else {
-    const novoArtigo = await prisma.article.create({
+    const novoArtigo = await prisma.artigo.create({
       data: {
         ...data,
-        data_publicacao: finalStatus === "publicado" ? (data_publicacao || new Date()) : null,
-        autor_id: session.user.id,
-        fact_checks: {
-          create: factChecks
+        dataPublicacao: finalStatus === "publicado" ? dataPublicacao || new Date() : null,
+        autorId: session.user.id,
+        checagensFato: {
+          create: factChecks,
         },
-        politicos: {
-          connect: politicoIds.map(pid => ({ id: pid }))
-        }
-      }
+        artigosPoliticos: {
+          create: politicoIds.map((politicoId) => ({
+            politico: {
+              connect: { id: politicoId },
+            },
+          })),
+        },
+      },
     });
 
-    await prisma.actionLog.create({
+    await prisma.logAcao.create({
       data: {
-        user_id: session.user.id,
+        usuarioId: session.user.id,
         acao: finalStatus === "publicado" ? "CRIACAO_E_PUBLICACAO" : "CRIACAO",
-        article_id: novoArtigo.id,
-      }
+        artigoId: novoArtigo.id,
+      },
     });
   }
 
@@ -153,58 +168,59 @@ export async function saveArticle(formData: FormData) {
 }
 
 export async function updateArticleStatus(id: string, newStatus: ArticleStatus) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) throw new Error("Não autorizado");
+  const session = await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
 
-  const article = await prisma.article.findUnique({
+  const artigo = await prisma.artigo.findUnique({
     where: { id },
-    select: { 
-      status_id: true, 
-      autor_id: true,
+    select: {
+      status: true,
+      autorId: true,
       titulo: true,
       resumo: true,
-      corpo_texto: true,
-      data_publicacao: true
-    }
+      corpoTexto: true,
+      dataPublicacao: true,
+    },
   });
 
-  if (!article) throw new Error("Artigo não encontrado");
+  if (!artigo) throw new Error("Artigo nao encontrado");
 
-  // RBAC Básico: Repórter não pode mover para "publicado"
-  const role = session.user.role;
-  if (newStatus === "publicado" && role !== "admin" && role !== "editor") {
-    throw new Error("Você não tem permissão para publicar.");
+  const podePublicar = temPermissao(session, "artigos:publicar");
+  const podeEditar = temPermissao(session, "artigos:editar");
+
+  if (newStatus === "publicado" && !podePublicar) {
+    throw new Error("Voce nao tem permissao para publicar.");
   }
 
-  // Salvar snapshot da versão atual antes de mudar o status (Versionamento M2-PLUS-T2)
-  await prisma.articleVersion.create({
+  if (newStatus !== "publicado" && !podeEditar) {
+    throw new Error("Voce nao tem permissao para alterar o fluxo editorial.");
+  }
+
+  await prisma.versaoArtigo.create({
     data: {
-      article_id: id,
-      titulo: article.titulo,
-      resumo: article.resumo,
-      corpo_texto: article.corpo_texto,
-      status_id: article.status_id,
-      user_id: session.user.id,
-      mudancas_resumo: `Mudança de status via Kanban para: ${newStatus}`,
-    }
+      artigoId: id,
+      titulo: artigo.titulo,
+      resumo: artigo.resumo,
+      corpoTexto: artigo.corpoTexto,
+      status: artigo.status,
+      usuarioId: session.user.id,
+      resumoMudancas: `Mudanca de status via Kanban para: ${newStatus}`,
+    },
   });
 
-  await prisma.article.update({
+  await prisma.artigo.update({
     where: { id },
-    data: { 
-      status_id: newStatus,
-      data_publicacao: newStatus === "publicado" 
-        ? (article.data_publicacao || new Date()) 
-        : null
-    }
+    data: {
+      status: newStatus,
+      dataPublicacao: newStatus === "publicado" ? artigo.dataPublicacao || new Date() : null,
+    },
   });
 
-  await prisma.actionLog.create({
+  await prisma.logAcao.create({
     data: {
-      user_id: session.user.id,
-      acao: `MOVER_KANBAN: ${article.status_id} -> ${newStatus}`,
-      article_id: id,
-    }
+      usuarioId: session.user.id,
+      acao: `MOVER_KANBAN: ${artigo.status} -> ${newStatus}`,
+      artigoId: id,
+    },
   });
 
   revalidatePath("/erp/artigos");
@@ -214,38 +230,31 @@ export async function updateArticleStatus(id: string, newStatus: ArticleStatus) 
   revalidatePath("/categoria/[slug]", "page");
 }
 
-export async function updateArticleAuthor(articleId: string, newAuthorId: string) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) throw new Error("Não autorizado");
+export async function updateArticleAuthor(artigoId: string, newAuthorId: string) {
+  const session = await exigirPermissao("artigos:editar");
 
-  const role = session.user.role;
-  if (role !== "admin" && role !== "editor") {
-    throw new Error("Apenas editores ou administradores podem atribuir pautas.");
-  }
-
-  await prisma.article.update({
-    where: { id: articleId },
-    data: { autor_id: newAuthorId }
+  await prisma.artigo.update({
+    where: { id: artigoId },
+    data: { autorId: newAuthorId },
   });
 
-  await prisma.actionLog.create({
+  await prisma.logAcao.create({
     data: {
-      user_id: session.user.id,
+      usuarioId: session.user.id,
       acao: `ATRIBUIR_AUTOR: ${newAuthorId}`,
-      article_id: articleId,
-    }
+      artigoId,
+    },
   });
 
   revalidatePath("/erp/artigos/kanban");
 }
 
-export async function getArticleVersions(articleId: string) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) throw new Error("Não autorizado");
+export async function getArticleVersions(artigoId: string) {
+  await exigirAlgumaPermissao(["artigos:ler", "artigos:editar", "artigos:publicar"]);
 
-  const versions = await prisma.articleVersion.findMany({
-    where: { article_id: articleId },
-    orderBy: { created_at: "desc" }
+  const versions = await prisma.versaoArtigo.findMany({
+    where: { artigoId },
+    orderBy: { criadoEm: "desc" },
   });
 
   return JSON.parse(JSON.stringify(versions));

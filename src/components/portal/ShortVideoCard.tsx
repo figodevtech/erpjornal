@@ -8,8 +8,8 @@ interface ShortVideoCardProps {
   video: {
     id: string;
     titulo: string;
-    video_url: string;
-    capa_url?: string | null;
+    urlVideo: string;
+    urlCapa?: string | null;
     descricao?: string | null;
     duracao?: number | null;
   };
@@ -78,8 +78,8 @@ export default function ShortVideoCard({ video }: ShortVideoCardProps) {
     >
       <video
         ref={videoRef}
-        src={video.video_url}
-        poster={video.capa_url || undefined}
+        src={video.urlVideo}
+        poster={video.urlCapa || undefined}
         loop
         muted={isMuted}
         playsInline

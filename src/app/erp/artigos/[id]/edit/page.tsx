@@ -1,5 +1,5 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { exigirAlgumaPermissao } from "@/lib/auth";
+
 import { prisma } from "@/lib/prisma";
 import ArticleForm, { InitialData } from "../../components/ArticleForm";
 import Link from "next/link";
@@ -7,35 +7,47 @@ import { redirect } from "next/navigation";
 
 // Next.js 15 exige Promise on params
 export default async function EditarArtigoPage({ params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/api/auth/signin");
+  const session = await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
 
   const resolvedParams = await params;
   const id = resolvedParams.id;
 
-  const article = await prisma.article.findUnique({
+  const artigoBase = await prisma.artigo.findUnique({
     where: { id },
     include: {
-      fact_checks: true,
-      politicos: { select: { id: true } }
-    }
-  }) as unknown as InitialData;
+      checagensFato: true,
+      artigosPoliticos: {
+        select: {
+          politico: {
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
 
-  if (!article) {
+  const artigo = artigoBase
+    ? ({
+        ...artigoBase,
+        politicos: artigoBase.artigosPoliticos.map((item) => item.politico),
+      } as unknown as InitialData)
+    : null;
+
+  if (!artigo) {
     redirect("/erp/artigos");
   }
 
   // Prevenção Rigorosa de Edição se Reporter tentar editar artigo de outros
-  if (session.user.role === "reporter" && article.autor_id !== session.user.id) {
+  if (session.user.role === "reporter" && artigo.autorId !== session.user.id) {
     redirect("/erp/artigos");
   }
 
-  const politicians = await prisma.politician.findMany({
+  const politicians = await prisma.politico.findMany({
     select: { id: true, nome: true, partido: true },
     orderBy: { nome: "asc" }
   });
 
-  const categories = await prisma.category.findMany({
+  const categories = await prisma.categoria.findMany({
     select: { id: true, nome: true },
     orderBy: { nome: "asc" }
   });
@@ -58,7 +70,7 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <ArticleForm categories={categories} politicians={politicians} userRole={session.user.role} initialData={article} />
+      <ArticleForm categories={categories} politicians={politicians} userRole={session.user.role} initialData={artigo} />
     </div>
   );
 }

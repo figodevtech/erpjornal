@@ -1,9 +1,10 @@
-import { prisma } from "@/lib/prisma";
-import Link from "next/link";
-import Image from "next/image";
-import { Search, ChevronRight, User, Calendar } from "lucide-react";
-import { SearchService } from "@/lib/services/search-service";
 import SearchFilters from "@/components/search/SearchFilters";
+import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
+import { prisma } from "@/lib/prisma";
+import { SearchService } from "@/lib/services/search-service";
+import Image from "next/image";
+import Link from "next/link";
+import { Calendar, ChevronRight, Search, User } from "lucide-react";
 import { Suspense } from "react";
 
 export const dynamic = "force-dynamic";
@@ -22,37 +23,34 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
   const { q: query, category, author, sortBy = "relevance", dateRange = "all" } = params;
 
-  // Metadados para os filtros laterais
   const [categories, authors] = await Promise.all([
-    prisma.category.findMany({ select: { id: true, nome: true, slug: true }, orderBy: { nome: "asc" } }),
-    prisma.user.findMany({
-      where: { articles_authored: { some: {} } },
+    prisma.categoria.findMany({ select: { id: true, nome: true, slug: true }, orderBy: { nome: "asc" } }),
+    prisma.usuario.findMany({
+      where: { artigosAutor: { some: {} } },
       select: { id: true, nome: true },
       orderBy: { nome: "asc" },
     }),
   ]);
 
-  // Tela vazia apenas quando não há nenhum parâmetro de busca/filtro
   if (!query && !author && !category) {
     return (
-      <main className="w-full bg-white dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-300">
-        <div className="max-w-7xl mx-auto px-4 py-32 text-center animate-in fade-in slide-in-from-bottom-5">
-          <div className="w-24 h-24 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-8 border-2 border-gray-200 dark:border-gray-800">
-            <Search className="w-10 h-10 text-gray-300" strokeWidth={1} />
+      <main className="min-h-screen w-full bg-white text-gray-900 transition-colors duration-300 dark:bg-gray-950 dark:text-gray-100">
+        <div className="mx-auto max-w-7xl px-4 py-32 text-center animate-in fade-in slide-in-from-bottom-5">
+          <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full border-2 border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-900">
+            <Search className="h-10 w-10 text-gray-300" strokeWidth={1} />
           </div>
-          <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-gray-100 tracking-tighter uppercase leading-none mb-6">
+          <h1 className="mb-6 text-4xl font-black uppercase leading-none tracking-tighter text-gray-900 dark:text-gray-100 md:text-6xl">
             Explore o acervo da <br />
-            <span className="text-red-700">Revista Gestão</span>
+            <span className="text-red-700">Revista Gestao</span>
           </h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto font-medium">
-            Busque por notícias, temas, articulistas, políticos e tendências que moldam o Brasil e o Mundo.
+          <p className="mx-auto max-w-2xl text-xl font-medium text-gray-600 dark:text-gray-400">
+            Busque por noticias, temas, articulistas, politicos e tendencias que moldam o Brasil e o mundo.
           </p>
         </div>
       </main>
     );
   }
 
-  // Busca unificada via SearchService
   const { results: allResults } = await SearchService.search({
     query: query || "",
     category,
@@ -63,7 +61,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     limit: 100,
   });
 
-  const articles = allResults.filter((r) => r.type === "noticia");
+  const artigos = allResults.filter((r) => r.type === "noticia");
 
   const highlight = (text: string) => {
     if (!query) return text;
@@ -72,96 +70,104 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       <>
         {parts.map((part, i) =>
           part.toLowerCase() === query.toLowerCase() ? (
-            <mark key={i} className="bg-red-100 dark:bg-red-900/40 text-red-950 dark:text-red-100 px-0.5 rounded-sm">
+            <mark key={i} className="rounded-sm bg-red-100 px-0.5 text-red-950 dark:bg-red-900/40 dark:text-red-100">
               {part}
             </mark>
           ) : (
             part
-          )
+          ),
         )}
       </>
     );
   };
 
-  // Nome do autor selecionado (para exibir no badge)
   const selectedAuthorName = author
     ? authors.find((a) => a.id === author)?.nome || "Autor"
     : null;
 
   return (
-    <main className="w-full bg-white dark:bg-gray-950 min-h-screen text-gray-900 dark:text-gray-100 transition-colors duration-300">
-      {/* Header Contextual */}
-      <div className="bg-gray-50 dark:bg-gray-900/50 border-b border-gray-200 dark:border-gray-800 py-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500 mb-6">
-            <Link href="/">Home</Link>
-            <ChevronRight className="w-3 h-3" />
-            <span className="text-red-700">Busca</span>
-          </nav>
-          <h1 className="text-4xl md:text-6xl font-black text-gray-900 dark:text-gray-100 tracking-tighter uppercase leading-none">
-            {query ? (
-              <>Resultados para <span className="text-red-700 italic">&ldquo;{query}&rdquo;</span></>
-            ) : category ? (
-              <>Editoria: <span className="text-red-700 italic">{category}</span></>
-            ) : selectedAuthorName ? (
-              <>Matérias de <span className="text-red-700 italic">{selectedAuthorName}</span></>
-            ) : (
-              <>Explorando <span className="text-red-700 italic">Arquivos</span></>
-            )}
-          </h1>
-          <div className="flex flex-wrap items-center gap-3 mt-6">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-black text-gray-900 dark:text-gray-100">{articles.length}</span>
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-500">Ocorrências</span>
-            </div>
-            {category && (
-              <span className="bg-red-700 text-white px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full">
-                Editoria: {category}
-              </span>
-            )}
-            {selectedAuthorName && (
-              <span className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full flex items-center gap-1.5">
-                <User className="w-3 h-3" />
-                {selectedAuthorName}
-              </span>
-            )}
+    <main className="min-h-screen w-full bg-white text-gray-900 transition-colors duration-300 dark:bg-gray-950 dark:text-gray-100">
+      <PortalSectionHeader
+        eyebrow="Busca"
+        title={
+          query ? (
+            <>
+              Resultados para <span className="italic text-red-700">"{query}"</span>
+            </>
+          ) : category ? (
+            <>
+              Editoria <span className="italic text-red-700">{category}</span>
+            </>
+          ) : selectedAuthorName ? (
+            <>
+              Materias de <span className="italic text-red-700">{selectedAuthorName}</span>
+            </>
+          ) : (
+            <>
+              Explorando <span className="italic text-red-700">arquivos</span>
+            </>
+          )
+        }
+        description="Filtre o acervo editorial por editoria, autor e relevancia para encontrar rapidamente o que importa."
+        badge={
+          <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-right shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <span className="block text-2xl font-black text-gray-950 dark:text-gray-50">{artigos.length}</span>
+            <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Ocorrencias</span>
           </div>
-        </div>
-      </div>
+        }
+      >
+        <nav className="mb-1 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-500">
+          <Link href="/">Home</Link>
+          <ChevronRight className="h-3 w-3" />
+          <span className="text-red-700">Busca</span>
+        </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col lg:flex-row gap-12">
-          {/* Filtros */}
-          <Suspense fallback={<div className="w-72 h-96 bg-gray-100 dark:bg-gray-900 animate-pulse rounded-2xl" />}>
+        <div className="flex flex-wrap items-center gap-3">
+          {category && (
+            <span className="rounded-full bg-red-700 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white">
+              Editoria: {category}
+            </span>
+          )}
+          {selectedAuthorName && (
+            <span className="flex items-center gap-1.5 rounded-full bg-gray-900 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white dark:bg-white dark:text-gray-900">
+              <User className="h-3 w-3" />
+              {selectedAuthorName}
+            </span>
+          )}
+        </div>
+      </PortalSectionHeader>
+
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-12 lg:flex-row">
+          <Suspense fallback={<div className="h-96 w-72 rounded-2xl bg-gray-100 animate-pulse dark:bg-gray-900" />}>
             <SearchFilters
               categories={categories.map((c) => ({ id: c.id, nome: c.nome, slug: c.slug }))}
-              authors={authors.map((a) => ({ id: a.id, nome: a.nome }))}
+              authors={authors.filter((a) => !!a.nome).map((a) => ({ id: a.id, nome: a.nome! }))}
             />
           </Suspense>
 
-          {/* Lista de Resultados */}
           <div className="flex-1">
-            {articles.length === 0 ? (
-              <div className="py-24 text-center bg-gray-50 dark:bg-gray-900/20 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem]">
-                <div className="w-20 h-20 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                  <Search className="w-8 h-8 text-gray-300" />
+            {artigos.length === 0 ? (
+              <div className="rounded-[2rem] border-2 border-dashed border-gray-200 bg-gray-50 py-24 text-center dark:border-gray-800 dark:bg-gray-900/20">
+                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-sm dark:bg-gray-800">
+                  <Search className="h-8 w-8 text-gray-300" />
                 </div>
-                <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100 uppercase tracking-tight">
+                <h3 className="text-2xl font-black uppercase tracking-tight text-gray-900 dark:text-gray-100">
                   Nenhuma pauta encontrada
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mt-2 max-w-md mx-auto">
-                  Não encontramos correspondências para sua busca com os filtros selecionados. Tente ajustar os critérios ou buscar termos mais genéricos.
+                <p className="mx-auto mt-2 max-w-md text-gray-600 dark:text-gray-400">
+                  Nao encontramos correspondencias para sua busca com os filtros selecionados.
                 </p>
-                <div className="flex flex-wrap justify-center gap-4 mt-10">
+                <div className="mt-10 flex flex-wrap justify-center gap-4">
                   <Link
                     href="/"
-                    className="px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-black uppercase tracking-widest rounded-xl transition-all hover:scale-105 active:scale-95"
+                    className="rounded-xl bg-gray-900 px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 hover:scale-105 dark:bg-white dark:text-gray-900"
                   >
-                    Ir para a Home
+                    Ir para a home
                   </Link>
                   <Link
                     href="/busca"
-                    className="px-8 py-3 bg-red-700 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-all hover:scale-105 active:scale-95"
+                    className="rounded-xl bg-red-700 px-8 py-3 text-xs font-black uppercase tracking-widest text-white transition-all active:scale-95 hover:scale-105"
                   >
                     Limpar filtros
                   </Link>
@@ -169,56 +175,56 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               </div>
             ) : (
               <div className="space-y-12">
-                {articles.map((art) => (
+                {artigos.map((art) => (
                   <article
                     key={art.id}
-                    className="group relative flex flex-col md:flex-row gap-8 pb-12 border-b border-gray-100 dark:border-gray-800 last:border-0 last:pb-0"
+                    className="group relative flex flex-col gap-8 border-b border-gray-100 pb-12 last:border-0 last:pb-0 dark:border-gray-800 md:flex-row"
                   >
                     <Link
                       href={`/noticia/${art.slug}`}
-                      className="md:w-72 lg:w-80 h-48 sm:h-56 bg-gray-100 dark:bg-gray-900 rounded-xl overflow-hidden relative border border-gray-200 dark:border-gray-800 flex-shrink-0"
+                      className="relative h-48 flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-gray-900 md:h-56 md:w-72 lg:w-80"
                     >
                       {art.image ? (
                         <Image
                           src={art.image}
                           alt={art.title}
                           fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-700"
+                          className="object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-200 dark:text-gray-800 transform group-hover:scale-110 transition-transform">
-                          <Search className="w-12 h-12" />
+                        <div className="flex h-full w-full items-center justify-center text-gray-200 transition-transform group-hover:scale-110 dark:text-gray-800">
+                          <Search className="h-12 w-12" />
                         </div>
                       )}
                       {art.metadata?.categoria && (
-                        <div className="absolute top-4 left-4 z-10">
-                          <span className="bg-red-700 text-white text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded shadow-xl">
+                        <div className="absolute left-4 top-4 z-10">
+                          <span className="rounded bg-red-700 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-xl">
                             {art.metadata.categoria}
                           </span>
                         </div>
                       )}
                     </Link>
 
-                    <div className="flex-1 flex flex-col pt-1">
-                      <div className="flex items-center gap-4 mb-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                    <div className="flex flex-1 flex-col pt-1">
+                      <div className="mb-4 flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
                         <div className="flex items-center gap-1.5">
-                          <Calendar className="w-3 h-3 text-red-700" />
-                          {art.date ? new Date(art.date).toLocaleDateString("pt-BR") : "Data indisponível"}
+                          <Calendar className="h-3 w-3 text-red-700" />
+                          {art.date ? new Date(art.date).toLocaleDateString("pt-BR") : "Data indisponivel"}
                         </div>
                         <div className="flex items-center gap-1.5">
-                          <User className="w-3 h-3 text-red-700" />
-                          Por {art.metadata?.autor || "Redação"}
+                          <User className="h-3 w-3 text-red-700" />
+                          Por {art.metadata?.autor || "Redacao"}
                         </div>
                       </div>
 
                       <Link href={`/noticia/${art.slug}`}>
-                        <h2 className="text-2xl md:text-3xl font-black text-gray-950 dark:text-gray-100 leading-[1.1] group-hover:text-red-700 transition-colors duration-300 mb-4 line-clamp-3">
+                        <h2 className="mb-4 line-clamp-3 text-2xl font-black leading-[1.1] text-gray-950 transition-colors duration-300 group-hover:text-red-700 dark:text-gray-100 md:text-3xl">
                           {highlight(art.title)}
                         </h2>
                       </Link>
 
                       {art.subtitle && (
-                        <p className="text-[15px] md:text-[17px] text-gray-700 dark:text-gray-400 leading-relaxed font-medium line-clamp-2 mb-6">
+                        <p className="mb-6 line-clamp-2 text-[15px] font-medium leading-relaxed text-gray-700 dark:text-gray-400 md:text-[17px]">
                           {highlight(art.subtitle)}
                         </p>
                       )}
@@ -226,10 +232,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       <div className="mt-auto flex items-center gap-6">
                         <Link
                           href={`/noticia/${art.slug}`}
-                          className="text-[11px] font-black uppercase tracking-widest text-red-700 flex items-center gap-2 group/btn"
+                          className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-red-700 group/btn"
                         >
-                          Ler matéria completa
-                          <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                          Ler materia completa
+                          <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                         </Link>
                       </div>
                     </div>

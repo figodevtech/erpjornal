@@ -1,84 +1,96 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Mic, Play, Plus, Clock, Tag, Calendar } from "lucide-react";
+import { Calendar, Clock, Mic, Plus, Tag } from "lucide-react";
+
+import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function PodcastsERPPage() {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/api/auth/signin");
+  const session = await exigirAlgumaPermissao(["podcasts:ler", "podcasts:criar", "podcasts:editar"]);
+  const podeCriar = temPermissao(session, "podcasts:criar");
+  const podeEditar = temPermissao(session, "podcasts:editar");
 
   const episodes = await (prisma as any).podcastEpisode.findMany({
-    orderBy: { data_pub: "desc" },
+    orderBy: { dataPub: "desc" },
   });
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Podcast: Podcasts</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {episodes.length} episódios no total.
-          </p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Podcast: Podcasts</h1>
+          <p className="mt-1 text-sm text-gray-500">{episodes.length} episodios no total.</p>
         </div>
-        <Link
-          href="/erp/podcasts/novo"
-          className="flex items-center gap-2 bg-purple-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-purple-500 transition-all shadow-md text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Novo Episódio
-        </Link>
+        {podeCriar && (
+          <Link
+            href="/erp/podcasts/novo"
+            className="flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-purple-500"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Episodio
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-4">
         {episodes.map((ep: any) => (
-          <div key={ep.id} className="bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-md transition-all flex items-center gap-6 group">
-            <div className="w-16 h-16 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
-               {ep.capa_url ? (
-                 <img src={ep.capa_url} alt={ep.titulo} className="w-full h-full object-cover rounded-xl" />
-               ) : (
-                 <Mic className="w-8 h-8 text-purple-600" />
-               )}
+          <div
+            key={ep.id}
+            className="group flex items-center gap-6 rounded-2xl border border-gray-200 bg-white p-5 transition-all hover:shadow-md"
+          >
+            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-purple-100">
+              {ep.urlCapa ? (
+                <img src={ep.urlCapa} alt={ep.titulo} className="h-full w-full rounded-xl object-cover" />
+              ) : (
+                <Mic className="h-8 w-8 text-purple-600" />
+              )}
             </div>
-            
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${ep.status === "published" ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-50 text-gray-400 border-gray-200"}`}>
+
+            <div className="min-w-0 flex-1">
+              <div className="mb-1 flex items-center gap-2">
+                <span
+                  className={`rounded border px-2 py-0.5 text-[10px] font-bold uppercase ${
+                    ep.status === "published"
+                      ? "border-green-200 bg-green-50 text-green-700"
+                      : "border-gray-200 bg-gray-50 text-gray-400"
+                  }`}
+                >
                   {ep.status}
                 </span>
                 <span className="text-gray-300">·</span>
-                <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                   <Calendar className="w-3 h-3" /> {new Date(ep.data_pub).toLocaleDateString("pt-BR")}
+                <span className="flex items-center gap-1 text-[10px] text-gray-400">
+                  <Calendar className="h-3 w-3" /> {new Date(ep.dataPub).toLocaleDateString("pt-BR")}
                 </span>
               </div>
-              <h3 className="font-bold text-gray-900 group-hover:text-purple-600 transition-colors truncate">{ep.titulo}</h3>
-              <div className="flex items-center gap-4 mt-2 text-[11px] text-gray-400">
-                 <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {Math.floor((ep.duracao || 0) / 60)} min
-                 </span>
-                 <span className="flex items-center gap-1">
-                    <Tag className="w-3 h-3" /> {ep.tags.slice(0, 3).join(", ")}
-                 </span>
+              <h3 className="truncate font-bold text-gray-900 transition-colors group-hover:text-purple-600">
+                {ep.titulo}
+              </h3>
+              <div className="mt-2 flex items-center gap-4 text-[11px] text-gray-400">
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3 w-3" /> {Math.floor((ep.duracao || 0) / 60)} min
+                </span>
+                <span className="flex items-center gap-1">
+                  <Tag className="h-3 w-3" /> {ep.tags.slice(0, 3).join(", ")}
+                </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-               <Link href={`/erp/podcasts/${ep.id}/editar`} className="text-xs font-bold text-purple-600 hover:text-purple-700 p-2">
-                 Editar
-               </Link>
+              {podeEditar && (
+                <Link href={`/erp/podcasts/${ep.id}/editar`} className="p-2 text-xs font-bold text-purple-600 hover:text-purple-700">
+                  Editar
+                </Link>
+              )}
             </div>
           </div>
         ))}
 
         {episodes.length === 0 && (
-          <div className="py-20 text-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50">
-             <Mic className="w-12 h-12 text-gray-200 mx-auto mb-4" />
-             <p className="text-gray-400 font-medium">Nenhum episódio de podcast ainda.</p>
+          <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50 py-20 text-center">
+            <Mic className="mx-auto mb-4 h-12 w-12 text-gray-200" />
+            <p className="font-medium text-gray-400">Nenhum episodio de podcast ainda.</p>
           </div>
         )}
       </div>
     </div>
   );
 }
-

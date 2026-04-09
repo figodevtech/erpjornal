@@ -112,7 +112,7 @@ export function FactCheckManager({ initialData = [] }: { initialData?: FactCheck
       </div>
       
       {/* Campo auxiliar para saber quantos items temos */}
-      <input type="hidden" name="fact_checks_count" value={items.length} />
+      <input type="hidden" name="checagensFato_count" value={items.length} />
     </div>
   );
 }

@@ -8,7 +8,7 @@ import { User, Calendar, Tag, Share2, Printer, Bookmark } from "lucide-react";
 interface ArticlePreviewProps {
   titulo: string;
   resumo?: string | null;
-  corpo_texto: string;
+  corpoTexto: string;
   categoria?: string;
   autor?: string;
   data?: Date | null;
@@ -19,7 +19,7 @@ interface ArticlePreviewProps {
 export function ArticlePreview({
   titulo,
   resumo,
-  corpo_texto,
+  corpoTexto,
   categoria,
   autor = "Equipe Revista Gestão",
   data,
@@ -107,7 +107,7 @@ export function ArticlePreview({
             prose-blockquote:border-l-blue-600 prose-blockquote:bg-blue-50/50 prose-blockquote:p-8 prose-blockquote:rounded-r-3xl
             prose-a:text-blue-600 prose-a:font-bold prose-a:no-underline hover:prose-a:underline
             selection:bg-indigo-100 selection:text-indigo-900"
-          dangerouslySetInnerHTML={{ __html: corpo_texto || "<p className='text-gray-300 italic'>O conteúdo da notícia aparecerá aqui...</p>" }}
+          dangerouslySetInnerHTML={{ __html: corpoTexto || "<p className='text-gray-300 italic'>O conteúdo da notícia aparecerá aqui...</p>" }}
         />
 
         {/* Footer/Tags */}

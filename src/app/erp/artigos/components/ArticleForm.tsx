@@ -13,20 +13,20 @@ export interface InitialData {
   titulo: string;
   slug: string;
   resumo: string | null;
-  corpo_texto: string;
-  categoria_id: string | null;
-  status_id: string;
-  legal_notes: string | null;
-  legal_status: string;
-  data_publicacao: Date | null;
-  fact_checks?: { id: string, fonte_url: string, documento_url: string, status_verificacao: string }[];
+  corpoTexto: string;
+  categoriaId: string | null;
+  status: string;
+  observacoesLegais: string | null;
+  statusLegal: string;
+  dataPublicacao: Date | null;
+  checagensFato?: { id: string, fonte_url: string, documento_url: string, status_verificacao: string }[];
   politicos?: { id: string }[];
   regiao: string | null;
   estado: string | null;
-  autor_id?: string;
-  publish_channels?: string[];
-  source_url?: string | null;
-  external_author?: string | null;
+  autorId?: string;
+  canaisPublicacao?: string[];
+  urlFonte?: string | null;
+  autorExterno?: string | null;
 }
 
 interface Politician {
@@ -67,25 +67,25 @@ export default function ArticleForm({ categories, politicians, userRole, initial
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   // Inicia com o status do banco, ou "rascunho"
-  const [statusInput, setStatusInput] = useState(initialData?.status_id || "rascunho");
-  const [currentText, setCurrentText] = useState(initialData?.corpo_texto || "");
+  const [statusInput, setStatusInput] = useState(initialData?.status || "rascunho");
+  const [currentText, setCurrentText] = useState(initialData?.corpoTexto || "");
   const [currentTitle, setCurrentTitle] = useState(initialData?.titulo || "");
   const [currentResumo, setCurrentResumo] = useState(initialData?.resumo || "");
   const [importUrl, setImportUrl] = useState("");
   const [isImporting, setIsImporting] = useState(false);
-  const [sourceUrl, setSourceUrl] = useState(initialData?.source_url || "");
-  const [externalAuthor, setExternalAuthor] = useState(initialData?.external_author || "");
+  const [sourceUrl, setSourceUrl] = useState(initialData?.urlFonte || "");
+  const [externalAuthor, setExternalAuthor] = useState(initialData?.autorExterno || "");
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [viewMode, setViewMode] = useState<"edit" | "preview" | "split">("edit");
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
-  const [selectedCategoryId, setSelectedCategoryId] = useState(initialData?.categoria_id || "");
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initialData?.categoriaId || "");
 
   const formatSlug = (val: string) => {
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
   };
 
-  const formatedDate = initialData?.data_publicacao 
-    ? new Date(initialData.data_publicacao.getTime() - initialData.data_publicacao.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  const formatedDate = initialData?.dataPublicacao 
+    ? new Date(initialData.dataPublicacao.getTime() - initialData.dataPublicacao.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
     : "";
 
   const handleAiRefactor = async (e: React.MouseEvent) => {
@@ -276,10 +276,10 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                 content={currentText} 
                 onChange={setCurrentText} 
               />
-              <input type="hidden" name="corpo_texto" value={currentText} required />
+              <input type="hidden" name="corpoTexto" value={currentText} required />
             </div>
 
-            <FactCheckManager initialData={initialData?.fact_checks} />
+            <FactCheckManager initialData={initialData?.checagensFato} />
           </div>
 
           {viewMode === "split" ? (
@@ -291,7 +291,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                   <ArticlePreview 
                     titulo={currentTitle}
                     resumo={currentResumo}
-                    corpo_texto={currentText}
+                    corpoTexto={currentText}
                     categoria={categories.find(c => c.id === selectedCategoryId)?.nome}
                     regiao={initialData?.regiao}
                     estado={initialData?.estado}
@@ -311,7 +311,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
                     <select 
-                      name="categoria_id" 
+                      name="categoriaId" 
                       value={selectedCategoryId}
                       onChange={(e) => setSelectedCategoryId(e.target.value)}
                       className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
@@ -326,7 +326,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status do Workflow</label>
                   <select 
-                    name="status_id" 
+                    name="status" 
                     value={statusInput}
                     onChange={(e) => setStatusInput(e.target.value)}
                     className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
@@ -342,7 +342,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                     <label className="block text-sm font-medium text-gray-700 mb-2">Agendamento (Opcional)</label>
                     <input 
                       type="datetime-local" 
-                      name="data_publicacao" 
+                      name="dataPublicacao" 
                       defaultValue={formatedDate}
                       className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
                     />
@@ -365,7 +365,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                     <label key={p.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors group">
                       <input 
                         type="checkbox" 
-                        name="politico_ids" 
+                        name="politicoIds" 
                         value={p.id}
                         defaultChecked={initialData?.politicos?.some((item) => item.id === p.id)}
                         className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 transition-all"
@@ -429,7 +429,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                       <Globe className="w-3 h-3" /> Portal/Autor Original
                     </label>
                     <input 
-                      name="external_author" 
+                      name="autorExterno" 
                       placeholder="Ex: CNN Brasil, G1, Folha"
                       value={externalAuthor}
                       onChange={(e) => setExternalAuthor(e.target.value)}
@@ -441,7 +441,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                       <LinkIcon className="w-3 h-3" /> Link da Fonte Original
                     </label>
                     <input 
-                      name="source_url" 
+                      name="urlFonte" 
                       placeholder="URL completa para crédito"
                       value={sourceUrl}
                       onChange={(e) => setSourceUrl(e.target.value)}
@@ -468,9 +468,9 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                     <label key={channel.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl cursor-pointer border border-transparent hover:border-gray-200 transition-all group">
                       <input 
                         type="checkbox" 
-                        name="publish_channels" 
+                        name="canaisPublicacao" 
                         value={channel.id}
-                        defaultChecked={initialData?.publish_channels?.includes(channel.id) || (!initialData && channel.id === "portal")}
+                        defaultChecked={initialData?.canaisPublicacao?.includes(channel.id) || (!initialData && channel.id === "portal")}
                         className="w-5 h-5 text-indigo-600 border-gray-300 rounded-lg focus:ring-indigo-500 transition-all"
                       />
                       <div className="flex flex-col">
@@ -495,8 +495,8 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                   <div>
                     <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-sans">Status Legal</label>
                     <select 
-                      name="legal_status" 
-                      defaultValue={initialData?.legal_status || "pendente"}
+                      name="statusLegal" 
+                      defaultValue={initialData?.statusLegal || "pendente"}
                       disabled={userRole === "reporter"}
                       className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm disabled:bg-gray-50 disabled:cursor-not-allowed"
                     >
@@ -510,9 +510,9 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                   <div>
                     <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-sans">Notas Jurídicas</label>
                     <textarea 
-                      name="legal_notes" 
+                      name="observacoesLegais" 
                       rows={3}
-                      defaultValue={initialData?.legal_notes || ""}
+                      defaultValue={initialData?.observacoesLegais || ""}
                       readOnly={userRole === "reporter"}
                       className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm resize-none disabled:bg-gray-50 placeholder:italic"
                       placeholder="Observações do departamento jurídico..."
@@ -575,7 +575,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
             <ArticlePreview 
               titulo={currentTitle}
               resumo={currentResumo}
-              corpo_texto={currentText}
+              corpoTexto={currentText}
               categoria={categories.find(c => c.id === selectedCategoryId)?.nome}
               regiao={initialData?.regiao}
               estado={initialData?.estado}
@@ -585,7 +585,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
       )}
 
       {initialData?.id && viewMode === "edit" && (
-        <ArticleHistory articleId={initialData.id} currentContent={currentText} />
+        <ArticleHistory artigoId={initialData.id} currentContent={currentText} />
       )}
     </div>
   );

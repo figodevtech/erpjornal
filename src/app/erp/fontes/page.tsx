@@ -1,9 +1,8 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { UserCheck, Lock, Eye, Plus, Shield } from "lucide-react";
+import { Eye, Lock, Plus, Shield, UserCheck } from "lucide-react";
+
+import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 const sigiloBadge = {
   publico: "bg-green-50 text-green-700 border-green-200",
@@ -18,84 +17,100 @@ const sigiloIcon = {
 };
 
 export default async function FontesPage() {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/api/auth/signin");
+  const session = await exigirAlgumaPermissao(["fontes:ler", "fontes:criar", "fontes:editar"]);
 
   const role = session.user.role as string;
   const isPrivileged = role === "admin" || role === "editor";
+  const podeCriar = temPermissao(session, "fontes:criar");
 
-  // Filtro de sigilo: repórteres não vêem fontes confidenciais
-  const fontes = await prisma.source.findMany({
-    where: isPrivileged ? {} : { nivel_sigilo: { not: "confidencial" } },
-    orderBy: { created_at: "desc" },
+  const fontes = await prisma.fonte.findMany({
+    where: isPrivileged ? {} : { nivelSigilo: { not: "confidencial" } },
+    orderBy: { criadoEm: "desc" },
     include: {
       criador: { select: { nome: true } },
-      _count: { select: { anotacoes: true } }
-    }
+      _count: { select: { anotacoes: true } },
+    },
   });
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">CRM de Fontes</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {fontes.length} fonte{fontes.length !== 1 ? "s" : ""} cadastrada{fontes.length !== 1 ? "s" : ""}
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">CRM de Fontes</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            {fontes.length} fonte{fontes.length !== 1 ? "s" : ""} cadastrada
+            {fontes.length !== 1 ? "s" : ""}
             {!isPrivileged && " · fontes confidenciais ocultas"}
           </p>
         </div>
-        <Link
-          href="/erp/fontes/nova"
-          className="flex items-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-500 transition-all shadow-md text-sm"
-        >
-          <Plus className="w-4 h-4" />
-          Nova Fonte
-        </Link>
+        {podeCriar && (
+          <Link
+            href="/erp/fontes/nova"
+            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-indigo-500"
+          >
+            <Plus className="h-4 w-4" />
+            Nova Fonte
+          </Link>
+        )}
       </div>
 
       {fontes.length === 0 ? (
-        <div className="py-32 text-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50">
-          <UserCheck className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+        <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50 py-32 text-center">
+          <UserCheck className="mx-auto mb-4 h-12 w-12 text-gray-300" />
           <h3 className="text-xl font-bold text-gray-400">Nenhuma fonte cadastrada</h3>
-          <p className="text-gray-400 max-w-sm mx-auto mt-2 text-sm">
-            Cadastre contatos governamentais e jornalísticos com controle de sigilo.
+          <p className="mx-auto mt-2 max-w-sm text-sm text-gray-400">
+            Cadastre contatos governamentais e jornalisticos com controle de sigilo.
           </p>
-          <Link href="/erp/fontes/nova" className="inline-flex items-center gap-2 mt-6 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-500 transition-all text-sm">
-            <Plus className="w-4 h-4" /> Adicionar primeira fonte
-          </Link>
+          {podeCriar && (
+            <Link
+              href="/erp/fontes/nova"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-indigo-500"
+            >
+              <Plus className="h-4 w-4" /> Adicionar primeira fonte
+            </Link>
+          )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {fontes.map((fonte) => {
-            const sigilo = fonte.nivel_sigilo as "publico" | "reservado" | "confidencial";
+            const sigilo = fonte.nivelSigilo as "publico" | "reservado" | "confidencial";
             const IconSigilo = sigiloIcon[sigilo];
+
             return (
               <Link
                 key={fonte.id}
                 href={`/erp/fontes/${fonte.id}`}
-                className="bg-white border border-gray-200 rounded-2xl p-6 hover:shadow-md hover:-trangray-y-0.5 transition-all group space-y-4"
+                className="group space-y-4 rounded-2xl border border-gray-200 bg-white p-6 transition-all hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                    <UserCheck className="w-5 h-5 text-indigo-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100">
+                    <UserCheck className="h-5 w-5 text-indigo-600" />
                   </div>
-                  <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg border flex items-center gap-1 ${sigiloBadge[sigilo]}`}>
-                    <IconSigilo className="w-3 h-3" /> {sigilo}
+                  <span
+                    className={`flex items-center gap-1 rounded-lg border px-2 py-1 text-[10px] font-bold uppercase tracking-widest ${sigiloBadge[sigilo]}`}
+                  >
+                    <IconSigilo className="h-3 w-3" /> {sigilo}
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{fonte.nome}</h3>
+                  <h3 className="font-bold text-gray-900 transition-colors group-hover:text-indigo-600">
+                    {fonte.nome}
+                  </h3>
                   {(fonte.cargo || fonte.organizacao) && (
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      {fonte.cargo}{fonte.cargo && fonte.organizacao ? " · " : ""}{fonte.organizacao}
+                    <p className="mt-0.5 text-xs text-gray-500">
+                      {fonte.cargo}
+                      {fonte.cargo && fonte.organizacao ? " · " : ""}
+                      {fonte.organizacao}
                     </p>
                   )}
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-400">
+                <div className="flex items-center justify-between border-t border-gray-100 pt-3 text-[11px] text-gray-400">
                   <span>Por {fonte.criador.nome}</span>
-                  <span className="font-bold text-gray-500">{fonte._count.anotacoes} anotaç{fonte._count.anotacoes !== 1 ? "ões" : "ão"}</span>
+                  <span className="font-bold text-gray-500">
+                    {fonte._count.anotacoes} anotac{fonte._count.anotacoes !== 1 ? "oes" : "ao"}
+                  </span>
                 </div>
               </Link>
             );
@@ -105,4 +120,3 @@ export default async function FontesPage() {
     </div>
   );
 }
-

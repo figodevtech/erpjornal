@@ -8,15 +8,27 @@ export default async function PoliticoProfilePage({ params }: { params: { id: st
   const resolvedParams = await params;
   const id = resolvedParams.id;
 
-  const politico = await prisma.politician.findUnique({
+  const politico = await prisma.politico.findUnique({
     where: { id },
     include: {
-      artigos: {
-        where: { status_id: ArticleStatus.publicado },
-        orderBy: { created_at: "desc" },
-        include: { categoria: true }
-      }
-    }
+      artigosPoliticos: {
+        where: {
+          artigo: {
+            status: ArticleStatus.publicado,
+          },
+        },
+        orderBy: {
+          artigo: {
+            criadoEm: "desc",
+          },
+        },
+        include: {
+          artigo: {
+            include: { categoria: true },
+          },
+        },
+      },
+    },
   });
 
   if (!politico) notFound();
@@ -28,8 +40,8 @@ export default async function PoliticoProfilePage({ params }: { params: { id: st
         <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50 dark:bg-gray-800 rotate-45 trangray-x-16 -trangray-y-16 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/20 transition-colors" />
         
         <div className="w-32 h-32 md:w-48 md:h-48 bg-gray-100 dark:bg-gray-800 rounded-2xl flex-shrink-0 flex items-center justify-center text-gray-300 dark:text-gray-700 relative z-10 border-4 border-white dark:border-gray-800 shadow-xl overflow-hidden">
-           {politico.foto_url ? (
-             <img src={politico.foto_url} alt={politico.nome} className="w-full h-full object-cover" />
+           {politico.urlFoto ? (
+             <img src={politico.urlFoto} alt={politico.nome} className="w-full h-full object-cover" />
            ) : (
              <UserCircle className="w-24 h-24" />
            )}
@@ -58,7 +70,7 @@ export default async function PoliticoProfilePage({ params }: { params: { id: st
              </div>
              <div className="flex items-center gap-1.5 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700">
                <Calendar className="w-4 h-4 text-indigo-500" />
-               <span>Atualizado em {new Date(politico.updated_at).toLocaleDateString("pt-BR")}</span>
+               <span>Atualizado em {new Date(politico.atualizadoEm).toLocaleDateString("pt-BR")}</span>
              </div>
            </div>
 
@@ -78,7 +90,7 @@ export default async function PoliticoProfilePage({ params }: { params: { id: st
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {politico.artigos.map((artigo) => (
+          {politico.artigosPoliticos.map(({ artigo }) => (
             <Link 
               key={artigo.id} 
               href={`/noticia/${artigo.slug}`}
@@ -96,7 +108,7 @@ export default async function PoliticoProfilePage({ params }: { params: { id: st
                 </p>
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800">
                   <span className="text-[11px] text-gray-500 dark:text-gray-500 font-medium">
-                    {new Date(artigo.created_at).toLocaleDateString("pt-BR")}
+                    {new Date(artigo.criadoEm).toLocaleDateString("pt-BR")}
                   </span>
                   <div className="text-indigo-600 font-bold text-xs flex items-center gap-1 group-hover:gap-2 transition-all">
                     Ler matéria completa <ArrowRight className="w-3 h-3" />
@@ -105,7 +117,7 @@ export default async function PoliticoProfilePage({ params }: { params: { id: st
               </div>
             </Link>
           ))}
-          {politico.artigos.length === 0 && (
+          {politico.artigosPoliticos.length === 0 && (
             <div className="col-span-full py-20 text-center bg-gray-50 dark:bg-gray-900/30 rounded-3xl border border-dashed border-gray-300 dark:border-gray-700">
                <UserCircle className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-4" />
                <p className="text-gray-600 dark:text-gray-400 font-medium italic">Nenhuma notícia vinculada a este político no momento.</p>

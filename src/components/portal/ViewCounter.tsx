@@ -4,14 +4,14 @@ import { useEffect, useRef } from "react";
 import { incrementArticleViews } from "@/app/actions/analytics";
 
 interface ViewCounterProps {
-  articleId: string;
+  artigoId: string;
 }
 
 /**
  * Componente que dispara o incremento de visualizações de forma atômica no Redis.
  * É um componente invisível que roda apenas no lado do cliente uma única vez.
  */
-export function ViewCounter({ articleId }: ViewCounterProps) {
+export function ViewCounter({ artigoId }: ViewCounterProps) {
   const hasCalled = useRef(false);
 
   useEffect(() => {
@@ -19,10 +19,10 @@ export function ViewCounter({ articleId }: ViewCounterProps) {
     if (hasCalled.current) return;
     
     // Incrementa a visualização no Redis
-    incrementArticleViews(articleId);
+    incrementArticleViews(artigoId);
     
     hasCalled.current = true;
-  }, [articleId]);
+  }, [artigoId]);
 
   return null;
 }

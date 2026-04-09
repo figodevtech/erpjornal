@@ -1,20 +1,17 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { exigirPermissao } from "@/lib/auth";
+
 import { prisma } from "@/lib/prisma";
 import ArticleForm from "../components/ArticleForm";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-
 export default async function NovoArtigoPage() {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/api/auth/signin");
+  const session = await exigirPermissao("artigos:criar");
 
-  const categories = await prisma.category.findMany({
+  const categories = await prisma.categoria.findMany({
     select: { id: true, nome: true },
     orderBy: { nome: "asc" }
   });
 
-  const politicians = await prisma.politician.findMany({
+  const politicians = await prisma.politico.findMany({
     select: { id: true, nome: true, partido: true },
     orderBy: { nome: "asc" }
   });

@@ -8,7 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-enum ArticleStatus {
+enum StatusArtigo {
   pauta
   apuracao
   redacao
@@ -18,258 +18,339 @@ enum ArticleStatus {
   arquivado
   rascunho
   em_revisao
+
+  @@map("status_artigo")
 }
 
-model Role {
-  id         String @id @default(uuid())
-  nome       String @unique
-  permissoes Json?
-  users      User[]
+model Usuario {
+  id                String               @id @db.Uuid
+  nome              String?
+  email             String?              @unique
+  tipoConta         String               @default("portal") @map("tipo_conta")
+  status            String               @default("ativo")
+  avatarUrl         String?              @map("avatar_url")
+  criadoEm          DateTime             @default(now()) @map("criado_em")
+  atualizadoEm      DateTime             @updatedAt @map("atualizado_em")
+  perfis            UsuarioPerfil[]
+  logsAcao          LogAcao[]
+  artigosAutor      Artigo[]             @relation("ArtigoAutor")
+  artigosEditor     Artigo[]             @relation("ArtigoEditor")
+  artigosRevisor    Artigo[]             @relation("ArtigoRevisor")
+  fontesCriadas     Fonte[]              @relation("FonteCriador")
+  notasFonte        NotaFonte[]          @relation("NotaFonteAutor")
+  versoesArtigo     VersaoArtigo[]
+
+  @@map("usuarios")
 }
 
-model User {
-  id                String       @id @default(uuid())
-  nome              String
-  email             String       @unique
-  senha_hash        String
-  cargo_id          String
-  bio               String?
-  redes_sociais     Json?
-  mfa_secret        String?
-  status            String       @default("ativo")
-  created_at        DateTime     @default(now())
-  action_logs       ActionLog[]
-  articles_authored Article[]    @relation("ArticleAuthor")
-  articles_edited   Article[]    @relation("ArticleEditor")
-  articles_revised  Article[]    @relation("ArticleRevisor")
-  fontes_criadas    Source[]     @relation("SourceCreator")
-  notas_fonte       SourceNote[] @relation("SourceNoteAuthor")
-  cargo             Role         @relation(fields: [cargo_id], references: [id])
+model Perfil {
+  id          String            @id @default(uuid()) @db.Uuid
+  nome        String            @unique
+  descricao   String?
+  criadoEm    DateTime          @default(now()) @map("criado_em")
+  usuarios    UsuarioPerfil[]
+  permissoes  PerfilPermissao[]
+
+  @@map("perfis")
 }
 
-model Article {
-  id               String           @id @default(uuid())
-  titulo           String
-  slug             String           @unique
-  corpo_texto      String
-  resumo           String?
-  autor_id         String
-  editor_id        String?
-  revisor_id       String?
-  categoria_id     String?
-  status_id        ArticleStatus    @default(pauta)
-  data_publicacao  DateTime?
-  visualizacoes    Int              @default(0)
-  og_image_url     String?
-  created_at       DateTime         @default(now())
-  updated_at       DateTime         @updatedAt
-  estado           String?
-  legal_notes      String?
-  legal_status     String           @default("pendente")
-  regiao           String?
-  is_premium       Boolean          @default(false)
-  publish_channels String[]         @default(["portal"])
-  external_author  String?
-  source_url       String?
-  human_reviewer   String?
-  rss_item_id      String?          @unique
-  action_logs      ActionLog[]
-  autor            User             @relation("ArticleAuthor", fields: [autor_id], references: [id])
-  categoria        Category?        @relation(fields: [categoria_id], references: [id])
-  editor           User?            @relation("ArticleEditor", fields: [editor_id], references: [id])
-  revisor          User?            @relation("ArticleRevisor", fields: [revisor_id], references: [id])
-  rss_item         RSSItemRaw?      @relation(fields: [rss_item_id], references: [id])
-  versions         ArticleVersion[]
-  fact_checks      FactCheck[]
-  fonte_notas      SourceNote[]
-  politicos        Politician[]     @relation("ArticlePoliticians")
+model Permissao {
+  id          String            @id @default(uuid()) @db.Uuid
+  modulo      String
+  acao        String
+  descricao   String?
+  criadoEm    DateTime          @default(now()) @map("criado_em")
+  perfis      PerfilPermissao[]
 
-  @@index([status_id, data_publicacao])
-  @@index([categoria_id])
+  @@unique([modulo, acao])
+  @@map("permissoes")
 }
 
-model Politician {
-  id         String    @id @default(uuid())
-  nome       String
-  cargo      String?
-  partido    String?
-  biografia  String?
-  foto_url   String?
-  regiao     String?
-  estado     String?
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  artigos    Article[] @relation("ArticlePoliticians")
+model UsuarioPerfil {
+  usuarioId   String   @db.Uuid @map("usuario_id")
+  perfilId    String   @db.Uuid @map("perfil_id")
+  criadoEm    DateTime @default(now()) @map("criado_em")
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  perfil      Perfil   @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, perfilId])
+  @@map("usuarios_perfis")
 }
 
-model FactCheck {
-  id                 String   @id @default(uuid())
-  article_id         String
-  fonte_url          String?
-  documento_url      String?
-  status_verificacao String   @default("verificado")
-  created_at         DateTime @default(now())
-  article            Article  @relation(fields: [article_id], references: [id])
+model PerfilPermissao {
+  perfilId     String     @db.Uuid @map("perfil_id")
+  permissaoId  String     @db.Uuid @map("permissao_id")
+  criadoEm     DateTime   @default(now()) @map("criado_em")
+  perfil       Perfil     @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  permissao    Permissao  @relation(fields: [permissaoId], references: [id], onDelete: Cascade)
+
+  @@id([perfilId, permissaoId])
+  @@map("perfis_permissoes")
 }
 
-model ArticleVersion {
-  id              String   @id @default(uuid())
-  article_id      String
-  titulo          String
-  resumo          String?
-  corpo_texto     String
-  status_id       ArticleStatus
-  user_id         String?
-  mudancas_resumo String?
-  created_at      DateTime @default(now())
-  article         Article  @relation(fields: [article_id], references: [id])
+model Artigo {
+  id                String           @id @default(uuid()) @db.Uuid
+  titulo            String
+  slug              String           @unique
+  corpoTexto        String           @map("corpo_texto")
+  resumo            String?
+  autorId           String           @db.Uuid @map("autor_id")
+  editorId          String?          @db.Uuid @map("editor_id")
+  revisorId         String?          @db.Uuid @map("revisor_id")
+  categoriaId       String?          @db.Uuid @map("categoria_id")
+  status            StatusArtigo     @default(pauta)
+  dataPublicacao    DateTime?        @map("data_publicacao")
+  visualizacoes     Int              @default(0)
+  urlImagemOg       String?          @map("url_imagem_og")
+  criadoEm          DateTime         @default(now()) @map("criado_em")
+  atualizadoEm      DateTime         @updatedAt @map("atualizado_em")
+  estado            String?
+  observacoesLegais String?          @map("observacoes_legais")
+  statusLegal       String           @default("pendente") @map("status_legal")
+  regiao            String?
+  ehPremium         Boolean          @default(false) @map("eh_premium")
+  canaisPublicacao  String[]         @default(["portal"]) @map("canais_publicacao")
+  autorExterno      String?          @map("autor_externo")
+  urlFonte          String?          @map("url_fonte")
+  revisorHumano     String?          @map("revisor_humano")
+  itemRssId         String?          @unique @db.Uuid @map("item_rss_id")
+  logsAcao          LogAcao[]
+  autor             Usuario          @relation("ArtigoAutor", fields: [autorId], references: [id])
+  categoria         Categoria?       @relation(fields: [categoriaId], references: [id])
+  editor            Usuario?         @relation("ArtigoEditor", fields: [editorId], references: [id])
+  revisor           Usuario?         @relation("ArtigoRevisor", fields: [revisorId], references: [id])
+  itemRss           ItemRssBruto?    @relation(fields: [itemRssId], references: [id])
+  versoes           VersaoArtigo[]
+  checagensFato     ChecagemFato[]
+  notasFonte        NotaFonte[]
+  artigosPoliticos  ArtigoPolitico[]
+
+  @@index([status, dataPublicacao])
+  @@index([categoriaId])
+  @@map("artigos")
 }
 
-model Category {
-  id               String     @id @default(uuid())
+model Politico {
+  id               String           @id @default(uuid()) @db.Uuid
   nome             String
-  slug             String     @unique
+  cargo            String?
+  partido          String?
+  biografia        String?
+  urlFoto          String?          @map("url_foto")
+  regiao           String?
+  estado           String?
+  criadoEm         DateTime         @default(now()) @map("criado_em")
+  atualizadoEm     DateTime         @updatedAt @map("atualizado_em")
+  artigosPoliticos ArtigoPolitico[]
+
+  @@map("politicos")
+}
+
+model ArtigoPolitico {
+  artigoId   String   @db.Uuid @map("artigo_id")
+  politicoId String   @db.Uuid @map("politico_id")
+  artigo     Artigo   @relation(fields: [artigoId], references: [id], onDelete: Cascade)
+  politico   Politico @relation(fields: [politicoId], references: [id], onDelete: Cascade)
+
+  @@id([artigoId, politicoId])
+  @@map("artigos_politicos")
+}
+
+model ChecagemFato {
+  id                 String   @id @default(uuid()) @db.Uuid
+  artigoId           String   @db.Uuid @map("artigo_id")
+  urlFonte           String?  @map("url_fonte")
+  urlDocumento       String?  @map("url_documento")
+  statusVerificacao  String   @default("verificado") @map("status_verificacao")
+  criadoEm           DateTime @default(now()) @map("criado_em")
+  artigo             Artigo   @relation(fields: [artigoId], references: [id], onDelete: Cascade)
+
+  @@map("checagens_fato")
+}
+
+model VersaoArtigo {
+  id               String       @id @default(uuid()) @db.Uuid
+  artigoId         String       @db.Uuid @map("artigo_id")
+  titulo           String
+  resumo           String?
+  corpoTexto       String       @map("corpo_texto")
+  status           StatusArtigo
+  usuarioId        String?      @db.Uuid @map("usuario_id")
+  resumoMudancas   String?      @map("resumo_mudancas")
+  criadoEm         DateTime     @default(now()) @map("criado_em")
+  artigo           Artigo       @relation(fields: [artigoId], references: [id], onDelete: Cascade)
+  usuario          Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@map("versoes_artigo")
+}
+
+model Categoria {
+  id               String       @id @default(uuid()) @db.Uuid
+  nome             String
+  slug             String       @unique
   esfera           String?
   cor              String?
-  meta_description String?
-  parent_id        String?
-  articles         Article[]
-  parent           Category?  @relation("SubCategories", fields: [parent_id], references: [id])
-  children         Category[] @relation("SubCategories")
+  metaDescricao    String?      @map("meta_descricao")
+  categoriaPaiId   String?      @db.Uuid @map("categoria_pai_id")
+  artigos          Artigo[]
+  categoriaPai     Categoria?   @relation("Subcategorias", fields: [categoriaPaiId], references: [id])
+  subcategorias    Categoria[]  @relation("Subcategorias")
+
+  @@map("categorias")
 }
 
-model ActionLog {
-  id         String   @id @default(uuid())
-  user_id    String
+model LogAcao {
+  id         String    @id @default(uuid()) @db.Uuid
+  usuarioId  String    @db.Uuid @map("usuario_id")
   acao       String
-  article_id String?
-  data_hora  DateTime @default(now())
-  article    Article? @relation(fields: [article_id], references: [id])
-  user       User     @relation(fields: [user_id], references: [id])
+  artigoId   String?   @db.Uuid @map("artigo_id")
+  dataHora   DateTime  @default(now()) @map("data_hora")
+  artigo      Artigo?  @relation(fields: [artigoId], references: [id], onDelete: SetNull)
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("logs_acao")
 }
 
-model Media {
-  id                String    @id @default(uuid())
-  url               String
-  nome              String
-  tipo              String
-  mimetype          String?
-  tamanho           Int?
-  direitos_autorais String?
-  tipo_licenca      String?
-  fonte             String?
-  data_expiracao    DateTime?
-  tags_ia           Json?
-  created_at        DateTime  @default(now())
-  updated_at        DateTime  @updatedAt
+model Midia {
+  id                 String    @id @default(uuid()) @db.Uuid
+  url                String
+  nome               String
+  tipo               String
+  mimeType           String?   @map("mime_type")
+  tamanho            Int?
+  direitosAutorais   String?   @map("direitos_autorais")
+  tipoLicenca        String?   @map("tipo_licenca")
+  fonte              String?
+  dataExpiracao      DateTime? @map("data_expiracao")
+  tagsIa             Json?     @map("tags_ia")
+  criadoEm           DateTime  @default(now()) @map("criado_em")
+  atualizadoEm       DateTime  @updatedAt @map("atualizado_em")
+
+  @@map("midias")
 }
 
-model Source {
-  id           String       @id @default(uuid())
-  nome         String
-  cargo        String?
-  organizacao  String?
-  email        String?
-  telefone     String?
-  nivel_sigilo String       @default("publico")
-  notas        String?
-  criador_id   String
-  created_at   DateTime     @default(now())
-  updated_at   DateTime     @updatedAt
-  criador      User         @relation("SourceCreator", fields: [criador_id], references: [id])
-  anotacoes    SourceNote[]
+model Fonte {
+  id            String      @id @default(uuid()) @db.Uuid
+  nome          String
+  cargo         String?
+  organizacao   String?
+  email         String?
+  telefone      String?
+  nivelSigilo   String      @default("publico") @map("nivel_sigilo")
+  notas         String?
+  criadorId     String      @db.Uuid @map("criador_id")
+  criadoEm      DateTime    @default(now()) @map("criado_em")
+  atualizadoEm  DateTime    @updatedAt @map("atualizado_em")
+  criador       Usuario     @relation("FonteCriador", fields: [criadorId], references: [id])
+  anotacoes     NotaFonte[]
+
+  @@map("fontes")
 }
 
-model SourceNote {
-  id         String   @id @default(uuid())
-  source_id  String
-  autor_id   String
-  conteudo   String
-  article_id String?
-  created_at DateTime @default(now())
-  article    Article? @relation(fields: [article_id], references: [id])
-  autor      User     @relation("SourceNoteAuthor", fields: [autor_id], references: [id])
-  source     Source   @relation(fields: [source_id], references: [id], onDelete: Cascade)
+model NotaFonte {
+  id          String    @id @default(uuid()) @db.Uuid
+  fonteId     String    @db.Uuid @map("fonte_id")
+  autorId     String    @db.Uuid @map("autor_id")
+  conteudo    String
+  artigoId    String?   @db.Uuid @map("artigo_id")
+  criadoEm    DateTime  @default(now()) @map("criado_em")
+  artigo      Artigo?   @relation(fields: [artigoId], references: [id], onDelete: SetNull)
+  autor       Usuario   @relation("NotaFonteAutor", fields: [autorId], references: [id], onDelete: Cascade)
+  fonte       Fonte     @relation(fields: [fonteId], references: [id], onDelete: Cascade)
+
+  @@map("notas_fonte")
 }
 
-model PodcastEpisode {
-  id         String   @id @default(uuid())
-  titulo     String
-  slug       String   @unique
-  descricao  String?
-  audio_url  String
-  capa_url   String?
-  duracao    Int?
-  data_pub   DateTime @default(now())
-  tags       String[]
-  status     String   @default("draft")
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+model EpisodioPodcast {
+  id           String    @id @default(uuid()) @db.Uuid
+  titulo       String
+  slug         String    @unique
+  descricao    String?
+  urlAudio     String    @map("url_audio")
+  urlCapa      String?   @map("url_capa")
+  duracao      Int?
+  dataPub      DateTime  @default(now()) @map("data_pub")
+  tags         String[]
+  status       String    @default("draft")
+  criadoEm     DateTime  @default(now()) @map("criado_em")
+  atualizadoEm DateTime  @updatedAt @map("atualizado_em")
+
+  @@map("episodios_podcast")
 }
 
-model ShortVideo {
-  id         String   @id @default(uuid())
-  titulo     String
-  slug       String   @unique
-  descricao  String?
-  video_url  String
-  capa_url   String?
-  duracao    Int?
-  data_pub   DateTime @default(now())
-  tags       String[]
-  status     String   @default("draft")
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
+model VideoCurto {
+  id           String    @id @default(uuid()) @db.Uuid
+  titulo       String
+  slug         String    @unique
+  descricao    String?
+  urlVideo     String    @map("url_video")
+  urlCapa      String?   @map("url_capa")
+  duracao      Int?
+  dataPub      DateTime  @default(now()) @map("data_pub")
+  tags         String[]
+  status       String    @default("draft")
+  criadoEm     DateTime  @default(now()) @map("criado_em")
+  atualizadoEm DateTime  @updatedAt @map("atualizado_em")
+
+  @@map("videos_curtos")
 }
 
-model NewsletterSubscription {
-  id         String   @id @default(uuid())
-  email      String   @unique
+model InscricaoNewsletter {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String    @unique
   nome       String?
   temas      String[]
   origem     String?
-  created_at DateTime @default(now())
+  criadoEm   DateTime  @default(now()) @map("criado_em")
+
+  @@map("inscricoes_newsletter")
 }
 
-model RSSSource {
-  id           String       @id @default(uuid())
-  feed_url     String       @unique
-  name         String
-  logo         String?
-  tone         String?
-  cache_ttl    Int          @default(30)
-  regiao       String?
-  estado       String?
-  last_harvest DateTime?
-  created_at   DateTime     @default(now())
-  is_active    Boolean      @default(true)
-  items        RSSItemRaw[]
+model FonteRss {
+  id                String         @id @default(uuid()) @db.Uuid
+  urlFeed           String         @unique @map("url_feed")
+  name              String         @map("nome")
+  logo              String?
+  tone              String?        @map("tom")
+  cacheTtl          Int            @default(30) @map("cache_ttl")
+  regiao            String?
+  estado            String?
+  lastHarvest       DateTime?      @map("ultimo_harvest")
+  criadoEm          DateTime       @default(now()) @map("criado_em")
+  ativa             Boolean        @default(true) @map("ativa")
+  items             ItemRssBruto[]
+
+  @@map("fontes_rss")
 }
 
-model RSSItemRaw {
-  id              String       @id @default(uuid())
-  source_id       String
-  guid            String?      @unique
-  original_title  String
-  original_link   String
-  original_author String?
-  description     String?
-  thumbnail       String?
-  pub_date        DateTime     @default(now())
-  status          String       @default("pending")
-  created_at      DateTime     @default(now())
-  article         Article?
-  source          RSSSource    @relation(fields: [source_id], references: [id])
-  rewrite_logs    RewriteLog[]
+model ItemRssBruto {
+  id                String          @id @default(uuid()) @db.Uuid
+  sourceId          String          @db.Uuid @map("fonte_rss_id")
+  guid              String?         @unique
+  tituloOriginal    String          @map("titulo_original")
+  linkOriginal      String          @map("link_original")
+  autorOriginal     String?         @map("autor_original")
+  description       String?         @map("descricao")
+  thumbnail         String?         @map("miniatura")
+  dataPublicacao    DateTime        @default(now()) @map("data_publicacao")
+  status            String          @default("pending")
+  criadoEm          DateTime        @default(now()) @map("criado_em")
+  artigo            Artigo?
+  source            FonteRss        @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  logsReescrita     LogReescrita[]
+
+  @@map("itens_rss_brutos")
 }
 
-model RewriteLog {
-  id            String     @id @default(uuid())
-  rss_item_id   String
-  ai_prompt     String?
-  ai_response   Json?
-  human_changes Json?
-  approval_time DateTime?
-  created_at    DateTime   @default(now())
-  rss_item      RSSItemRaw @relation(fields: [rss_item_id], references: [id])
+model LogReescrita {
+  id               String        @id @default(uuid()) @db.Uuid
+  itemRssId        String        @db.Uuid @map("item_rss_id")
+  promptIa         String?       @map("prompt_ia")
+  respostaIa       Json?         @map("resposta_ia")
+  alteracoesHumanas Json?        @map("alteracoes_humanas")
+  horarioAprovacao DateTime?     @map("horario_aprovacao")
+  criadoEm         DateTime      @default(now()) @map("criado_em")
+  itemRss          ItemRssBruto  @relation(fields: [itemRssId], references: [id], onDelete: Cascade)
+
+  @@map("logs_reescrita")
 }

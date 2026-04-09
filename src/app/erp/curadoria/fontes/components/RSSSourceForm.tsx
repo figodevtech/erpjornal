@@ -81,8 +81,8 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
             <div className="space-y-2">
               <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">URL do Feed (XML)</label>
               <input 
-                name="feed_url" 
-                defaultValue={source?.feed_url} 
+                name="urlFeed" 
+                defaultValue={source?.urlFeed} 
                 required 
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs font-mono text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all" 
               />
@@ -104,9 +104,9 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
               <div className="space-y-2">
                 <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Refresh (Min)</label>
                 <input 
-                  name="cache_ttl" 
+                  name="cacheTtl" 
                   type="number" 
-                  defaultValue={source?.cache_ttl || 30} 
+                  defaultValue={source?.cacheTtl || 30} 
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all" 
                 />
               </div>
@@ -117,8 +117,8 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
                 <div className="relative">
                   <input 
                     type="checkbox" 
-                    name="is_active" 
-                    defaultChecked={source?.is_active ?? true}
+                    name="ativa" 
+                    defaultChecked={source?.ativa ?? true}
                     className="sr-only peer" 
                     value="true"
                   />

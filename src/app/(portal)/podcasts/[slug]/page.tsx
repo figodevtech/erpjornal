@@ -36,13 +36,13 @@ export default async function EpisodePage({ params }: { params: { slug: string }
           {ep.titulo}
         </h1>
         <div className="flex items-center gap-4 text-[11px] font-bold text-gray-400 tracking-widest uppercase">
-           <span>Publicado: {new Date(ep.data_pub).toLocaleDateString("pt-BR", { day:'numeric', month:'long', year:'numeric' })}</span>
+           <span>Publicado: {new Date(ep.dataPub).toLocaleDateString("pt-BR", { day:'numeric', month:'long', year:'numeric' })}</span>
            <span className="text-gray-200">|</span>
            <span>Revista Gestão Oficial</span>
         </div>
       </div>
 
-      <PodcastPlayer audioUrl={ep.audio_url} titulo={ep.titulo} />
+      <PodcastPlayer audioUrl={ep.urlAudio} titulo={ep.titulo} />
 
       <div className="mt-12 space-y-8">
         <div className="prose prose-gray max-w-none">

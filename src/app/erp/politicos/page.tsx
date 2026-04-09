@@ -1,17 +1,10 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
+import { exigirPermissao } from "@/lib/auth";
+
 import { getPoliticians } from "./actions";
 import PoliticianManager from "./components/PoliticianManager";
 
 export default async function PoliticosPage() {
-  const session = await getServerSession(authOptions);
-  if (!session) redirect("/api/auth/signin");
-
-  // Apenas editores e admins gerenciam políticos
-  if (session.user.role === "reporter") {
-    redirect("/erp/artigos");
-  }
+  await exigirPermissao("politicos:gerir");
 
   const politicians = await getPoliticians();
 
@@ -21,4 +14,3 @@ export default async function PoliticosPage() {
     </div>
   );
 }
-

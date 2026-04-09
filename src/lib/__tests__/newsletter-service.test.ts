@@ -18,7 +18,7 @@ async function testNewsletterService() {
   const result = await sendNewsletterEmail({
     to,
     subject: `Newsletter Gestão: ${sampleArticle.title}`,
-    article: sampleArticle
+    artigo: sampleArticle
   });
 
   if (result.success || result.message === 'API Key ausente') {

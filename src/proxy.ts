@@ -1,38 +1,19 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { atualizarSessaoSupabase } from "@/lib/supabase/proxy";
 
-export default withAuth(
-  function proxy(req) {
-    const token = req.nextauth.token;
-    const path = req.nextUrl.pathname;
+export async function proxy(request: NextRequest) {
+  const { response, user } = await atualizarSessaoSupabase(request);
+  const path = request.nextUrl.pathname;
 
-    const isStaff = ["admin", "editor", "reporter", "juridico"].includes(token?.role as string);
-    const isERPRoute = path.startsWith("/erp");
-
-    // Bloquear assinantes do ERP
-    if (isERPRoute && !isStaff) {
-      return NextResponse.rewrite(new URL("/403", req.url));
-    }
-
-    // Rotas estritas de admin
-    if (path.startsWith("/erp/admin") && token?.role !== "admin") {
-      return NextResponse.rewrite(new URL("/403", req.url));
-    }
-
-    // Rotas de publicação (Editor e Admin apenas)
-    if (path.startsWith("/api/publish") && token?.role !== "admin" && token?.role !== "editor") {
-      return new NextResponse("Unauthorized", { status: 403 });
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token }) => !!token,
-    },
+  if ((path.startsWith("/erp") || path.startsWith("/api/protected")) && !user) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("callbackUrl", path);
+    return NextResponse.redirect(loginUrl);
   }
-);
+
+  return response;
+}
 
 export const config = {
-  matcher: ["/erp/:path*", "/api/protected/:path*"]
+  matcher: ["/erp/:path*", "/api/protected/:path*"],
 };

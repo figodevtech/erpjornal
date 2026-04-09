@@ -10,14 +10,19 @@ interface TTSPlayerProps {
 }
 
 export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
+  const [mounted, setMounted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentChunkIndex, setCurrentChunkIndex] = useState(0);
   const [chunks, setChunks] = useState<string[]>([]);
-  
-  const synth = typeof window !== "undefined" ? window.speechSynthesis : null;
+
+  const synth = mounted ? window.speechSynthesis : null;
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Prepara o texto quando o conteúdo muda
   useEffect(() => {
@@ -111,7 +116,7 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
     setCurrentChunkIndex(0);
   };
 
-  if (!synth) return null;
+  if (!mounted || !synth) return null;
 
   return (
     <div className="my-8 p-4 md:p-6 bg-gray-50 dark:bg-gray-900 border-l-4 border-red-700 rounded-r-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 transition-all group overflow-hidden relative">
@@ -130,7 +135,7 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
               </span>
             )}
           </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+          <p className="text-xs text-gray-350 dark:text-gray-400 font-medium">
             {isPlaying 
               ? `Lendo bloco ${currentChunkIndex + 1} de ${chunks.length}` 
               : isPaused ? "Leitura pausada" : "Escute a matéria completa por síntese de voz"}

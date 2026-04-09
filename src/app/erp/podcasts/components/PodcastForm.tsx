@@ -10,8 +10,8 @@ interface PodcastData {
   titulo?: string;
   slug?: string;
   descricao?: string | null;
-  audio_url?: string;
-  capa_url?: string | null;
+  urlAudio?: string;
+  urlCapa?: string | null;
   duracao?: number | null;
   tags?: string[];
   status?: string;
@@ -47,12 +47,12 @@ export default function PodcastForm({ initialData }: PodcastFormProps) {
 
           <div>
              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5 label-required">URL do Áudio (CDN/S3)</label>
-             <input type="url" name="audio_url" required defaultValue={initialData?.audio_url ?? ""} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+             <input type="url" name="urlAudio" required defaultValue={initialData?.urlAudio ?? ""} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
           </div>
 
           <div>
              <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">URL da Capa (Opcional)</label>
-             <input type="url" name="capa_url" defaultValue={initialData?.capa_url ?? ""} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+             <input type="url" name="urlCapa" defaultValue={initialData?.urlCapa ?? ""} className="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
           </div>
 
           <div>

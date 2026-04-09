@@ -29,12 +29,12 @@ interface Article {
   titulo: string;
   autor?: { nome: string } | null;
   categoria?: { nome: string; cor?: string | null } | null;
-  status_id: ArticleStatus;
-  created_at: Date;
+  status: ArticleStatus;
+  criadoEm: Date;
 }
 
 export function KanbanBoard({ initialArticles }: { initialArticles: Article[] }) {
-  const [articles, setArticles] = useState<Article[]>(initialArticles);
+  const [artigos, setArticles] = useState<Article[]>(initialArticles);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -52,8 +52,8 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
     if (COLUMNS.some((col) => col.id === id)) {
       return id as ArticleStatus;
     }
-    const article = articles.find((art) => art.id === id);
-    return article ? (article.status_id as ArticleStatus) : null;
+    const artigo = artigos.find((art) => art.id === id);
+    return artigo ? (artigo.status as ArticleStatus) : null;
   };
 
   const onDragStart = (event: DragStartEvent) => {
@@ -80,7 +80,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
 
       let newIndex;
       if (COLUMNS.some((col) => col.id === overId)) {
-        newIndex = articles.length;
+        newIndex = artigos.length;
       } else {
         const isBelowOverItem =
           over &&
@@ -93,7 +93,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
       }
 
       const updated = [...prev];
-      updated[activeIndex] = { ...updated[activeIndex], status_id: overColumn as ArticleStatus };
+      updated[activeIndex] = { ...updated[activeIndex], status: overColumn as ArticleStatus };
       return arrayMove(updated, activeIndex, newIndex);
     });
   };
@@ -112,13 +112,13 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
     const overColumn = findColumn(overId);
 
     if (activeColumn && overColumn) {
-      const article = articles.find((art) => art.id === activeId);
-      if (article && article.status_id !== activeColumn) {
+      const artigo = artigos.find((art) => art.id === activeId);
+      if (artigo && artigo.status !== activeColumn) {
         // Updated in onDragOver
       }
       
       // Persist status change
-      if (article && overColumn !== initialArticles.find(a => a.id === activeId)?.status_id) {
+      if (artigo && overColumn !== initialArticles.find(a => a.id === activeId)?.status) {
         try {
           await updateArticleStatus(activeId, overColumn as ArticleStatus);
           toast.success("Status atualizado com sucesso!");
@@ -132,7 +132,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
     setActiveId(null);
   };
 
-  const activeArticle = articles.find((art) => art.id === activeId);
+  const activeArticle = artigos.find((art) => art.id === activeId);
 
   return (
     <div className="flex flex-col h-full bg-gray-50 min-h-[calc(100vh-120px)] p-6 overflow-x-auto overflow-y-hidden">
@@ -149,7 +149,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
               key={column.id}
               id={column.id}
               label={column.label}
-              articles={articles.filter((art) => art.status_id === column.id)}
+              artigos={artigos.filter((art) => art.status === column.id)}
             />
           ))}
         </div>
@@ -163,7 +163,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
             },
           }),
         }}>
-          {activeArticle ? <KanbanCard article={activeArticle} /> : null}
+          {activeArticle ? <KanbanCard artigo={activeArticle} /> : null}
         </DragOverlay>
       </DndContext>
     </div>

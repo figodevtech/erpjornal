@@ -8,29 +8,29 @@ import logger from "@/lib/logger";
  * Incrementa as visualizações de um artigo de forma atômica no Redis.
  * Também atualiza o ranking de popularidade (Sorted Set).
  */
-export async function incrementArticleViews(articleId: string) {
-  if (!articleId) return;
+export async function incrementArticleViews(artigoId: string) {
+  if (!artigoId) return;
 
   try {
-    const key = redisKeys.articleViews(articleId);
+    const key = redisKeys.artigoViews(artigoId);
     
     const pipeline = redis.pipeline();
     pipeline.incr(key);
-    pipeline.zincrby(redisKeys.popularArticles, 1, articleId);
+    pipeline.zincrby(redisKeys.popularArticles, 1, artigoId);
     
     const [results] = await Promise.all([
       pipeline.exec(),
-      prisma.article.update({
-        where: { id: articleId },
+      prisma.artigo.update({
+        where: { id: artigoId },
         data: { visualizacoes: { increment: 1 } }
       })
     ]);
 
     const newCount = results[0] as any;
-    logger.info({ articleId, count: newCount }, "Article view incremented [Redis + Postgres]");
+    logger.info({ artigoId, count: newCount }, "Article view incremented [Redis + Postgres]");
     return typeof newCount === 'number' ? newCount : (newCount[1] ?? 0);
   } catch (error) {
-    logger.error({ articleId, error }, "Failed to increment article views");
+    logger.error({ artigoId, error }, "Failed to increment artigo views");
     return null;
   }
 }
@@ -38,18 +38,18 @@ export async function incrementArticleViews(articleId: string) {
 /**
  * Recupera as visualizações atuais (Redis + Postgres fallback).
  */
-export async function getArticleViews(articleId: string) {
+export async function getArticleViews(artigoId: string) {
   try {
-    const redisCount = await redis.get<number>(redisKeys.articleViews(articleId));
+    const redisCount = await redis.get<number>(redisKeys.artigoViews(artigoId));
     if (redisCount !== null) return redisCount;
 
     // Fallback para o banco se o Redis rresetar ou a chave expirar
-    const article = await prisma.article.findUnique({
-      where: { id: articleId },
+    const artigo = await prisma.artigo.findUnique({
+      where: { id: artigoId },
       select: { visualizacoes: true }
     });
     
-    return article?.visualizacoes || 0;
+    return artigo?.visualizacoes || 0;
   } catch {
     return 0;
   }
@@ -61,12 +61,12 @@ export async function getArticleViews(articleId: string) {
 export async function getPopularArticles(limit: number = 5) {
   try {
     // Busca do ranking (Sorted Set - Ordem Decrescente)
-    const topIds = await redis.zrange<string[]>(redisKeys.popularArticles, 0, limit - 1, { rev: true });
+    const topIds = (await redis.zrange(redisKeys.popularArticles, 0, limit - 1, { rev: true })) as string[];
 
     if (!topIds || topIds.length === 0) {
       // FALLBACK OTIMIZADO: Evita Overfetching selecionando apenas campos leves
-      return await prisma.article.findMany({
-        where: { status_id: "publicado" },
+      return await prisma.artigo.findMany({
+        where: { status: "publicado" },
         orderBy: { visualizacoes: "desc" },
         take: limit,
         select: {
@@ -74,8 +74,8 @@ export async function getPopularArticles(limit: number = 5) {
           titulo: true,
           slug: true,
           resumo: true,
-          data_publicacao: true,
-          og_image_url: true,
+          dataPublicacao: true,
+          urlImagemOg: true,
           categoria: {
             select: { nome: true, slug: true, cor: true }
           }
@@ -84,15 +84,15 @@ export async function getPopularArticles(limit: number = 5) {
     }
 
     // Busca os dados completos no banco preservando a ordem do Redis
-    const articles = await prisma.article.findMany({
-      where: { id: { in: topIds }, status_id: "publicado" },
+    const artigos = await prisma.artigo.findMany({
+      where: { id: { in: topIds }, status: "publicado" },
       select: {
         id: true,
         titulo: true,
         slug: true,
         resumo: true,
-        data_publicacao: true,
-        og_image_url: true,
+        dataPublicacao: true,
+        urlImagemOg: true,
         categoria: {
           select: { nome: true, slug: true, cor: true }
         }
@@ -100,7 +100,7 @@ export async function getPopularArticles(limit: number = 5) {
     });
 
     // Ordena de volta conforme o topIds
-    return articles.sort((a, b) => topIds.indexOf(a.id) - topIds.indexOf(b.id));
+    return artigos.sort((a, b) => topIds.indexOf(a.id) - topIds.indexOf(b.id));
   } catch (error) {
     logger.error({ error }, "Erro ao buscar populares no Redis");
     return [];

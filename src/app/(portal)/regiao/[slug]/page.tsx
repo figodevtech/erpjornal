@@ -1,18 +1,41 @@
+import PortalEmptyState from "@/components/portal/PortalEmptyState";
+import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
-import { notFound } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
-import { MapPin, ArrowRight, Calendar, Globe } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Calendar, Globe, MapPin } from "lucide-react";
+import { notFound } from "next/navigation";
 
 const stateNames: Record<string, string> = {
-  "ac": "Acre", "al": "Alagoas", "ap": "Amapá", "am": "Amazonas", "ba": "Bahia",
-  "ce": "Ceará", "df": "Distrito Federal", "es": "Espírito Santo", "go": "Goiás",
-  "ma": "Maranhão", "mt": "Mato Grosso", "ms": "Mato Grosso do Sul", "mg": "Minas Gerais",
-  "pa": "Pará", "pb": "Paraíba", "pr": "Paraná", "pe": "Pernambuco", "pi": "Piauí",
-  "rj": "Rio de Janeiro", "rn": "Rio Grande do Norte", "rs": "Rio Grande do Sul",
-  "ro": "Rondônia", "rr": "Roraima", "sc": "Santa Catarina", "sp": "São Paulo",
-  "se": "Sergipe", "to": "Tocantins", "nacional": "Nacional"
+  ac: "Acre",
+  al: "Alagoas",
+  ap: "Amapa",
+  am: "Amazonas",
+  ba: "Bahia",
+  ce: "Ceara",
+  df: "Distrito Federal",
+  es: "Espirito Santo",
+  go: "Goias",
+  ma: "Maranhao",
+  mt: "Mato Grosso",
+  ms: "Mato Grosso do Sul",
+  mg: "Minas Gerais",
+  pa: "Para",
+  pb: "Paraiba",
+  pr: "Parana",
+  pe: "Pernambuco",
+  pi: "Piaui",
+  rj: "Rio de Janeiro",
+  rn: "Rio Grande do Norte",
+  rs: "Rio Grande do Sul",
+  ro: "Rondonia",
+  rr: "Roraima",
+  sc: "Santa Catarina",
+  sp: "Sao Paulo",
+  se: "Sergipe",
+  to: "Tocantins",
+  nacional: "Nacional",
 };
 
 interface ArticleWithExtras {
@@ -20,119 +43,113 @@ interface ArticleWithExtras {
   titulo: string;
   slug: string;
   resumo: string | null;
-  og_image_url: string | null;
-  created_at: Date;
+  urlImagemOg: string | null;
+  criadoEm: Date;
   regiao: string | null;
   estado: string | null;
   autor: { nome: string };
   categoria: { nome: string } | null;
 }
 
-export default async function RegionalPage({ params }: { params: { slug: string } }) {
+export default async function RegionalPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = await params;
   const slug = resolvedParams.slug.toLowerCase();
-  
-  let title = "Notícias Regionais";
-  let description = "Acompanhe as notícias políticas da sua região.";
-  const whereClause: { status_id: ArticleStatus; regiao?: string; estado?: string } = { 
-    status_id: ArticleStatus.publicado 
+
+  let title = "Noticias regionais";
+  let description = "Acompanhe as noticias politicas da sua regiao.";
+  const whereClause: { status: ArticleStatus; regiao?: string; estado?: string } = {
+    status: ArticleStatus.publicado,
   };
 
   if (slug === "nacional") {
-    title = "Notícias Nacionais";
+    title = "Noticias nacionais";
+    description = "Cobertura politica de alcance nacional, com foco em poder, governo e impactos institucionais.";
     whereClause.regiao = "Nacional";
   } else if (slug === "internacional") {
-    title = "Notícias Internacionais";
+    title = "Noticias internacionais";
+    description = "Acompanhe as noticias politicas de todo o mundo.";
     whereClause.regiao = "Internacional";
-    description = "Acompanhe as notícias políticas de todo o mundo.";
   } else if (stateNames[slug]) {
-    title = `Política em ${stateNames[slug]}`;
+    title = `Politica em ${stateNames[slug]}`;
+    description = `Acompanhe os fatos mais relevantes da cena politica em ${stateNames[slug]}.`;
     whereClause.estado = slug.toUpperCase();
   } else {
-    // Tenta filtrar por esfera se não for estado
     const spheres = ["estadual", "municipal"];
     if (spheres.includes(slug)) {
-      title = `Política ${slug.charAt(0).toUpperCase() + slug.slice(1)}`;
-      whereClause.regiao = slug.charAt(0).toUpperCase() + slug.slice(1);
+      const label = slug.charAt(0).toUpperCase() + slug.slice(1);
+      title = `Politica ${label}`;
+      description = `Cobertura das decisoes e movimentacoes da esfera ${slug}.`;
+      whereClause.regiao = label;
     } else {
       notFound();
     }
   }
 
-  const articles = await prisma.article.findMany({
+  const artigos = (await prisma.artigo.findMany({
     where: whereClause,
-    orderBy: { created_at: "desc" },
-    include: { categoria: true, autor: { select: { nome: true } } }
-  }) as unknown as ArticleWithExtras[];
+    orderBy: { criadoEm: "desc" },
+    include: { categoria: true, autor: { select: { nome: true } } },
+  })) as unknown as ArticleWithExtras[];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 space-y-8 animate-in fade-in duration-500">
-      {/* Regional Header */}
-      <header className="bg-gray-900 text-white rounded-3xl p-10 relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -trangray-y-1/2 trangray-x-1/2 blur-3xl" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-red-500 font-black text-[10px] tracking-[0.2em] uppercase">
-              <Globe className="w-4 h-4" />
-              Cobertura Regional
-            </div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tighter">{title}</h1>
-            <p className="text-gray-400 text-lg max-w-xl">{description}</p>
+    <div className="space-y-8 pb-8">
+      <PortalSectionHeader
+        eyebrow="Cobertura regional"
+        title={title}
+        description={description}
+        badge={
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-xs font-black uppercase tracking-widest text-white shadow-sm backdrop-blur-md">
+            <MapPin className="h-4 w-4 text-red-400" />
+            <span>{slug}</span>
           </div>
-          <div className="flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 self-start md:self-center">
-            <MapPin className="w-5 h-5 text-red-500" />
-            <span className="font-bold uppercase tracking-widest text-xs">{slug}</span>
-          </div>
-        </div>
-      </header>
+        }
+      />
 
-      {/* Articles Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {articles.map((artigo) => (
-          <Link 
-            key={artigo.id} 
+      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-3">
+        {artigos.map((artigo) => (
+          <Link
+            key={artigo.id}
             href={`/noticia/${artigo.slug}`}
-            className="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-trangray-y-1"
+            className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
           >
-            {artigo.og_image_url && (
-               <div className="aspect-video w-full overflow-hidden relative">
-                <Image 
-                  src={artigo.og_image_url} 
-                  alt={artigo.titulo} 
+            {artigo.urlImagemOg && (
+              <div className="relative aspect-video w-full overflow-hidden">
+                <Image
+                  src={artigo.urlImagemOg}
+                  alt={artigo.titulo}
                   fill
                   sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover group-hover:scale-105 transition-transform duration-500" 
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
-               </div>
+              </div>
             )}
-            <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+
+            <div className="flex flex-1 flex-col justify-between space-y-4 p-6">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-red-600 uppercase tracking-widest bg-red-50 px-2 py-0.5 rounded border border-red-100">
-                    {artigo.categoria?.nome || "Política"}
+                  <span className="rounded border border-red-100 bg-red-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-red-600">
+                    {artigo.categoria?.nome || "Politica"}
                   </span>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    {artigo.regiao} {artigo.estado ? `â€¢ ${artigo.estado}` : ""}
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                    {artigo.regiao} {artigo.estado ? `• ${artigo.estado}` : ""}
                   </span>
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 group-hover:text-red-600 transition-colors leading-tight">
+                <h3 className="text-lg font-bold leading-tight text-gray-900 transition-colors group-hover:text-red-700">
                   {artigo.titulo}
                 </h3>
-                <p className="text-gray-500 text-xs line-clamp-3">
-                  {artigo.resumo}
-                </p>
+                <p className="line-clamp-3 text-xs text-gray-600">{artigo.resumo}</p>
               </div>
 
-              <div className="pt-4 border-t border-gray-50 flex items-center justify-between">
+              <div className="flex items-center justify-between border-t border-gray-100 pt-4">
                 <div className="flex flex-col">
-                  <span className="text-[10px] text-gray-400">Por {artigo.autor.nome}</span>
-                  <div className="flex items-center gap-1 text-[10px] text-gray-400">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(artigo.created_at).toLocaleDateString("pt-BR")}
+                  <span className="text-[10px] text-gray-500">Por {artigo.autor.nome}</span>
+                  <div className="flex items-center gap-1 text-[10px] text-gray-500">
+                    <Calendar className="h-3 w-3" />
+                    {new Date(artigo.criadoEm).toLocaleDateString("pt-BR")}
                   </div>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-red-600 group-hover:text-white transition-all">
-                  <ArrowRight className="w-4 h-4" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-all group-hover:bg-red-600 group-hover:text-white">
+                  <ArrowRight className="h-4 w-4" />
                 </div>
               </div>
             </div>
@@ -140,14 +157,13 @@ export default async function RegionalPage({ params }: { params: { slug: string 
         ))}
       </section>
 
-      {articles.length === 0 && (
-        <div className="py-32 text-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50">
-          <Globe className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-gray-400">Nenhum artigo encontrado para esta região.</h3>
-          <p className="text-gray-400 max-w-sm mx-auto mt-2">Estamos trabalhando para trazer as notícias políticas mais relevantes desta localidade em breve.</p>
-        </div>
+      {artigos.length === 0 && (
+        <PortalEmptyState
+          icon={Globe}
+          title="Nenhum artigo encontrado para esta regiao."
+          description="Estamos trabalhando para trazer as noticias politicas mais relevantes desta localidade em breve."
+        />
       )}
     </div>
   );
 }
-

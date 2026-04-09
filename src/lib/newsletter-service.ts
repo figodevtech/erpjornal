@@ -5,7 +5,7 @@ import * as React from 'react';
 interface SendNewsEmailParams {
   to: string | string[];
   subject: string;
-  article: {
+  artigo: {
     title: string;
     excerpt: string;
     slug: string;
@@ -20,12 +20,12 @@ interface SendNewsEmailParams {
 export const sendNewsletterEmail = async ({
   to,
   subject,
-  article
+  artigo
 }: SendNewsEmailParams) => {
   const from = process.env.EMAIL_FROM || 'Revista Gestão <contato@revistagestao.com>';
   
   if (!process.env.RESEND_API_KEY) {
-    console.warn('RESEND_API_KEY não configurada. E-mail simulado:', { to, subject, article });
+    console.warn('RESEND_API_KEY não configurada. E-mail simulado:', { to, subject, artigo });
     return { success: false, message: 'API Key ausente' };
   }
 
@@ -36,7 +36,7 @@ export const sendNewsletterEmail = async ({
       from,
       to,
       subject,
-      react: NewsletterTemplate(article) as React.ReactElement,
+      react: NewsletterTemplate(artigo) as React.ReactElement,
     });
 
     if (error) {

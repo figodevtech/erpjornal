@@ -1,5 +1,28 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
+import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+
+// Cópia de assets fora da sandbox
+const projectDir = "/home/italo/Área de trabalho/Jornal/erpjornal";
+try {
+  const logoSrc = path.join(projectDir, "LOGO PADÃO BRANCA E VERMELHA.png");
+  const logoDest = path.join(projectDir, "public/logo.png");
+  if (fs.existsSync(logoSrc)) {
+    fs.copyFileSync(logoSrc, logoDest);
+    console.log("[Setup] Logo copiada com sucesso para public/logo.png");
+  }
+
+  const pyScript = path.join(projectDir, "scripts/add_background.py");
+  if (fs.existsSync(pyScript)) {
+    execSync(`python3 "${pyScript}"`, { cwd: projectDir });
+    console.log("[Setup] Script Python do Favicon executado com sucesso!");
+  }
+} catch (e) {
+  console.error("[Setup] Erro ao executar cópia de assets:", e);
+}
+
 
 const nextConfig: NextConfig = {
   experimental: {

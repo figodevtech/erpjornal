@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { KeyRound, Loader2, ShieldCheck, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { salvarPermissoesPerfil } from "../actions";
@@ -124,6 +125,7 @@ function ModalShell({
 }
 
 export default function PermissionsManager({ perfis, permissoes }: PermissionsManagerProps) {
+  const router = useRouter();
   const [perfilSelecionadoId, setPerfilSelecionadoId] = useState<string | null>(null);
   const [criandoPerfil, setCriandoPerfil] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -174,6 +176,7 @@ export default function PermissionsManager({ perfis, permissoes }: PermissionsMa
       toast.success(criandoPerfil ? "Perfil criado." : "Permissões salvas.");
       setPerfilSelecionadoId(null);
       setCriandoPerfil(false);
+      router.refresh();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Não foi possível salvar o perfil.");
     } finally {

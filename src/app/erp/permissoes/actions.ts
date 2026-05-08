@@ -1,14 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-function redirecionarComErro(mensagem: string) {
-  redirect(`/erp/permissoes?erro=${encodeURIComponent(mensagem)}`);
-}
 
 function isPrismaError(error: unknown): error is { code: string } {
   return typeof error === "object" && error !== null && "code" in error;
@@ -39,7 +34,7 @@ export async function salvarPermissoesPerfil(formData: FormData) {
       });
     } else {
       if (!nome) {
-        redirecionarComErro("Informe o nome do novo perfil.");
+        throw new Error("Informe o nome do novo perfil.");
       }
 
       const novoPerfil = await prisma.perfil.create({
@@ -73,10 +68,10 @@ export async function salvarPermissoesPerfil(formData: FormData) {
       mensagem = "Já existe um perfil com esse nome.";
     }
 
-    redirecionarComErro(mensagem);
+    throw new Error(mensagem);
   }
 
   revalidatePath("/erp/permissoes");
   revalidatePath("/erp/usuarios");
-  redirect("/erp/permissoes?sucesso=permissoes-salvas");
+  return { ok: true };
 }

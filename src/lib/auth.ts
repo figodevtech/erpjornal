@@ -122,11 +122,7 @@ export function temPerfil(sessao: SessaoAplicacao, perfisAceitos: string[]) {
 }
 
 export function temPermissao(sessao: SessaoAplicacao, permissao: string) {
-  return (
-    sessao.user.role === "admin" ||
-    sessao.user.perfis.includes("admin_erp") ||
-    sessao.user.permissoes.includes(permissao)
-  );
+  return sessao.user.permissoes.includes(permissao);
 }
 
 export function temAlgumaPermissao(sessao: SessaoAplicacao, permissoes: string[]) {

@@ -16,7 +16,7 @@ export default async function Header() {
   const videosEnabled = isModuleEnabled("videos");
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-950 shadow-sm border-b-[4px] border-red-700 transition-colors duration-300">
+    <header className="sticky top-0 z-50 w-full bg-white dark:bg-gray-950 shadow-sm border-b-4 border-red-700 transition-colors duration-300">
       {/* 1. TOP BAR */}
       <div className="hidden md:flex bg-gray-900 dark:bg-black text-gray-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 justify-between items-center font-bold tracking-widest uppercase">
         <span suppressHydrationWarning>Atualizado: {new Date().toLocaleDateString("pt-BR")}</span>
@@ -29,10 +29,10 @@ export default async function Header() {
       </div>
 
       {/* 2. MAIN BAR */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-[72px]">
+      <div className="max-w-360 mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-18">
 
-          <div className="flex-shrink-0 flex items-center">
+          <div className="shrink-0 flex items-center">
             <Link href="/" className="group flex items-center gap-2 outline-none focus-visible:ring-2 focus-visible:ring-red-700/50 rounded-lg p-1" aria-label="Revista Gestão - Início">
               <div className="w-10 h-10 bg-red-700 text-white flex items-center justify-center font-black text-2xl tracking-tighter" aria-hidden="true">
                 RG

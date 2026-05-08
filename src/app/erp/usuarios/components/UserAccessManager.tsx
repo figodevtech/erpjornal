@@ -56,12 +56,6 @@ function ModalShell({
   onClose: () => void;
   children: React.ReactNode;
 }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   useEffect(() => {
     if (!open) return;
 
@@ -73,7 +67,7 @@ function ModalShell({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose, open]);
 
-  if (!mounted || !open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
@@ -124,7 +118,7 @@ function PerfilCheckboxes({
             <span>
               <span className="block font-bold text-gray-950">{perfil.nome}</span>
               <span className="block text-xs text-gray-500">
-                {perfil.descricao || "Sem descricao"} · {perfil.usuariosCount} usuario(s)
+                {perfil.descricao || "Sem descrição"} · {perfil.usuariosCount} usuário(s)
               </span>
             </span>
           </label>
@@ -151,8 +145,8 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
       await criarUsuarioErp(formData);
       toast.success("Usuario criado.");
       setDialogCriacaoAberto(false);
-    } catch (error: any) {
-      toast.error(error?.message || "Nao foi possivel criar o usuario.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Nao foi possivel criar o usuario.");
     } finally {
       setIsCreating(false);
     }
@@ -164,8 +158,8 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
       await atualizarUsuarioErp(formData);
       toast.success("Usuario atualizado.");
       setUsuarioSelecionadoId(null);
-    } catch (error: any) {
-      toast.error(error?.message || "Nao foi possivel atualizar o usuario.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Nao foi possivel atualizar o usuario.");
     } finally {
       setIsUpdating(false);
     }
@@ -175,7 +169,7 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-gray-950">Usuarios e Acessos</h1>
+          <h1 className="text-3xl font-black tracking-tight text-gray-950">Usuários e Acessos</h1>
           <p className="mt-1 text-sm text-gray-600">
             Gerencie contas internas e os perfis liberados para cada pessoa.
           </p>
@@ -186,12 +180,12 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
             className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-bold text-indigo-700 transition-colors hover:bg-indigo-100"
           >
             <Shield className="h-4 w-4" />
-            Editar permissoes
+            Editar permissões
           </Link>
           <button
             type="button"
             onClick={() => setDialogCriacaoAberto(true)}
-            className="inline-flex items-center gap-2 rounded-xl bg-red-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-red-800"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
           >
             <Plus className="h-4 w-4" />
             Novo usuario
@@ -207,7 +201,7 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
           <div>
             <h2 className="text-xl font-black text-gray-950">Equipe cadastrada</h2>
             <p className="text-sm text-gray-500">
-              {usuarios.length} usuario(s) com acesso mapeado no sistema.
+              {usuarios.length} usuário(s) com acesso mapeado no sistema.
             </p>
           </div>
         </div>

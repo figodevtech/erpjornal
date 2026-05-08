@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Clock, Filter, Sparkles, X } from "lucide-react";
 
-import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 import { SelectionCard } from "./components/SelectionCard";
@@ -11,7 +11,7 @@ export default async function CuradoriaDashboardPage({
 }: {
   searchParams: Promise<{ source?: string }>;
 }) {
-  const session = await exigirAlgumaPermissao(["curadoria:ler", "curadoria:aprovar"]);
+  const session = await exigirPermissao("curadoria:ler");
   const podeAprovar = temPermissao(session, "curadoria:aprovar");
   const { source } = await searchParams;
 

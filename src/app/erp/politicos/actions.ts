@@ -1,25 +1,30 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function upsertPolitician(formData: FormData) {
-  await exigirPermissao("politicos:gerir");
-
   const id = formData.get("id") as string | null;
-  const nome = formData.get("nome") as string;
-  const cargo = formData.get("cargo") as string;
-  const partido = formData.get("partido") as string;
-  const regiao = formData.get("regiao") as string;
-  const estado = formData.get("estado") as string;
-  const biografia = formData.get("biografia") as string;
+  await exigirPermissao(id ? "entidades:editar" : "entidades:criar");
 
-  if (!nome) throw new Error("O nome e obrigatorio.");
+  const nome = ((formData.get("nome") as string) || "").trim() || null;
+  const cpf = ((formData.get("cpf") as string) || "").replace(/\D/g, "") || null;
+  const cnpj = ((formData.get("cnpj") as string) || "").replace(/\D/g, "") || null;
+  const categoriaEntidade = ((formData.get("categoriaEntidade") as string) || "").trim() || null;
+  const cargo = ((formData.get("cargo") as string) || "").trim() || null;
+  const partido = ((formData.get("partido") as string) || "").trim() || null;
+  const regiao = ((formData.get("regiao") as string) || "").trim() || null;
+  const estado = ((formData.get("estado") as string) || "").trim().toUpperCase().slice(0, 2) || null;
+  const biografia = ((formData.get("biografia") as string) || "").trim() || null;
 
   const data = {
     nome,
+    cpf,
+    cnpj,
+    categoriaEntidade,
     cargo,
     partido,
     regiao,
@@ -28,23 +33,89 @@ export async function upsertPolitician(formData: FormData) {
   };
 
   if (id) {
-    await prisma.politico.update({ where: { id }, data });
+    await prisma.$executeRaw`
+      update public.politicos
+      set
+        nome = ${data.nome},
+        cpf = ${data.cpf},
+        cnpj = ${data.cnpj},
+        categoria_entidade = ${data.categoriaEntidade},
+        cargo = ${data.cargo},
+        partido = ${data.partido},
+        regiao = ${data.regiao},
+        estado = ${data.estado},
+        biografia = ${data.biografia},
+        atualizado_em = now()
+      where id = ${id}::uuid
+    `;
   } else {
-    await prisma.politico.create({ data });
+    await prisma.$executeRaw`
+      insert into public.politicos (
+        id,
+        nome,
+        cpf,
+        cnpj,
+        categoria_entidade,
+        cargo,
+        partido,
+        regiao,
+        estado,
+        biografia,
+        atualizado_em
+      )
+      values (
+        ${randomUUID()}::uuid,
+        ${data.nome},
+        ${data.cpf},
+        ${data.cnpj},
+        ${data.categoriaEntidade},
+        ${data.cargo},
+        ${data.partido},
+        ${data.regiao},
+        ${data.estado},
+        ${data.biografia},
+        now()
+      )
+    `;
   }
 
-  revalidatePath("/erp/politicos");
+  revalidatePath("/erp/entidades");
 }
 
 export async function deletePolitician(id: string) {
-  await exigirPermissao("politicos:gerir");
+  await exigirPermissao("entidades:editar");
   await prisma.politico.delete({ where: { id } });
-  revalidatePath("/erp/politicos");
+  revalidatePath("/erp/entidades");
 }
 
 export async function getPoliticians() {
-  await exigirPermissao("politicos:gerir");
-  return prisma.politico.findMany({
-    orderBy: { nome: "asc" },
-  });
+  await exigirPermissao("entidades:ler");
+  return prisma.$queryRaw<
+    Array<{
+      id: string;
+      nome: string | null;
+      cpf: string | null;
+      cnpj: string | null;
+      categoriaEntidade: string | null;
+      cargo: string | null;
+      partido: string | null;
+      biografia: string | null;
+      regiao: string | null;
+      estado: string | null;
+    }>
+  >`
+    select
+      id,
+      nome,
+      cpf,
+      cnpj,
+      categoria_entidade as "categoriaEntidade",
+      cargo,
+      partido,
+      biografia,
+      regiao,
+      estado
+    from public.politicos
+    order by nome asc nulls last, criado_em desc
+  `;
 }

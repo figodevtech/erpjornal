@@ -20,26 +20,35 @@ export interface InitialData {
   statusLegal: string;
   dataPublicacao: Date | null;
   checagensFato?: { id: string, fonte_url: string, documento_url: string, status_verificacao: string }[];
-  politicos?: { id: string }[];
+  politicos?: { id: string; papel?: string | null }[];
   regiao: string | null;
   estado: string | null;
   autorId?: string;
   canaisPublicacao?: string[];
   urlFonte?: string | null;
   autorExterno?: string | null;
+  revistaId?: string | null;
 }
 
 interface Politician {
   id: string;
-  nome: string;
+  nome: string | null;
   partido: string | null;
+  categoriaEntidade?: string | null;
 }
 
 interface ArticleFormProps {
   categories: Category[];
   politicians: Politician[];
+  revistas: Array<{
+    id: string;
+    titulo: string;
+    edicao: string;
+  }>;
   userRole: string;
   initialData?: InitialData | null;
+  revistaId?: string | null;
+  revistaTitulo?: string | null;
 }
 
 import { FactCheckManager } from "./FactCheckManager";
@@ -59,11 +68,21 @@ import {
 } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import RichTextEditor from "@/components/ui/RichTextEditor";
+import CustomSelect from "@/components/ui/CustomSelect";
 import { SEOSidebar } from "./SEOSidebar";
 import { ArticlePreview } from "./ArticlePreview";
+import EntityRelationCombobox from "./EntityRelationCombobox";
 import { rephraseArticleContent } from "../ai-actions";
 
-export default function ArticleForm({ categories, politicians, userRole, initialData }: ArticleFormProps) {
+export default function ArticleForm({
+  categories,
+  politicians,
+  revistas,
+  userRole,
+  initialData,
+  revistaId,
+  revistaTitulo,
+}: ArticleFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
   // Inicia com o status do banco, ou "rascunho"
@@ -79,6 +98,7 @@ export default function ArticleForm({ categories, politicians, userRole, initial
   const [viewMode, setViewMode] = useState<"edit" | "preview" | "split">("edit");
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [selectedCategoryId, setSelectedCategoryId] = useState(initialData?.categoriaId || "");
+  const effectiveRevistaId = revistaId ?? initialData?.revistaId ?? null;
 
   const formatSlug = (val: string) => {
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -215,6 +235,11 @@ export default function ArticleForm({ categories, politicians, userRole, initial
       <form action={handleAction} className={`transition-all duration-500 ${viewMode === "preview" ? "opacity-0 invisible h-0" : ""}`}>
         {/* Campo Oculto para UPDATE Dinâmico Controlado por React API Routes */}
         {initialData?.id && <input type="hidden" name="id" value={initialData.id} />}
+        {effectiveRevistaId && revistaTitulo && (
+          <div className="mb-6 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-800">
+            Artigo vinculado à revista: {revistaTitulo}
+          </div>
+        )}
 
         {error && (
           <div className="mb-6 p-4 bg-rose-50 text-rose-800 border-l-4 border-rose-500 rounded-r-lg text-sm font-medium">
@@ -310,31 +335,49 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                 <div className="space-y-5">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                    <select 
-                      name="categoriaId" 
+                    <CustomSelect
+                      name="categoriaId"
                       value={selectedCategoryId}
-                      onChange={(e) => setSelectedCategoryId(e.target.value)}
-                      className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
-                    >
-                      <option value="">Selecione uma categoria...</option>
-                      {categories.map(c => (
-                        <option key={c.id} value={c.id}>{c.nome}</option>
-                      ))}
-                    </select>
+                      onChange={setSelectedCategoryId}
+                      placeholder="Selecione uma categoria..."
+                      options={[
+                        { value: "", label: "Sem categoria" },
+                        ...categories.map((category) => ({ value: category.id, label: category.nome })),
+                      ]}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Revista</label>
+                    <CustomSelect
+                      name="revistaId"
+                      defaultValue={effectiveRevistaId ?? ""}
+                      placeholder="Sem revista"
+                      options={[
+                        { value: "", label: "Sem revista" },
+                        ...revistas.map((revista) => ({
+                          value: revista.id,
+                          label: `Edição ${revista.edicao} - ${revista.titulo}`,
+                        })),
+                      ]}
+                    />
+                    <p className="mt-2 text-xs text-gray-500">
+                      Vincule esta matéria a uma edição já cadastrada, se ela fizer parte de uma revista.
+                    </p>
                   </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status do Workflow</label>
-                  <select 
-                    name="status" 
+                  <CustomSelect
+                    name="status"
                     value={statusInput}
-                    onChange={(e) => setStatusInput(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm"
-                  >
-                    <option value="rascunho">Salvar como Rascunho</option>
-                    <option value="em_revisao">Enviar para Revisão</option>
-                    {canPublish && <option value="publicado">Publicar Oficialmente</option>}
-                  </select>
+                    onChange={setStatusInput}
+                    options={[
+                      { value: "rascunho", label: "Salvar como Rascunho" },
+                      { value: "em_revisao", label: "Enviar para Revisão" },
+                      ...(canPublish ? [{ value: "publicado", label: "Publicar Oficialmente" }] : []),
+                    ]}
+                  />
                 </div>
 
                 {statusInput === "publicado" && canPublish && (
@@ -357,29 +400,10 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                   <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                   </svg>
-                  Políticos Envolvidos
+                  Entidades Relacionadas
                 </h3>
                 
-                <div className="max-h-48 overflow-y-auto space-y-2 p-1">
-                  {politicians.map((p) => (
-                    <label key={p.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors group">
-                      <input 
-                        type="checkbox" 
-                        name="politicoIds" 
-                        value={p.id}
-                        defaultChecked={initialData?.politicos?.some((item) => item.id === p.id)}
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 transition-all"
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">{p.nome}</span>
-                        <span className="text-[10px] text-gray-400 font-medium uppercase">{p.partido || "Sem Partido"}</span>
-                      </div>
-                    </label>
-                  ))}
-                  {politicians.length === 0 && (
-                    <p className="text-xs text-gray-400 italic py-2">Nenhum político cadastrado.</p>
-                  )}
-                </div>
+                <EntityRelationCombobox entities={politicians} initialSelected={initialData?.politicos ?? []} />
               </div>
 
               <div className="pt-6 border-t border-gray-200/80">
@@ -393,16 +417,16 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                 <div className="space-y-4">
                   <div>
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Esfera / Região</label>
-                    <select 
-                      name="regiao" 
+                    <CustomSelect
+                      name="regiao"
                       defaultValue={initialData?.regiao || "Nacional"}
-                      className="w-full bg-gray-50 border border-gray-200 rounded-xl p-2.5 text-sm outline-none focus:ring-2 focus:ring-rose-500 transition-all font-medium"
-                    >
-                      <option value="Nacional">Nacional</option>
-                      <option value="Internacional">Internacional</option>
-                      <option value="Estadual">Estadual</option>
-                      <option value="Municipal">Municipal</option>
-                    </select>
+                      options={[
+                        { value: "Nacional", label: "Nacional" },
+                        { value: "Internacional", label: "Internacional" },
+                        { value: "Estadual", label: "Estadual" },
+                        { value: "Municipal", label: "Municipal" },
+                      ]}
+                    />
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Estado (Sigla)</label>
@@ -494,17 +518,17 @@ export default function ArticleForm({ categories, politicians, userRole, initial
                 <div className="space-y-4">
                   <div>
                     <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 font-sans">Status Legal</label>
-                    <select 
-                      name="statusLegal" 
+                    <CustomSelect
+                      name="statusLegal"
                       defaultValue={initialData?.statusLegal || "pendente"}
                       disabled={userRole === "reporter"}
-                      className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm disabled:bg-gray-50 disabled:cursor-not-allowed"
-                    >
-                      <option value="pendente">Pendente</option>
-                      <option value="em_analise">Em Análise</option>
-                      <option value="aprovado">Aprovado para Publicação</option>
-                      <option value="ajustes">Requer Ajustes</option>
-                    </select>
+                      options={[
+                        { value: "pendente", label: "Pendente" },
+                        { value: "em_analise", label: "Em Análise" },
+                        { value: "aprovado", label: "Aprovado para Publicação" },
+                        { value: "ajustes", label: "Requer Ajustes" },
+                      ]}
+                    />
                   </div>
                   
                   <div>

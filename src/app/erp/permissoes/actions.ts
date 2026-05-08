@@ -10,6 +10,10 @@ function redirecionarComErro(mensagem: string) {
   redirect(`/erp/permissoes?erro=${encodeURIComponent(mensagem)}`);
 }
 
+function isPrismaError(error: unknown): error is { code: string } {
+  return typeof error === "object" && error !== null && "code" in error;
+}
+
 export async function salvarPermissoesPerfil(formData: FormData) {
   await exigirPermissao("usuarios:gerir");
 
@@ -61,12 +65,12 @@ export async function salvarPermissoesPerfil(formData: FormData) {
         skipDuplicates: true,
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     let mensagem =
-      error instanceof Error ? error.message : "Nao foi possivel salvar as permissoes.";
+      error instanceof Error ? error.message : "Não foi possível salvar as permissões.";
 
-    if (error?.code === "P2002") {
-      mensagem = "Ja existe um perfil com esse nome.";
+    if (isPrismaError(error) && error.code === "P2002") {
+      mensagem = "Já existe um perfil com esse nome.";
     }
 
     redirecionarComErro(mensagem);

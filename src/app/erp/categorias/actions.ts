@@ -13,10 +13,14 @@ function slugify(value: string) {
     .replace(/(^-|-$)+/g, "");
 }
 
-export async function salvarCategoria(formData: FormData) {
-  await exigirPermissao("categorias:gerir");
+function isPrismaError(error: unknown): error is { code: string } {
+  return typeof error === "object" && error !== null && "code" in error;
+}
 
+export async function salvarCategoria(formData: FormData) {
   const id = (formData.get("id") as string | null) || null;
+  await exigirPermissao(id ? "categorias:editar" : "categorias:criar");
+
   const nome = (formData.get("nome") as string)?.trim();
   const slugInput = (formData.get("slug") as string)?.trim();
   const esfera = ((formData.get("esfera") as string) || "").trim() || null;
@@ -40,8 +44,8 @@ export async function salvarCategoria(formData: FormData) {
     } else {
       await prisma.categoria.create({ data });
     }
-  } catch (error: any) {
-    if (error?.code === "P2002") {
+  } catch (error: unknown) {
+    if (isPrismaError(error) && error.code === "P2002") {
       throw new Error("Ja existe uma categoria com esse nome ou slug.");
     }
     throw error;
@@ -54,7 +58,7 @@ export async function salvarCategoria(formData: FormData) {
 }
 
 export async function excluirCategoria(id: string) {
-  await exigirPermissao("categorias:gerir");
+  await exigirPermissao("categorias:editar");
 
   const categoria = await prisma.categoria.findUnique({
     where: { id },

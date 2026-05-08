@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Lock, MessageSquare, Plus, UserCheck } from "lucide-react";
 
-import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 import { saveSourceNote } from "../actions";
@@ -13,7 +13,7 @@ interface PageProps {
 
 export default async function FonteDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const session = await exigirAlgumaPermissao(["fontes:ler", "fontes:editar"]);
+  const session = await exigirPermissao("fontes:ler");
 
   const role = session.user.role;
   const isPrivileged = role === "admin" || role === "editor";

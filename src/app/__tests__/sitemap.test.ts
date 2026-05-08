@@ -7,7 +7,6 @@ vi.mock('@/lib/prisma', () => ({
   prisma: {
     artigo: { findMany: vi.fn() },
     category: { findMany: vi.fn() },
-    politician: { findMany: vi.fn() },
     podcastEpisode: { findMany: vi.fn() },
   },
 }));
@@ -25,11 +24,6 @@ describe('Sitemap Generator', () => {
     ] as any);
 
      
-    vi.mocked(prisma.politico.findMany).mockResolvedValue([
-        { id: '123', atualizadoEm: new Date() }
-    ] as any);
-
-     
     vi.mocked(prisma.episodioPodcast.findMany).mockResolvedValue([
         { slug: 'podcast-1', atualizadoEm: new Date() }
     ] as any);
@@ -41,7 +35,6 @@ describe('Sitemap Generator', () => {
     expect(urls).toContain('https://revistagestao.com.br');
     expect(urls).toContain('https://revistagestao.com.br/noticia/artigo-1');
     expect(urls).toContain('https://revistagestao.com.br/categoria/politica');
-    expect(urls).toContain('https://revistagestao.com.br/politicos/123');
     expect(urls).toContain('https://revistagestao.com.br/podcasts/podcast-1');
   });
 });

@@ -39,12 +39,6 @@ function ModalShell({
   onClose: () => void;
   children: React.ReactNode;
 }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -54,30 +48,39 @@ function ModalShell({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [onClose, open]);
 
-  if (!mounted || !open) return null;
+  if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
-      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-[36px] border border-gray-100 bg-white shadow-2xl">
-        <div className="relative bg-slate-900 p-7 text-white">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-950/60 p-4 backdrop-blur-sm">
+      <div className="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+        <div className="relative border-b border-gray-100 p-6">
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-5 top-5 rounded-full p-2 text-white/50 transition hover:bg-white/10 hover:text-white"
+            className="absolute right-4 top-4 rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Fechar"
           >
             <X className="h-5 w-5" />
           </button>
-          <h2 className="text-xl font-black tracking-tight">{title}</h2>
-          <p className="mt-1 text-sm text-slate-300">{subtitle}</p>
+          <h2 className="pr-10 text-xl font-black tracking-tight text-gray-900">{title}</h2>
+          <p className="mt-1 pr-10 text-sm text-gray-500">{subtitle}</p>
         </div>
-        <div className="overflow-y-auto bg-white p-7">{children}</div>
+        <div className="overflow-y-auto bg-white p-6">{children}</div>
       </div>
     </div>,
     document.body
   );
 }
 
-export default function CategoryManager({ categorias }: { categorias: CategoriaItem[] }) {
+export default function CategoryManager({
+  categorias,
+  podeCriar,
+  podeEditar,
+}: {
+  categorias: CategoriaItem[];
+  podeCriar: boolean;
+  podeEditar: boolean;
+}) {
   const [dialogAberto, setDialogAberto] = useState(false);
   const [categoriaSelecionadaId, setCategoriaSelecionadaId] = useState<string | null>(null);
   const [nome, setNome] = useState("");
@@ -119,8 +122,8 @@ export default function CategoryManager({ categorias }: { categorias: CategoriaI
       await salvarCategoria(formData);
       toast.success(categoriaSelecionada ? "Categoria atualizada." : "Categoria criada.");
       setDialogAberto(false);
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao salvar categoria.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Erro ao salvar categoria.");
     } finally {
       setIsSaving(false);
     }
@@ -132,8 +135,8 @@ export default function CategoryManager({ categorias }: { categorias: CategoriaI
       await excluirCategoria(id);
       toast.success("Categoria excluida.");
       setDialogAberto(false);
-    } catch (error: any) {
-      toast.error(error.message || "Erro ao excluir categoria.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Erro ao excluir categoria.");
     } finally {
       setIsDeleting(false);
     }
@@ -148,17 +151,19 @@ export default function CategoryManager({ categorias }: { categorias: CategoriaI
             Organize as editorias do portal e mantenha a taxonomia editorial centralizada.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            setCategoriaSelecionadaId(null);
-            setDialogAberto(true);
-          }}
-          className="inline-flex items-center gap-2 rounded-xl bg-red-700 px-4 py-2.5 text-sm font-black text-white transition hover:bg-red-800"
-        >
-          <Plus className="h-4 w-4" />
-          Nova categoria
-        </button>
+        {podeCriar && (
+          <button
+            type="button"
+            onClick={() => {
+              setCategoriaSelecionadaId(null);
+              setDialogAberto(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
+          >
+            <Plus className="h-4 w-4" />
+            Nova categoria
+          </button>
+        )}
       </div>
 
       <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -194,17 +199,19 @@ export default function CategoryManager({ categorias }: { categorias: CategoriaI
                   </div>
                   <p className="mt-1 text-sm text-gray-500">/{categoria.slug}</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setCategoriaSelecionadaId(categoria.id);
-                    setDialogAberto(true);
-                  }}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gray-950 px-4 py-2 text-sm font-black text-white transition hover:bg-black"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  Editar
-                </button>
+                {podeEditar && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCategoriaSelecionadaId(categoria.id);
+                      setDialogAberto(true);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-xl bg-gray-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-black"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    Editar
+                  </button>
+                )}
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold uppercase tracking-wide">
@@ -245,7 +252,7 @@ export default function CategoryManager({ categorias }: { categorias: CategoriaI
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-sm font-bold text-gray-800">Nome</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Nome</label>
               <input
                 name="nome"
                 value={nome}
@@ -256,37 +263,37 @@ export default function CategoryManager({ categorias }: { categorias: CategoriaI
                   }
                 }}
                 required
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-950 outline-none transition focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-bold text-gray-800">Slug</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Slug</label>
               <input
                 name="slug"
                 value={slug}
                 onChange={(event) => setSlug(slugify(event.target.value))}
                 required
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-950 outline-none transition focus:ring-2 focus:ring-indigo-500"
               />
             </div>
           </div>
 
           <div className="grid gap-4 md:grid-cols-[1fr_180px]">
             <div>
-              <label className="mb-1.5 block text-sm font-bold text-gray-800">Esfera</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Esfera</label>
               <input
                 name="esfera"
                 value={esfera}
                 onChange={(event) => setEsfera(event.target.value)}
                 placeholder="Nacional, Internacional, Estadual..."
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-950 outline-none transition focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-bold text-gray-800">Cor</label>
-              <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-white px-3 py-2">
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Cor</label>
+              <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
                 <input
                   type="color"
                   name="cor"
@@ -300,23 +307,23 @@ export default function CategoryManager({ categorias }: { categorias: CategoriaI
           </div>
 
           <div>
-            <label className="mb-1.5 block text-sm font-bold text-gray-800">Meta descricao</label>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Meta descrição</label>
             <textarea
               name="metaDescricao"
               value={metaDescricao}
               onChange={(event) => setMetaDescricao(event.target.value)}
               rows={3}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-950 outline-none transition focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
-          <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:justify-between">
-            {categoriaSelecionada ? (
+          <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            {categoriaSelecionada && podeEditar ? (
               <button
                 type="button"
                 onClick={() => void handleDelete(categoriaSelecionada.id)}
                 disabled={isSaving || isDeleting}
-                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-black text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
               >
                 <Trash2 className="h-4 w-4" />
                 {isDeleting ? "Excluindo..." : "Excluir"}
@@ -325,14 +332,24 @@ export default function CategoryManager({ categorias }: { categorias: CategoriaI
               <span />
             )}
 
-            <button
-              type="submit"
-              disabled={isSaving || isDeleting}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gray-950 px-5 py-3 text-sm font-black text-white transition hover:bg-black disabled:opacity-50"
-            >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
-              {isSaving ? "Salvando..." : "Salvar categoria"}
-            </button>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setDialogAberto(false)}
+                disabled={isSaving || isDeleting}
+                className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-50 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving || isDeleting}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-indigo-500 disabled:opacity-50"
+              >
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+                {isSaving ? "Salvando..." : "Salvar categoria"}
+              </button>
+            </div>
           </div>
         </form>
       </ModalShell>

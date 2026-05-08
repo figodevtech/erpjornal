@@ -114,12 +114,15 @@ model Artigo {
   urlFonte          String?          @map("url_fonte")
   revisorHumano     String?          @map("revisor_humano")
   itemRssId         String?          @unique @db.Uuid @map("item_rss_id")
+  revistaId         String?          @db.Uuid @map("revista_id")
+  ordemNaRevista    Int?             @map("ordem_revista")
   logsAcao          LogAcao[]
   autor             Usuario          @relation("ArtigoAutor", fields: [autorId], references: [id])
   categoria         Categoria?       @relation(fields: [categoriaId], references: [id])
   editor            Usuario?         @relation("ArtigoEditor", fields: [editorId], references: [id])
   revisor           Usuario?         @relation("ArtigoRevisor", fields: [revisorId], references: [id])
   itemRss           ItemRssBruto?    @relation(fields: [itemRssId], references: [id])
+  revista           Revista?         @relation(fields: [revistaId], references: [id], onDelete: SetNull)
   versoes           VersaoArtigo[]
   checagensFato     ChecagemFato[]
   notasFonte        NotaFonte[]
@@ -127,12 +130,30 @@ model Artigo {
 
   @@index([status, dataPublicacao])
   @@index([categoriaId])
+  @@index([revistaId, ordemNaRevista])
   @@map("artigos")
+}
+
+model Revista {
+  id              String    @id @default(uuid()) @db.Uuid
+  titulo          String
+  descricao       String?
+  edicao          String
+  dataPublicacao  DateTime? @map("data_publicacao")
+  capaUrl         String?   @map("capa_url")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  artigos         Artigo[]
+
+  @@map("revistas")
 }
 
 model Politico {
   id               String           @id @default(uuid()) @db.Uuid
-  nome             String
+  nome             String?
+  cpf              String?          @unique
+  cnpj             String?          @unique
+  categoriaEntidade String?         @map("categoria_entidade")
   cargo            String?
   partido          String?
   biografia        String?
@@ -149,6 +170,7 @@ model Politico {
 model ArtigoPolitico {
   artigoId   String   @db.Uuid @map("artigo_id")
   politicoId String   @db.Uuid @map("politico_id")
+  papel      String?
   artigo     Artigo   @relation(fields: [artigoId], references: [id], onDelete: Cascade)
   politico   Politico @relation(fields: [politicoId], references: [id], onDelete: Cascade)
 

@@ -1,13 +1,13 @@
 import Link from "next/link";
-import { AlertTriangle, FileText, Film, Image, Plus, Upload } from "lucide-react";
+import { AlertTriangle, FileText, Film, ImageIcon, Plus, Upload } from "lucide-react";
 
-import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 function MediaTypeIcon({ tipo }: { tipo: string }) {
   if (tipo === "video") return <Film className="h-6 w-6 text-purple-500" />;
   if (tipo === "document") return <FileText className="h-6 w-6 text-blue-500" />;
-  return <Image className="h-6 w-6 text-rose-500" />;
+  return <ImageIcon className="h-6 w-6 text-rose-500" />;
 }
 
 function LicenseBadge({ tipoLicenca }: { tipoLicenca: string | null }) {
@@ -25,7 +25,7 @@ function LicenseBadge({ tipoLicenca }: { tipoLicenca: string | null }) {
 }
 
 export default async function MidiaPage() {
-  const session = await exigirAlgumaPermissao(["midia:ler", "midia:criar", "midia:editar"]);
+  const session = await exigirPermissao("midia:ler");
   const podeCriar = temPermissao(session, "midia:criar");
   const podeEditar = temPermissao(session, "midia:editar");
 

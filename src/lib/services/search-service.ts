@@ -1,3 +1,5 @@
+import { Prisma } from "@prisma/client";
+
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
 import { ArticleStatus } from "@/lib/types/article-status";
@@ -34,6 +36,11 @@ export interface SearchOptions {
   sortBy?: "relevance" | "newest";
 }
 
+type CachedSearchResponse = {
+  results?: Array<Omit<SearchResult, "date"> & { date?: string | Date }>;
+  total?: number;
+};
+
 export class SearchService {
   /**
    * Realiza busca em múltiplas tabelas com ranking e filtros
@@ -47,14 +54,14 @@ export class SearchService {
     // 0. Cache via Redis
     const cacheKey = `search:v2:${Buffer.from(JSON.stringify(options)).toString('base64')}`;
     try {
-      const cached = await redis.get(cacheKey) as any;
+      const cached = (await redis.get(cacheKey)) as CachedSearchResponse | null;
       if (cached) {
         // Reidrata datas que foram serializadas como string pelo JSON
-        const rehydrated = (cached.results || []).map((r: any) => ({
+        const rehydrated = (cached.results || []).map((r) => ({
           ...r,
           date: r.date ? new Date(r.date) : undefined,
         }));
-        return { results: rehydrated, total: cached.total };
+        return { results: rehydrated, total: cached.total ?? rehydrated.length };
       }
     } catch (e) {
       console.warn("Redis search cache error:", e);
@@ -73,7 +80,7 @@ export class SearchService {
     ]);
 
     // 2. Unificar e Rankear
-    let allResults: SearchResult[] = [
+    const allResults: SearchResult[] = [
       ...artigos,
       ...categories,
       ...authors,
@@ -96,7 +103,7 @@ export class SearchService {
     // 4. Salvar no Redis (5 min)
     try {
       await redis.set(cacheKey, JSON.stringify(response), { ex: 300 });
-    } catch (e) {
+    } catch {
       // Ignora erro de cache
     }
 
@@ -105,7 +112,7 @@ export class SearchService {
 
   private static async searchArticles(query: string, options: SearchOptions): Promise<SearchResult[]> {
     const now = new Date();
-    const where: any = {
+    const where: Prisma.ArtigoWhereInput = {
       status: ArticleStatus.publicado,
     };
 
@@ -150,7 +157,7 @@ export class SearchService {
     }
 
     // Ordenação no banco para garantir que pegamos os Corretos no 'take'
-    const orderBy: any = {};
+    const orderBy: Prisma.ArtigoOrderByWithRelationInput = {};
     if (options.sortBy === "newest") {
       orderBy.dataPublicacao = "desc";
     } else {
@@ -261,7 +268,7 @@ export class SearchService {
     return politicians.map((p) => ({
       id: p.id,
       type: "politico",
-      title: p.nome,
+      title: p.nome || "Entidade sem nome",
       slug: p.id,
       image: p.urlFoto || undefined,
       metadata: {

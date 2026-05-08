@@ -1,28 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, X, Globe, Save, Trash2, RefreshCcw } from "lucide-react";
+import { Plus, X, Globe, Trash2, RefreshCcw } from "lucide-react";
 import { saveRSSSource, deleteRSSSource } from "../../actions";
 import { toast } from "sonner";
 
 import { createPortal } from "react-dom";
 
+type RSSSource = {
+  id: string;
+  name: string;
+  urlFeed: string;
+  tone: string | null;
+  cacheTtl: number | null;
+  ativa: boolean | null;
+};
+
 interface RSSSourceFormProps {
-  source?: any;
+  source?: RSSSource;
 }
 
 export function RSSSourceForm({ source }: RSSSourceFormProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // Garantir que o portal só renderize no cliente
-  useState(() => {
-    if (typeof window !== "undefined") {
-      setMounted(true);
-    }
-    return undefined;
-  });
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,8 +32,8 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
       await saveRSSSource(formData);
       toast.success("Fonte salva com sucesso!");
       setIsOpen(false);
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Nao foi possivel salvar a fonte.");
     } finally {
       setLoading(false);
     }
@@ -163,7 +163,11 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className={source ? "p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-all" : "flex items-center gap-2 bg-indigo-600 text-white font-bold px-5 py-2.5 rounded-xl hover:bg-indigo-500 transition-all shadow-md text-sm uppercase tracking-widest"}
+        className={
+          source
+            ? "p-2 hover:bg-gray-100 rounded-lg text-gray-400 hover:text-indigo-600 transition-all"
+            : "inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
+        }
       >
         {source ? (
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -172,7 +176,7 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
         ) : <><Plus className="w-4 h-4" /> Novo Feed RSS</>}
       </button>
 
-      {mounted && typeof document !== "undefined" && createPortal(modalContent, document.body)}
+      {typeof document !== "undefined" && createPortal(modalContent, document.body)}
     </>
   );
 }

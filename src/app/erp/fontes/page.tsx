@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Eye, Lock, Plus, Shield, UserCheck } from "lucide-react";
+import { Eye, Lock, Shield, UserCheck } from "lucide-react";
 
-import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import NovaFonteDialog from "./components/NovaFonteDialog";
 
 const sigiloBadge = {
   publico: "bg-green-50 text-green-700 border-green-200",
@@ -17,7 +18,7 @@ const sigiloIcon = {
 };
 
 export default async function FontesPage() {
-  const session = await exigirAlgumaPermissao(["fontes:ler", "fontes:criar", "fontes:editar"]);
+  const session = await exigirPermissao("fontes:ler");
 
   const role = session.user.role as string;
   const isPrivileged = role === "admin" || role === "editor";
@@ -43,15 +44,7 @@ export default async function FontesPage() {
             {!isPrivileged && " · fontes confidenciais ocultas"}
           </p>
         </div>
-        {podeCriar && (
-          <Link
-            href="/erp/fontes/nova"
-            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-indigo-500"
-          >
-            <Plus className="h-4 w-4" />
-            Nova Fonte
-          </Link>
-        )}
+        {podeCriar && <NovaFonteDialog />}
       </div>
 
       {fontes.length === 0 ? (
@@ -61,14 +54,6 @@ export default async function FontesPage() {
           <p className="mx-auto mt-2 max-w-sm text-sm text-gray-400">
             Cadastre contatos governamentais e jornalisticos com controle de sigilo.
           </p>
-          {podeCriar && (
-            <Link
-              href="/erp/fontes/nova"
-              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-indigo-500"
-            >
-              <Plus className="h-4 w-4" /> Adicionar primeira fonte
-            </Link>
-          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">

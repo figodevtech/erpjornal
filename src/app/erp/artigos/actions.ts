@@ -25,6 +25,7 @@ export async function saveArticle(formData: FormData) {
   const canaisPublicacao = formData.getAll("canaisPublicacao") as string[];
   const urlFonte = (formData.get("urlFonte") as string) || null;
   const autorExterno = (formData.get("autorExterno") as string) || null;
+  const revistaId = (formData.get("revistaId") as string) || null;
 
   if (!titulo || !slug || !corpoTexto) {
     throw new Error("Campos obrigatorios ausentes");
@@ -68,6 +69,7 @@ export async function saveArticle(formData: FormData) {
     canaisPublicacao,
     urlFonte,
     autorExterno,
+    revistaId,
   };
 
   const factChecksCount = parseInt((formData.get("checagensFato_count") as string) || "0");
@@ -82,6 +84,11 @@ export async function saveArticle(formData: FormData) {
   }
 
   const politicoIds = formData.getAll("politicoIds") as string[];
+  const entidadesRelacionadas = politicoIds.map((politicoId) => ({
+    politicoId,
+    papel: ((formData.get(`entidadePapel_${politicoId}`) as string) || "").trim() || null,
+  }));
+  let previousRevistaId: string | null = null;
 
   if (id) {
     if (!podeEditar && !podePublicar) {
@@ -90,6 +97,7 @@ export async function saveArticle(formData: FormData) {
 
     const existing = await prisma.artigo.findUnique({ where: { id } });
     if (!existing) throw new Error("Artigo nao encontrado");
+    previousRevistaId = existing.revistaId;
 
     if (role === "reporter" && existing.autorId !== session.user.id) {
       throw new Error("Voce nao tem permissao para editar este artigo.");
@@ -102,18 +110,27 @@ export async function saveArticle(formData: FormData) {
       finalPublishDate = null;
     }
 
+    const shouldAssignMagazineOrder = revistaId && existing.revistaId !== revistaId;
+    const ordemNaRevista = shouldAssignMagazineOrder
+      ? (await prisma.artigo.count({ where: { revistaId } })) + 1
+      : revistaId
+        ? existing.ordemNaRevista
+        : null;
+
     await prisma.artigo.update({
       where: { id },
       data: {
         ...data,
         dataPublicacao: finalPublishDate,
+        ordemNaRevista,
         checagensFato: {
           deleteMany: {},
           create: factChecks,
         },
         artigosPoliticos: {
           deleteMany: {},
-          create: politicoIds.map((politicoId) => ({
+          create: entidadesRelacionadas.map(({ politicoId, papel }) => ({
+            papel,
             politico: {
               connect: { id: politicoId },
             },
@@ -133,16 +150,20 @@ export async function saveArticle(formData: FormData) {
       },
     });
   } else {
+    const ordemNaRevista = revistaId ? (await prisma.artigo.count({ where: { revistaId } })) + 1 : null;
+
     const novoArtigo = await prisma.artigo.create({
       data: {
         ...data,
         dataPublicacao: finalStatus === "publicado" ? dataPublicacao || new Date() : null,
         autorId: session.user.id,
+        ordemNaRevista,
         checagensFato: {
           create: factChecks,
         },
         artigosPoliticos: {
-          create: politicoIds.map((politicoId) => ({
+          create: entidadesRelacionadas.map(({ politicoId, papel }) => ({
+            papel,
             politico: {
               connect: { id: politicoId },
             },
@@ -161,10 +182,16 @@ export async function saveArticle(formData: FormData) {
   }
 
   revalidatePath("/erp/artigos");
+  if (revistaId) {
+    revalidatePath(`/erp/revistas/${revistaId}`);
+  }
+  if (previousRevistaId && previousRevistaId !== revistaId) {
+    revalidatePath(`/erp/revistas/${previousRevistaId}`);
+  }
   revalidatePath("/");
   revalidatePath("/noticia/[slug]", "page");
   revalidatePath("/categoria/[slug]", "page");
-  redirect("/erp/artigos");
+  redirect(revistaId ? `/erp/revistas/${revistaId}` : "/erp/artigos");
 }
 
 export async function updateArticleStatus(id: string, newStatus: ArticleStatus) {

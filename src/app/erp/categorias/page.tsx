@@ -1,9 +1,11 @@
 import { prisma } from "@/lib/prisma";
-import { exigirPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import CategoryManager from "./components/CategoryManager";
 
 export default async function CategoriasPage() {
-  await exigirPermissao("categorias:gerir");
+  const session = await exigirPermissao("categorias:ler");
+  const podeCriar = temPermissao(session, "categorias:criar");
+  const podeEditar = temPermissao(session, "categorias:editar");
 
   const categorias = await prisma.categoria.findMany({
     orderBy: { nome: "asc" },
@@ -19,6 +21,8 @@ export default async function CategoriasPage() {
 
   return (
     <CategoryManager
+      podeCriar={podeCriar}
+      podeEditar={podeEditar}
       categorias={categorias.map((categoria) => ({
         id: categoria.id,
         nome: categoria.nome,

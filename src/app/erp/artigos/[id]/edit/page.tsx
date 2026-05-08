@@ -16,20 +16,30 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
     where: { id },
     include: {
       checagensFato: true,
-      artigosPoliticos: {
-        select: {
-          politico: {
-            select: { id: true },
-          },
-        },
-      },
     },
   });
+
+  const entidadesDoArtigo = await prisma.$queryRaw<Array<{ id: string; papel: string | null }>>`
+    select politico_id as id, papel
+    from public.artigos_politicos
+    where artigo_id = ${id}::uuid
+  `;
+
+  const revistaAtual = artigoBase?.revistaId
+    ? (
+        await prisma.$queryRaw<Array<{ id: string; titulo: string }>>`
+          select id, titulo
+          from public.revistas
+          where id = ${artigoBase.revistaId}::uuid
+          limit 1
+        `
+      )[0]
+    : null;
 
   const artigo = artigoBase
     ? ({
         ...artigoBase,
-        politicos: artigoBase.artigosPoliticos.map((item) => item.politico),
+        politicos: entidadesDoArtigo,
       } as unknown as InitialData)
     : null;
 
@@ -42,21 +52,29 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
     redirect("/erp/artigos");
   }
 
-  const politicians = await prisma.politico.findMany({
-    select: { id: true, nome: true, partido: true },
-    orderBy: { nome: "asc" }
-  });
+  const politicians = await prisma.$queryRaw<
+    Array<{ id: string; nome: string | null; partido: string | null; categoriaEntidade: string | null }>
+  >`
+    select id, nome, partido, categoria_entidade as "categoriaEntidade"
+    from public.politicos
+    order by nome asc nulls last, criado_em desc
+  `;
 
   const categories = await prisma.categoria.findMany({
     select: { id: true, nome: true },
     orderBy: { nome: "asc" }
   });
 
+  const revistas = await prisma.revista.findMany({
+    select: { id: true, titulo: true, edicao: true },
+    orderBy: [{ dataPublicacao: "desc" }, { createdAt: "desc" }],
+  });
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
         <Link 
-          href="/erp/artigos" 
+          href={artigo.revistaId ? `/erp/revistas/${artigo.revistaId}` : "/erp/artigos"} 
           className="text-gray-400 hover:text-gray-900 bg-white hover:bg-gray-100 p-2 rounded-full shadow-sm transition-all border border-gray-200"
           aria-label="Voltar para a listagem"
         >
@@ -70,7 +88,14 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
         </div>
       </div>
 
-      <ArticleForm categories={categories} politicians={politicians} userRole={session.user.role} initialData={artigo} />
+      <ArticleForm
+        categories={categories}
+        politicians={politicians}
+        revistas={revistas}
+        userRole={session.user.role}
+        initialData={artigo}
+        revistaTitulo={revistaAtual?.titulo}
+      />
     </div>
   );
 }

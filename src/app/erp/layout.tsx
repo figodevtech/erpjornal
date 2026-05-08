@@ -1,4 +1,4 @@
-import { exigirAcessoErp, temAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { exigirAcessoErp, temPermissao } from "@/lib/auth";
 import { isModuleEnabled } from "@/lib/config/modules";
 import ErpSidebar from "./ErpSidebar";
 
@@ -7,13 +7,14 @@ export default async function ERPLayout({ children }: { children: React.ReactNod
 
   const podcastsEnabled = isModuleEnabled("podcasts");
   const mediaEnabled = isModuleEnabled("videos");
-  const podeVerArtigos = temAlgumaPermissao(sessao, ["artigos:ler", "artigos:criar", "artigos:editar", "artigos:publicar"]);
-  const podeGerirCategorias = temPermissao(sessao, "categorias:gerir");
-  const podeGerirPoliticos = temPermissao(sessao, "politicos:gerir");
-  const podeVerFontes = temAlgumaPermissao(sessao, ["fontes:ler", "fontes:criar", "fontes:editar"]);
-  const podeVerMidia = temAlgumaPermissao(sessao, ["midia:ler", "midia:criar", "midia:editar"]);
-  const podeVerPodcasts = temAlgumaPermissao(sessao, ["podcasts:ler", "podcasts:criar", "podcasts:editar"]);
-  const podeVerCuradoria = temAlgumaPermissao(sessao, ["curadoria:ler", "curadoria:aprovar"]);
+  const podeVerArtigos = temPermissao(sessao, "artigos:ler");
+  const podeVerRevistas = temPermissao(sessao, "revistas:ler");
+  const podeGerirCategorias = temPermissao(sessao, "categorias:ler");
+  const podeGerirEntidades = temPermissao(sessao, "entidades:ler");
+  const podeVerFontes = temPermissao(sessao, "fontes:ler");
+  const podeVerMidia = temPermissao(sessao, "midia:ler");
+  const podeVerPodcasts = temPermissao(sessao, "podcasts:ler");
+  const podeVerCuradoria = temPermissao(sessao, "curadoria:ler");
   const podeGerirCuradoria = temPermissao(sessao, "curadoria:gerir");
   const podeGerirUsuarios = temPermissao(sessao, "usuarios:gerir");
 
@@ -23,8 +24,9 @@ export default async function ERPLayout({ children }: { children: React.ReactNod
         podcastsEnabled={podcastsEnabled}
         mediaEnabled={mediaEnabled}
         podeVerArtigos={podeVerArtigos}
+        podeVerRevistas={podeVerRevistas}
         podeGerirCategorias={podeGerirCategorias}
-        podeGerirPoliticos={podeGerirPoliticos}
+        podeGerirEntidades={podeGerirEntidades}
         podeVerFontes={podeVerFontes}
         podeVerMidia={podeVerMidia}
         podeVerPodcasts={podeVerPodcasts}

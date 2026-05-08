@@ -63,18 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // 4. Políticos (Perfil individual)
-  const politicians = await prisma.politico.findMany({
-    select: { id: true, atualizadoEm: true }
-  });
-
-  const politicianPgs: MetadataRoute.Sitemap = politicians.map((pol) => ({
-    url: `${baseUrl}/politicos/${pol.id}`,
-    lastModified: pol.atualizadoEm,
-    changeFrequency: "weekly",
-    priority: 0.9,
-  }));
-
-  // 5. Podcast Episodes
+  // 4. Podcast Episodes
   const podcasts = await prisma.episodioPodcast.findMany({
     where: { status: 'published' },
     select: { slug: true, atualizadoEm: true }
@@ -90,7 +79,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...standardPgs, 
     ...categoryPgs, 
-    ...politicianPgs, 
     ...artigoPgs,
     ...podcastPgs
   ];

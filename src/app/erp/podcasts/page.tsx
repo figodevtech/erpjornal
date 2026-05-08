@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { Calendar, Clock, Mic, Plus, Tag } from "lucide-react";
 
-import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export default async function PodcastsERPPage() {
-  const session = await exigirAlgumaPermissao(["podcasts:ler", "podcasts:criar", "podcasts:editar"]);
+  const session = await exigirPermissao("podcasts:ler");
   const podeCriar = temPermissao(session, "podcasts:criar");
   const podeEditar = temPermissao(session, "podcasts:editar");
 
-  const episodes = await (prisma as any).podcastEpisode.findMany({
+  const episodes = await prisma.episodioPodcast.findMany({
     orderBy: { dataPub: "desc" },
   });
 
@@ -32,7 +32,7 @@ export default async function PodcastsERPPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4">
-        {episodes.map((ep: any) => (
+        {episodes.map((ep) => (
           <div
             key={ep.id}
             className="group flex items-center gap-6 rounded-2xl border border-gray-200 bg-white p-5 transition-all hover:shadow-md"

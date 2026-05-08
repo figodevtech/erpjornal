@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Prisma } from "@prisma/client";
 
-import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
 
@@ -12,12 +12,7 @@ interface PageProps {
 }
 
 export default async function ArtigosPage({ searchParams }: PageProps) {
-  const session = await exigirAlgumaPermissao([
-    "artigos:ler",
-    "artigos:criar",
-    "artigos:editar",
-    "artigos:publicar",
-  ]);
+  const session = await exigirPermissao("artigos:ler");
   const resolvedParams = await searchParams;
   const search = resolvedParams?.search || "";
   const status = resolvedParams?.status || "";

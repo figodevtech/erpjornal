@@ -13,6 +13,7 @@ import {
   Image as ImageIcon,
   LogOut,
   MicVocal,
+  Newspaper,
   Rss,
   Shield,
   UserSquare2,
@@ -24,8 +25,9 @@ type ErpSidebarProps = {
   podcastsEnabled: boolean;
   mediaEnabled: boolean;
   podeVerArtigos: boolean;
+  podeVerRevistas: boolean;
   podeGerirCategorias: boolean;
-  podeGerirPoliticos: boolean;
+  podeGerirEntidades: boolean;
   podeVerFontes: boolean;
   podeVerMidia: boolean;
   podeVerPodcasts: boolean;
@@ -96,8 +98,9 @@ export default function ErpSidebar({
   podcastsEnabled,
   mediaEnabled,
   podeVerArtigos,
+  podeVerRevistas,
   podeGerirCategorias,
-  podeGerirPoliticos,
+  podeGerirEntidades,
   podeVerFontes,
   podeVerMidia,
   podeVerPodcasts,
@@ -107,7 +110,7 @@ export default function ErpSidebar({
   usuario,
 }: ErpSidebarProps) {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => /^\/erp\/revistas\/(?!nova(?:\/|$))[^/]+/.test(pathname));
   const iniciais = obterIniciais(usuario.nome, usuario.email);
   const perfilPrincipal = formatarPerfil(usuario.perfis, usuario.role);
 
@@ -166,6 +169,15 @@ export default function ErpSidebar({
               active={isActive("/erp/artigos")}
             />
           )}
+          {podeVerRevistas && (
+            <SidebarLink
+              href="/erp/revistas"
+              label="Revistas"
+              icon={<Newspaper className="h-4 w-4 text-red-400" />}
+              collapsed={collapsed}
+              active={isActive("/erp/revistas")}
+            />
+          )}
           {podeGerirCategorias && (
             <SidebarLink
               href="/erp/categorias"
@@ -175,13 +187,13 @@ export default function ErpSidebar({
               active={isActive("/erp/categorias")}
             />
           )}
-          {podeGerirPoliticos && (
+          {podeGerirEntidades && (
             <SidebarLink
-              href="/erp/politicos"
-              label="Politicos"
+              href="/erp/entidades"
+              label="Entidades"
               icon={<Users className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
-              active={isActive("/erp/politicos")}
+              active={isActive("/erp/entidades")}
             />
           )}
           {mediaEnabled && podeVerMidia && (
@@ -217,19 +229,19 @@ export default function ErpSidebar({
               <div className="my-2 h-px bg-gray-800" />
               {!collapsed && (
                 <div className="px-2 py-1 text-[10px] font-black uppercase tracking-widest italic text-gray-500">
-                  Administracao
+                  Administração
                 </div>
               )}
               <SidebarLink
                 href="/erp/usuarios"
-                label="Usuarios"
+                label="Usuários"
                 icon={<Users className="h-4 w-4 text-red-400" />}
                 collapsed={collapsed}
                 active={isActive("/erp/usuarios")}
               />
               <SidebarLink
                 href="/erp/permissoes"
-                label="Permissoes"
+                label="Permissões"
                 icon={<Shield className="h-4 w-4 text-red-400" />}
                 collapsed={collapsed}
                 active={isActive("/erp/permissoes")}
@@ -243,7 +255,7 @@ export default function ErpSidebar({
             <>
               {!collapsed && (
                 <div className="px-2 py-1 text-[10px] font-black uppercase tracking-widest italic text-gray-500">
-                  Inteligencia
+                  Inteligência
                 </div>
               )}
               {podeVerCuradoria && (
@@ -294,7 +306,7 @@ export default function ErpSidebar({
             }`}
             title={
               collapsed
-                ? `${usuario.nome ?? "Usuario autenticado"}${usuario.email ? `\n${usuario.email}` : ""}`
+                ? `${usuario.nome ?? "Usuário autenticado"}${usuario.email ? `\n${usuario.email}` : ""}`
                 : undefined
             }
           >
@@ -306,7 +318,7 @@ export default function ErpSidebar({
               {!collapsed && (
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold text-white">
-                    {usuario.nome ?? "Usuario autenticado"}
+                    {usuario.nome ?? "Usuário autenticado"}
                   </div>
                   <div className="truncate text-xs text-gray-400">{usuario.email ?? "Sem email informado"}</div>
                   <div className="mt-1 inline-flex max-w-full items-center rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-red-300">

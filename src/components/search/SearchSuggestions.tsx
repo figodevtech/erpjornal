@@ -2,7 +2,7 @@
 
 import { SearchResult } from "@/lib/services/search-service";
 import Link from "next/link";
-import { User, FileText, Briefcase, Video, Mic, Tag } from "lucide-react";
+import { User, FileText, Briefcase, Video, Mic, Tag, type LucideIcon } from "lucide-react";
 
 interface SearchSuggestionsProps {
   results: SearchResult[];
@@ -26,7 +26,7 @@ export default function SearchSuggestions({ results, isLoading, onSelect, query 
   if (safeResults.length === 0 && query.length >= 2) {
     return (
       <div className="p-10 text-center">
-        <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">Nenhum resultado para "{query}"</p>
+        <p className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-2">Nenhum resultado para &quot;{query}&quot;</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">Tente termos mais genéricos ou verifique a ortografia.</p>
       </div>
     );
@@ -39,11 +39,11 @@ export default function SearchSuggestions({ results, isLoading, onSelect, query 
     return acc;
   }, {} as Record<string, SearchResult[]>);
 
-  const typeLabels: Record<string, { label: string; icon: any }> = {
+  const typeLabels: Record<string, { label: string; icon: LucideIcon }> = {
     noticia: { label: "Notícias", icon: FileText },
     autor: { label: "Articulistas & Autores", icon: User },
     categoria: { label: "Editorias", icon: Tag },
-    politico: { label: "Políticos", icon: Briefcase },
+    politico: { label: "Entidades", icon: Briefcase },
     podcast: { label: "Podcasts", icon: Mic },
     video: { label: "Vídeos", icon: Video },
   };

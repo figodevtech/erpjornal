@@ -1,4 +1,6 @@
 import NewsletterForm from "@/components/portal/NewsletterForm";
+import RevistaCarousel from "@/components/portal/RevistaCarousel";
+import type { RevistaCarouselItem } from "@/components/portal/RevistaCarousel";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
 import Image from "next/image";
@@ -7,11 +9,14 @@ import Link from "next/link";
 export const revalidate = 60;
 
 export default async function PortalHome() {
+  const publicationCutoff = new Date();
+  publicationCutoff.setTime(publicationCutoff.getTime() + 60000);
+
   const artigosBrutos = await prisma.artigo.findMany({
     where: {
       status: ArticleStatus.publicado,
       OR: [
-        { dataPublicacao: { lte: new Date(Date.now() + 60000) } },
+        { dataPublicacao: { lte: publicationCutoff } },
         { dataPublicacao: null },
       ],
     },
@@ -44,6 +49,34 @@ export default async function PortalHome() {
 
   const featured = artigos.slice(0, 3);
   const recent = artigos.slice(3);
+
+  const revistasBrutas = await prisma.revista.findMany({
+    orderBy: [{ dataPublicacao: "desc" }, { createdAt: "desc" }],
+    take: 8,
+    select: {
+      id: true,
+      titulo: true,
+      descricao: true,
+      edicao: true,
+      dataPublicacao: true,
+      capaUrl: true,
+      _count: {
+        select: {
+          artigos: true,
+        },
+      },
+    },
+  });
+
+  const revistas: RevistaCarouselItem[] = revistasBrutas.map((revista) => ({
+    id: revista.id,
+    titulo: revista.titulo,
+    descricao: revista.descricao,
+    edicao: revista.edicao,
+    dataPublicacao: revista.dataPublicacao?.toISOString() ?? null,
+    capaUrl: revista.capaUrl,
+    totalArtigos: revista._count.artigos,
+  }));
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -144,6 +177,8 @@ export default async function PortalHome() {
           </div>
         )}
       </section>
+
+      {revistas.length > 0 && <RevistaCarousel revistas={revistas} />}
 
       <section className="mb-20">
         <NewsletterForm origem="home" />

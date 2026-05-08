@@ -14,7 +14,11 @@ export default async function PermissoesErpPage({ searchParams }: PageProps) {
     prisma.perfil.findMany({
       orderBy: { nome: "asc" },
       include: {
-        permissoes: true,
+        permissoes: {
+          include: {
+            permissao: true,
+          },
+        },
         _count: {
           select: {
             usuarios: true,
@@ -31,7 +35,7 @@ export default async function PermissoesErpPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       {params.sucesso && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-          PermissÃµes salvas com sucesso.
+          Permissões salvas com sucesso.
         </div>
       )}
 
@@ -47,14 +51,20 @@ export default async function PermissoesErpPage({ searchParams }: PageProps) {
           nome: perfil.nome,
           descricao: perfil.descricao,
           usuariosCount: perfil._count.usuarios,
-          permissaoIds: perfil.permissoes.map(({ permissaoId }) => permissaoId),
+          permissaoIds: perfil.permissoes
+            .filter(({ permissao }) => permissao.modulo !== "politicos")
+            .filter(({ permissao }) => !(["categorias", "entidades"].includes(permissao.modulo) && permissao.acao === "gerir"))
+            .map(({ permissaoId }) => permissaoId),
         }))}
-        permissoes={permissoes.map((permissao) => ({
-          id: permissao.id,
-          modulo: permissao.modulo,
-          acao: permissao.acao,
-          descricao: permissao.descricao,
-        }))}
+        permissoes={permissoes
+          .filter((permissao) => permissao.modulo !== "politicos")
+          .filter((permissao) => !(["categorias", "entidades"].includes(permissao.modulo) && permissao.acao === "gerir"))
+          .map((permissao) => ({
+            id: permissao.id,
+            modulo: permissao.modulo,
+            acao: permissao.acao,
+            descricao: permissao.descricao,
+          }))}
       />
     </div>
   );

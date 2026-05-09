@@ -486,8 +486,8 @@ export default function ArticleForm({
                 <div className="space-y-3">
                   {[
                     { id: "portal", label: "Portal Revista Gestão", icon: "🌐" },
-                    { id: "newsletter", label: "Newsletter Matinal", icon: "📧" },
-                    { id: "redes_sociais", label: "Redes Sociais (Social Post)", icon: "📱" }
+                    { id: "newsletter", label: "Newsletter", icon: "📧" },
+                    // { id: "redes_sociais", label: "Redes Sociais (Social Post)", icon: "📱" }
                   ].map((channel) => (
                     <label key={channel.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-xl cursor-pointer border border-transparent hover:border-gray-200 transition-all group">
                       <input 

@@ -78,8 +78,9 @@ export default function SearchBar() {
         const searchResults: SearchResult[] = data.results || [];
         searchCache.current[query.trim()] = searchResults;
         setResults(searchResults);
-      } catch (err: any) {
-        if (err.name !== "AbortError") console.error("Search error:", err);
+      } catch (err: unknown) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+        console.error("Search error:", err);
       } finally {
         setIsLoading(false);
       }
@@ -253,26 +254,21 @@ export default function SearchBar() {
               </div>
 
               {/* Rodapé com atalhos */}
-              <div className="hidden sm:flex bg-gray-50 dark:bg-gray-900/50 p-2.5 px-4 border-t border-gray-200 dark:border-gray-800 items-center justify-between">
-                <div className="flex gap-5">
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                    <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-gray-500">↑</kbd>
-                    <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-gray-500">↓</kbd>
+              <div className="hidden border-t border-gray-200 bg-gray-50 p-2.5 px-4 dark:border-gray-800 dark:bg-gray-900/70 sm:grid sm:grid-cols-3 sm:items-center">
+                <div className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 font-black text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">↑</kbd>
+                    <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 font-black text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">↓</kbd>
                     Navegar
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                    <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-gray-500">Enter</kbd>
+                </div>
+                <div className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 font-black text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">Enter</kbd>
                     Selecionar
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                    <kbd className="px-1.5 py-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded text-gray-500 flex items-center gap-0.5">
+                </div>
+                <div className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
+                    <kbd className="flex items-center gap-0.5 rounded border border-gray-300 bg-white px-1.5 py-0.5 font-black text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
                       <Command className="w-2.5 h-2.5" />K
                     </kbd>
                     Abrir/Fechar
-                  </div>
-                </div>
-                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                  RG Search
                 </div>
               </div>
             </motion.div>
@@ -282,3 +278,4 @@ export default function SearchBar() {
     </div>
   );
 }
+

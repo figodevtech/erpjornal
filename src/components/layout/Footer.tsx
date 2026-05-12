@@ -6,20 +6,20 @@ export default function Footer() {
 
   return (
     <footer className="bg-[#0f172a] border-t-8 border-red-700 mt-20 text-white">
-      <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 pb-16 pt-12 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
 
           <div className="col-span-1 md:col-span-5">
-            <Link href="/" className="flex items-center gap-3 mb-6 group outline-none focus-visible:ring-2 focus-visible:ring-red-700/50 rounded-lg p-1" aria-label="Revista Gestão - Início">
+            <Link href="/" className="-mt-2 flex items-center gap-3 rounded-lg p-1 outline-none group focus-visible:ring-2 focus-visible:ring-red-700/50" aria-label="Revista Gestão - Início">
               <Image
                 src="/logo.png"
                 alt="Revista Gestão Logo"
-                width={240}
-                height={70}
-                className="h-16 md:h-20 w-auto object-contain drop-shadow-[0_2px_12px_rgba(255,255,255,0.25)] transition-all duration-300 group-hover:scale-105"
+                width={340}
+                height={96}
+                className="h-20 w-auto object-contain drop-shadow-[0_2px_12px_rgba(255,255,255,0.25)] transition-all duration-300 group-hover:scale-105 md:h-24"
               />
             </Link>
-            <p className="text-gray-400 text-[15px] leading-relaxed max-w-sm mb-6 font-medium">
+            <p className="mb-4 max-w-sm text-[15px] font-medium leading-relaxed text-slate-200">
               O portal de notícias focado em gestão pública e privada, governança, bastidores políticos e economia do Brasil.
             </p>
             <div className="flex space-x-4">
@@ -35,24 +35,24 @@ export default function Footer() {
           </div>
 
           <div className="col-span-1 md:col-span-3">
-            <h3 className="text-[13px] font-black text-white tracking-widest uppercase mb-5 border-l-4 border-red-700 pl-3">Editorias</h3>
+            <h3 className="mb-5 border-l-4 border-red-700 pl-3 text-[13px] font-black uppercase tracking-widest text-white">Editorias</h3>
             <nav aria-label="Editorias no rodapé">
               <ul className="space-y-3">
-                <li><Link href="/categoria/executivo" className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors focus-visible:text-red-700 outline-none">Executivo</Link></li>
-                <li><Link href="/categoria/legislativo" className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors focus-visible:text-red-700 outline-none">Legislativo</Link></li>
-                <li><Link href="/categoria/judiciario" className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors focus-visible:text-red-700 outline-none">Judiciário</Link></li>
-                <li><Link href="/categoria/negocios" className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors focus-visible:text-red-700 outline-none">Negócios</Link></li>
+                <li><Link href="/categoria/executivo" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Executivo</Link></li>
+                <li><Link href="/categoria/legislativo" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Legislativo</Link></li>
+                <li><Link href="/categoria/judiciario" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Judiciário</Link></li>
+                <li><Link href="/categoria/negocios" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Negócios</Link></li>
               </ul>
             </nav>
           </div>
 
           <div className="col-span-1 md:col-span-4">
-            <h3 className="text-[13px] font-black text-white tracking-widest uppercase mb-5 border-l-4 border-gray-700 pl-3">Corporativo</h3>
+            <h3 className="mb-5 border-l-4 border-slate-500 pl-3 text-[13px] font-black uppercase tracking-widest text-white">Corporativo</h3>
             <nav aria-label="Links corporativos">
               <ul className="space-y-3">
-                <li><Link href="/sobre" className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors focus-visible:text-red-700 outline-none">Sobre Nós</Link></li>
-                <li><Link href="/expediente" className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors focus-visible:text-red-700 outline-none">Expediente</Link></li>
-                <li><Link href="/politica-de-privacidade" className="text-[15px] font-medium text-gray-400 hover:text-white transition-colors focus-visible:text-red-700 outline-none">Política de Privacidade</Link></li>
+                <li><Link href="/sobre" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Sobre Nós</Link></li>
+                <li><Link href="/expediente" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Expediente</Link></li>
+                <li><Link href="/politica-de-privacidade" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Política de Privacidade</Link></li>
               </ul>
             </nav>
           </div>
@@ -60,15 +60,16 @@ export default function Footer() {
         </div>
 
         <div className="mt-16 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center bg-transparent">
-          <p className="text-gray-500 text-[13px] font-medium">
+          <p className="text-[13px] font-medium text-slate-300">
             &copy; {currentYear} Grupo Revista Gestão. Todos os direitos reservados.
           </p>
           <div className="mt-4 md:mt-0">
-            <span className="text-gray-600 text-[11px] font-black uppercase tracking-widest">Desde 2024</span>
+            <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Desde 2024</span>
           </div>
         </div>
       </div>
     </footer>
   );
 }
+
 

@@ -13,6 +13,7 @@ export default async function ERPLayout({ children }: { children: React.ReactNod
   const podeGerirEntidades = temPermissao(sessao, "entidades:ler");
   const podeVerFontes = temPermissao(sessao, "fontes:ler");
   const podeVerMidia = temPermissao(sessao, "midia:ler");
+  const podeVerMidiaKit = temPermissao(sessao, "midia-kit:ler");
   const podeVerPodcasts = temPermissao(sessao, "podcasts:ler");
   const podeVerCuradoria = temPermissao(sessao, "curadoria:ler");
   const podeGerirCuradoria = temPermissao(sessao, "curadoria:gerir");
@@ -29,6 +30,7 @@ export default async function ERPLayout({ children }: { children: React.ReactNod
         podeGerirEntidades={podeGerirEntidades}
         podeVerFontes={podeVerFontes}
         podeVerMidia={podeVerMidia}
+        podeVerMidiaKit={podeVerMidiaKit}
         podeVerPodcasts={podeVerPodcasts}
         podeVerCuradoria={podeVerCuradoria}
         podeGerirCuradoria={podeGerirCuradoria}

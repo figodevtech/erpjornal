@@ -106,7 +106,7 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
                 <h3 className="portal-card-title text-2xl font-black leading-tight transition">
                   {artigo.titulo}
                 </h3>
-                {artigo.resumo && <p className="portal-card-summary mt-3 line-clamp-3 text-base font-medium leading-6">{artigo.resumo}</p>}
+                {artigo.resumo && <p className="portal-card-summary mt-3 line-clamp-3 text-base font-normal leading-6">{artigo.resumo}</p>}
                 <div className="portal-card-meta mt-auto pt-5 text-[11px] font-black uppercase tracking-widest">
                   Por {artigo.autor?.nome || "Redação"}
                 </div>

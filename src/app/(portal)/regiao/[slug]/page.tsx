@@ -2,9 +2,9 @@ import PortalEmptyState from "@/components/portal/PortalEmptyState";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
+import { Globe, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Calendar, Globe, MapPin } from "lucide-react";
 import { notFound } from "next/navigation";
 
 const stateNames: Record<string, string> = {
@@ -44,10 +44,11 @@ interface ArticleWithExtras {
   slug: string;
   resumo: string | null;
   urlImagemOg: string | null;
+  dataPublicacao: Date | null;
   criadoEm: Date;
   regiao: string | null;
   estado: string | null;
-  autor: { nome: string };
+  autor: { nome: string | null };
   categoria: { nome: string } | null;
 }
 
@@ -92,7 +93,7 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
   })) as unknown as ArticleWithExtras[];
 
   return (
-    <div className="space-y-8 pb-8">
+    <div className="portal-page min-h-[70vh] w-full pb-8 transition-colors duration-300">
       <PortalSectionHeader
         eyebrow="Cobertura regional"
         title={title}
@@ -105,53 +106,51 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
         }
       />
 
-      <section className="mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 md:grid-cols-2 lg:grid-cols-3">
+      <section className="mx-auto grid max-w-7xl grid-cols-1 gap-10 gap-y-12 px-4 py-10 sm:px-6 md:grid-cols-2 lg:grid-cols-3 lg:px-8">
         {artigos.map((artigo) => (
-          <Link
-            key={artigo.id}
-            href={`/noticia/${artigo.slug}`}
-            className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-          >
-            {artigo.urlImagemOg && (
-              <div className="relative aspect-video w-full overflow-hidden">
+          <Link key={artigo.id} href={`/noticia/${artigo.slug}`} className="group flex h-full flex-col items-start">
+            <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden border border-gray-200 bg-gray-100 transition-colors duration-300 group-hover:border-red-700 dark:border-gray-800 dark:bg-gray-900">
+              <div className="absolute inset-0 z-10 bg-gradient-to-t from-gray-900/10 to-transparent" />
+              {artigo.urlImagemOg ? (
                 <Image
                   src={artigo.urlImagemOg}
                   alt={artigo.titulo}
                   fill
                   sizes="(max-width: 768px) 100vw, 400px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
                 />
-              </div>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-300 transition-transform duration-500 group-hover:scale-105 dark:text-gray-700">
+                  <svg className="h-12 w-12" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+
+            <div className="mb-4 flex w-full items-center justify-between gap-2">
+              <span className="rounded-sm border border-red-900 bg-red-800 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-white dark:border-red-900/30 dark:bg-red-700/80">
+                {artigo.categoria?.nome || "Politica"}
+              </span>
+              <span className="portal-card-meta text-[10px] font-black uppercase tracking-widest">
+                {artigo.regiao} {artigo.estado ? `- ${artigo.estado}` : ""}
+              </span>
+            </div>
+
+            <h3 className="card-headline mb-3 line-clamp-3 text-[22px] font-black leading-[1.2] transition-colors duration-500">
+              {artigo.titulo}
+            </h3>
+
+            {artigo.resumo && (
+              <p className="portal-summary mb-4 flex-grow line-clamp-3 text-[16px] font-normal leading-snug">
+                {artigo.resumo}
+              </p>
             )}
 
-            <div className="flex flex-1 flex-col justify-between space-y-4 p-6">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="rounded border border-red-100 bg-red-50 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-red-600">
-                    {artigo.categoria?.nome || "Politica"}
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                    {artigo.regiao} {artigo.estado ? `• ${artigo.estado}` : ""}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold leading-tight text-gray-900 transition-colors group-hover:text-red-700">
-                  {artigo.titulo}
-                </h3>
-                <p className="line-clamp-3 text-xs text-gray-600">{artigo.resumo}</p>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-gray-100 pt-4">
-                <div className="flex flex-col">
-                  <span className="text-[10px] text-gray-500">Por {artigo.autor.nome}</span>
-                  <div className="flex items-center gap-1 text-[10px] text-gray-500">
-                    <Calendar className="h-3 w-3" />
-                    {new Date(artigo.criadoEm).toLocaleDateString("pt-BR")}
-                  </div>
-                </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-all group-hover:bg-red-600 group-hover:text-white">
-                  <ArrowRight className="h-4 w-4" />
-                </div>
-              </div>
+            <div className="portal-card-meta mt-auto flex w-full items-center gap-3 pt-2 text-[11px] font-black uppercase tracking-widest">
+              <time>{(artigo.dataPublicacao ?? artigo.criadoEm).toLocaleDateString("pt-BR")}</time>
+              <span className="hidden h-1 w-1 bg-gray-300 sm:block" />
+              <span className="hidden truncate sm:inline-block">Por {artigo.autor.nome || "Redacao"}</span>
             </div>
           </Link>
         ))}

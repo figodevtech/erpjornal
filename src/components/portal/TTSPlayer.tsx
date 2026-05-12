@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play, Pause, Square, Volume2, Loader2 } from "lucide-react";
 import { extractPlainTextFromHtml, splitTextIntoChunks } from "@/lib/tts-utils";
 
@@ -15,20 +15,29 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
   const [isPaused, setIsPaused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentChunkIndex, setCurrentChunkIndex] = useState(0);
-  const [chunks, setChunks] = useState<string[]>([]);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   const synth = mounted ? window.speechSynthesis : null;
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   useEffect(() => {
-    setMounted(true);
+    const timer = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
-  // Prepara o texto quando o conteúdo muda
   useEffect(() => {
+    if (!synth) return;
+
+    const loadVoices = () => setVoices(synth.getVoices());
+
+    loadVoices();
+    synth.addEventListener("voiceschanged", loadVoices);
+    return () => synth.removeEventListener("voiceschanged", loadVoices);
+  }, [synth]);
+  // Prepara o texto quando o conteudo muda
+  const chunks = useMemo(() => {
     const plainText = `${title}. ${extractPlainTextFromHtml(htmlContent)}`;
-    // Aumentamos o tamanho de cada bloco para 600 caracteres para uma leitura mais fluida
-    setChunks(splitTextIntoChunks(plainText, 600));
+    return splitTextIntoChunks(plainText, 600);
   }, [htmlContent, title]);
 
   // Cleanup ao desmontar
@@ -40,7 +49,36 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
     };
   }, [synth]);
 
-  const speak = (index: number) => {
+  const getPreferredVoice = useCallback(() => {
+    const availableVoices = voices.length > 0 ? voices : synth?.getVoices() ?? [];
+    const ptBrVoices = availableVoices.filter((voice) =>
+      voice.lang.toLowerCase().replace("_", "-").startsWith("pt-br")
+    );
+    const ptVoices = availableVoices.filter((voice) => voice.lang.toLowerCase().startsWith("pt"));
+    const candidates = ptBrVoices.length > 0 ? ptBrVoices : ptVoices;
+    const preferredTerms = [
+      "microsoft francisca",
+      "microsoft antonio",
+      "google portugu",
+      "luciana",
+      "joana",
+      "natural",
+      "neural",
+      "premium",
+    ];
+
+    return (
+      candidates.find((voice) => {
+        const name = voice.name.toLowerCase();
+        return preferredTerms.some((term) => name.includes(term));
+      }) ??
+      candidates.find((voice) => !voice.localService) ??
+      candidates[0] ??
+      null
+    );
+  }, [synth, voices]);
+
+  const speak = useCallback((index: number) => {
     if (!synth || index >= chunks.length || !isPlaying) return;
 
     // Cancela qualquer fala anterior para evitar sobreposição
@@ -48,11 +86,12 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
 
     const utterance = new SpeechSynthesisUtterance(chunks[index]);
     utterance.lang = "pt-BR";
-    utterance.rate = 1.0;
+    utterance.rate = 0.92;
+    utterance.pitch = 0.96;
+    utterance.volume = 1;
     
     // Tenta encontrar uma voz em português brasileiro de qualidade
-    const voices = synth.getVoices();
-    const ptVoice = voices.find(v => v.lang.includes("pt-BR") || v.lang.includes("pt_BR"));
+    const ptVoice = getPreferredVoice();
     if (ptVoice) utterance.voice = ptVoice;
 
     utterance.onstart = () => {
@@ -69,22 +108,23 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
     };
 
     utterance.onerror = (event) => {
-      console.error("TTS Error:", event);
-      if (event.error !== "interrupted") {
-        setIsPlaying(false);
-      }
+      if (event.error === "interrupted" || event.error === "canceled") return;
+
+      setIsLoading(false);
+      setIsPlaying(false);
+      setIsPaused(false);
     };
 
     utteranceRef.current = utterance;
     synth.speak(utterance);
-  };
+  }, [chunks, getPreferredVoice, isPlaying, synth]);
 
   // Trigger para tocar o próximo bloco quando o index muda
   useEffect(() => {
     if (isPlaying && !isPaused) {
       speak(currentChunkIndex);
     }
-  }, [currentChunkIndex, isPlaying, isPaused]);
+  }, [currentChunkIndex, isPlaying, isPaused, speak]);
 
   const handlePlay = () => {
     if (!synth) return;
@@ -116,10 +156,10 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
     setCurrentChunkIndex(0);
   };
 
-  if (!mounted || !synth) return null;
+  if (!synth) return null;
 
   return (
-    <div className="my-8 p-4 md:p-6 bg-gray-50 dark:bg-gray-900 border-l-4 border-red-700 rounded-r-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 transition-all group overflow-hidden relative">
+    <div className="my-8 p-4 md:p-6 bg-gray-50 dark:bg-gray-900 border-l-4 border-red-700 rounded-r-xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 transition-all group overflow-hidden relative" suppressHydrationWarning>
       <div className="flex items-center gap-4 flex-1">
         <div className="w-12 h-12 bg-red-700 text-white rounded-full flex items-center justify-center shadow-md shrink-0 group-hover:scale-105 transition-transform">
           <Volume2 className="w-6 h-6" />
@@ -189,3 +229,5 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
     </div>
   );
 }
+
+

@@ -8,8 +8,8 @@
   --portal-surface-muted: #f3f4f6;
   --portal-border: #e5e7eb;
   --portal-heading: #111827;
-  --portal-headline: #2f0808;
-  --portal-body: #1f2937;
+  --portal-headline: #000000;
+  --portal-body: #000000;
   --portal-muted: #4b5563;
 
   --primary: #3b82f6;
@@ -24,8 +24,8 @@
   --portal-surface-muted: #111827;
   --portal-border: #1f2937;
   --portal-heading: #f9fafb;
-  --portal-headline: #ffe4e6;
-  --portal-body: #e5e7eb;
+  --portal-headline: #ffffff;
+  --portal-body: #ffffff;
   --portal-muted: #cbd5e1;
 }
 
@@ -65,6 +65,7 @@ body {
 
 .portal-card-summary {
   color: var(--portal-body);
+  font-weight: 400;
 }
 
 .portal-card-meta {
@@ -104,12 +105,13 @@ html:not(.dark) .text-red-950 { color: #2f0808; }
 }
 
 .card-headline {
-  color: #2f0808 !important;
+  color: #000000 !important;
 }
 
 .portal-summary,
 .article-summary {
-  color: #111111 !important;
+  color: #000000 !important;
+  font-weight: 400 !important;
 }
 
 .article-meta {
@@ -146,12 +148,12 @@ html:not(.dark) .article-prose figcaption * {
 }
 
 .dark .card-headline {
-  color: #ffe4e6 !important;
+  color: #ffffff !important;
 }
 
 .dark .portal-summary,
 .dark .article-summary {
-  color: #e5e7eb !important;
+  color: #ffffff !important;
 }
 
 .dark .article-meta {

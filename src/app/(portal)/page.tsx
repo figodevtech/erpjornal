@@ -8,6 +8,8 @@ import Link from "next/link";
 
 export const revalidate = 60;
 
+const HOME_REVISTAS_LIMIT = 80;
+
 export default async function PortalHome() {
   const publicationCutoff = new Date();
   publicationCutoff.setTime(publicationCutoff.getTime() + 60000);
@@ -51,8 +53,8 @@ export default async function PortalHome() {
   const recent = artigos.slice(3);
 
   const revistasBrutas = await prisma.revista.findMany({
-    orderBy: [{ dataPublicacao: "desc" }, { createdAt: "desc" }],
-    take: 8,
+    orderBy: [{ artigos: { _count: "desc" } }, { dataPublicacao: "desc" }, { createdAt: "desc" }],
+    take: HOME_REVISTAS_LIMIT,
     select: {
       id: true,
       titulo: true,
@@ -65,21 +67,42 @@ export default async function PortalHome() {
           artigos: true,
         },
       },
+      artigos: {
+        where: { status: ArticleStatus.publicado },
+        orderBy: [{ dataPublicacao: "desc" }, { criadoEm: "desc" }],
+        take: 1,
+        select: {
+          dataPublicacao: true,
+          criadoEm: true,
+        },
+      },
     },
   });
 
-  const revistas: RevistaCarouselItem[] = revistasBrutas.map((revista) => ({
-    id: revista.id,
-    titulo: revista.titulo,
-    descricao: revista.descricao,
-    edicao: revista.edicao,
-    dataPublicacao: revista.dataPublicacao?.toISOString() ?? null,
-    capaUrl: revista.capaUrl,
-    totalArtigos: revista._count.artigos,
-  }));
+  const revistas: RevistaCarouselItem[] = revistasBrutas
+    .map((revista) => {
+      const ultimoArtigo = revista.artigos[0];
+      return {
+        id: revista.id,
+        titulo: revista.titulo,
+        descricao: revista.descricao,
+        edicao: revista.edicao,
+        dataPublicacao: revista.dataPublicacao?.toISOString() ?? null,
+        capaUrl: revista.capaUrl,
+        totalArtigos: revista._count.artigos,
+        ultimaPublicacaoArtigo: (ultimoArtigo?.dataPublicacao ?? ultimoArtigo?.criadoEm)?.toISOString() ?? null,
+      };
+    })
+    .sort((a, b) => {
+      const aDate = a.ultimaPublicacaoArtigo ?? a.dataPublicacao ?? "";
+      const bDate = b.ultimaPublicacaoArtigo ?? b.dataPublicacao ?? "";
+      return bDate.localeCompare(aDate);
+    });
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {revistas.length > 0 && <RevistaCarousel revistas={revistas} />}
+
       <section className="mb-12 border-b-2 border-gray-200 pb-12 dark:border-gray-800">
         {featured.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
@@ -115,7 +138,7 @@ export default async function PortalHome() {
                 </h1>
 
                 {featured[0].resumo && (
-                  <p className="portal-summary mb-5 max-w-4xl line-clamp-2 text-[18px] font-semibold leading-snug md:text-[22px]">
+                  <p className="portal-summary mb-5 max-w-4xl line-clamp-2 text-[18px] font-normal leading-snug md:text-[22px]">
                     {featured[0].resumo}
                   </p>
                 )}
@@ -178,8 +201,6 @@ export default async function PortalHome() {
         )}
       </section>
 
-      {revistas.length > 0 && <RevistaCarousel revistas={revistas} />}
-
       <section className="mb-20">
         <NewsletterForm origem="home" />
       </section>
@@ -226,7 +247,7 @@ export default async function PortalHome() {
                 </h3>
 
                 {art.resumo && (
-                  <p className="portal-summary mb-4 line-clamp-3 text-[16px] font-medium leading-snug">
+                  <p className="portal-summary mb-4 line-clamp-3 text-[16px] font-normal leading-snug">
                     {art.resumo}
                   </p>
                 )}

@@ -4,6 +4,13 @@
 :root {
   --background: #ffffff;
   --foreground: #1e293b;
+  --portal-surface: #ffffff;
+  --portal-surface-muted: #f3f4f6;
+  --portal-border: #e5e7eb;
+  --portal-heading: #111827;
+  --portal-headline: #2f0808;
+  --portal-body: #1f2937;
+  --portal-muted: #4b5563;
 
   --primary: #3b82f6;
   --secondary: #60a5fa;
@@ -13,6 +20,13 @@
 .dark {
   --background: #0f172a;
   --foreground: #f8fafc;
+  --portal-surface: #0f172a;
+  --portal-surface-muted: #111827;
+  --portal-border: #1f2937;
+  --portal-heading: #f9fafb;
+  --portal-headline: #ffe4e6;
+  --portal-body: #e5e7eb;
+  --portal-muted: #cbd5e1;
 }
 
 @theme inline {
@@ -29,6 +43,42 @@ body {
   transition: background-color 0.2s ease-in-out;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.portal-page {
+  background-color: var(--portal-surface);
+  color: var(--portal-body);
+}
+
+.portal-muted-surface {
+  background-color: var(--portal-surface-muted);
+  border-color: var(--portal-border);
+}
+
+.portal-section-title {
+  color: var(--portal-heading);
+}
+
+.portal-card-title {
+  color: var(--portal-headline);
+}
+
+.portal-card-summary {
+  color: var(--portal-body);
+}
+
+.portal-card-meta {
+  color: var(--portal-muted);
+}
+
+.group:hover .portal-card-title,
+.group:focus-visible .portal-card-title {
+  color: #991b1b;
+}
+
+.dark .group:hover .portal-card-title,
+.dark .group:focus-visible .portal-card-title {
+  color: #fda4af;
 }
 
 /* Contraste global do portal. */

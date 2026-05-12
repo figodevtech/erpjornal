@@ -34,7 +34,7 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
   }
 
   return (
-    <div className="w-full bg-background pb-20">
+    <div className="portal-page w-full pb-20 transition-colors duration-300">
       <section className="w-full border-b border-gray-200 bg-gray-950 text-white dark:border-gray-800">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-8">
           <div className="relative aspect-[3/4] w-full max-w-[260px] overflow-hidden rounded-md bg-gray-900 shadow-2xl">
@@ -68,9 +68,9 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between border-l-[6px] border-red-700 bg-gray-100 px-5 py-3 dark:bg-gray-900">
-          <h2 className="text-xl font-black uppercase tracking-wide text-gray-900 dark:text-gray-100">Artigos da edição</h2>
-          <span className="text-xs font-black uppercase tracking-widest text-gray-500">{revista.artigos.length} artigos</span>
+        <div className="portal-muted-surface mb-8 flex items-center justify-between border-l-[6px] border-red-700 px-5 py-3">
+          <h2 className="portal-section-title text-xl font-black uppercase tracking-wide">Artigos da edição</h2>
+          <span className="portal-card-meta text-xs font-black uppercase tracking-widest">{revista.artigos.length} artigos</span>
         </div>
 
         {revista.artigos.length === 0 ? (
@@ -80,7 +80,11 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
         ) : (
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {revista.artigos.map((artigo) => (
-              <Link key={artigo.id} href={`/noticia/${artigo.slug}`} className="group flex h-full flex-col">
+              <Link
+                key={artigo.id}
+                href={`/noticia/${artigo.slug}`}
+                className="group flex h-full flex-col rounded-xl p-1 transition-colors"
+              >
                 <div className="relative mb-4 aspect-[4/3] overflow-hidden border border-gray-200 bg-gray-100 transition group-hover:border-red-700 dark:border-gray-800 dark:bg-gray-900">
                   {artigo.urlImagemOg ? (
                     <Image
@@ -99,11 +103,11 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
                     {artigo.categoria.nome}
                   </span>
                 )}
-                <h3 className="text-2xl font-black leading-tight text-gray-950 transition group-hover:text-red-700 dark:text-gray-100">
+                <h3 className="portal-card-title text-2xl font-black leading-tight transition">
                   {artigo.titulo}
                 </h3>
-                {artigo.resumo && <p className="mt-3 line-clamp-3 text-base font-medium leading-6 text-gray-700 dark:text-gray-400">{artigo.resumo}</p>}
-                <div className="mt-auto pt-5 text-[11px] font-black uppercase tracking-widest text-gray-500">
+                {artigo.resumo && <p className="portal-card-summary mt-3 line-clamp-3 text-base font-medium leading-6">{artigo.resumo}</p>}
+                <div className="portal-card-meta mt-auto pt-5 text-[11px] font-black uppercase tracking-widest">
                   Por {artigo.autor?.nome || "Redação"}
                 </div>
               </Link>

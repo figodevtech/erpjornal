@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 
 // Cópia de assets fora da sandbox
-const projectDir = "/home/italo/Área de trabalho/Jornal/erpjornal";
+const projectDir = process.cwd();
 try {
   const logoSrc = path.join(projectDir, "LOGO PADÃO BRANCA E VERMELHA.png");
   const logoDest = path.join(projectDir, "public/logo.png");

@@ -70,7 +70,7 @@ export default function BlockPropertiesPanel({ section, onChange }: Props) {
           <label className="mb-1.5 block text-sm font-semibold text-gray-700">Título Interno (apenas para o painel)</label>
           <input
             type="text"
-            value={section.titulo}
+            value={section.titulo ?? ""}
             onChange={(e) => onChange({ titulo: e.target.value })}
             className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:border-rose-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-100"
             placeholder="Ex: Hero Inicial"

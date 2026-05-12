@@ -36,7 +36,6 @@ export default async function MidiaKitEditorPage({ params }: Props) {
     ativo: s.ativo,
     data: s.data,
     criadoEm: s.criadoEm,
-    atualizadoEm: s.atualizadoEm,
   })) as MediaKitSectionWithData[];
 
   return (

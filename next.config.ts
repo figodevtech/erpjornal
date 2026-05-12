@@ -12,12 +12,17 @@ try {
   if (fs.existsSync(logoSrc)) {
     fs.copyFileSync(logoSrc, logoDest);
     console.log("[Setup] Logo copiada com sucesso para public/logo.png");
+  } else {
+    console.log("[Setup] Logo original não encontrada, pulando cópia.");
   }
 
+  const iconSrc = path.join(projectDir, "RG ICON.png");
   const pyScript = path.join(projectDir, "scripts/add_background.py");
-  if (fs.existsSync(pyScript)) {
+  if (fs.existsSync(pyScript) && fs.existsSync(iconSrc)) {
     execSync(`python3 "${pyScript}"`, { cwd: projectDir });
     console.log("[Setup] Script Python do Favicon executado com sucesso!");
+  } else {
+    console.log("[Setup] Assets do favicon ou script não encontrados, pulando processamento.");
   }
 } catch (e) {
   console.error("[Setup] Erro ao executar cópia de assets:", e);

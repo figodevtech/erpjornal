@@ -80,7 +80,7 @@ export default async function MidiaKitPublicPage({ params }: Props) {
 
   if (!kit) notFound();
 
-  const theme: MediaKitTheme = (kit.tema as MediaKitTheme) ?? {
+  const theme: MediaKitTheme = (kit.tema as unknown as MediaKitTheme) ?? {
     primaryColor: "#dc2626",
     secondaryColor: "#0f172a",
     backgroundColor: "#ffffff",

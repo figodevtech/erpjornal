@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { exigirPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function saveSource(formData: FormData) {
@@ -44,7 +44,7 @@ export async function saveSourceNote(formData: FormData) {
   const fonte = await prisma.fonte.findUnique({ where: { id: fonteId } });
   if (!fonte) throw new Error("Fonte nao encontrada");
 
-  if (fonte.nivelSigilo === "confidencial" && !["admin", "editor"].includes(session.user.role)) {
+  if (fonte.nivelSigilo === "confidencial" && !temPermissao(session, "fontes:confidencial")) {
     throw new Error("Acesso nao autorizado a fontes confidenciais.");
   }
 

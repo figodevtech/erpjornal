@@ -35,6 +35,7 @@ const permissoes = [
   { modulo: "artigos", acao: "ler", descricao: "Visualizar artigos" },
   { modulo: "artigos", acao: "criar", descricao: "Criar artigos" },
   { modulo: "artigos", acao: "editar", descricao: "Editar artigos" },
+  { modulo: "artigos", acao: "editar_todos", descricao: "Editar artigos de qualquer autor" },
   { modulo: "artigos", acao: "publicar", descricao: "Publicar artigos" },
   { modulo: "revistas", acao: "ler", descricao: "Visualizar revistas" },
   { modulo: "revistas", acao: "criar", descricao: "Criar revistas" },
@@ -48,6 +49,7 @@ const permissoes = [
   { modulo: "fontes", acao: "ler", descricao: "Visualizar fontes" },
   { modulo: "fontes", acao: "criar", descricao: "Criar fontes" },
   { modulo: "fontes", acao: "editar", descricao: "Editar fontes" },
+  { modulo: "fontes", acao: "confidencial", descricao: "Visualizar fontes confidenciais" },
   { modulo: "curadoria", acao: "ler", descricao: "Visualizar curadoria" },
   { modulo: "curadoria", acao: "aprovar", descricao: "Aprovar itens de curadoria" },
   { modulo: "curadoria", acao: "gerir", descricao: "Gerenciar feeds e coleta RSS" },
@@ -68,11 +70,11 @@ const permissoes = [
 const permissoesPorPerfil: Record<string, string[]> = {
   admin_erp: permissoes.map((p) => `${p.modulo}:${p.acao}`),
   editor_erp: [
-    "artigos:ler", "artigos:criar", "artigos:editar", "artigos:publicar",
+    "artigos:ler", "artigos:criar", "artigos:editar", "artigos:editar_todos", "artigos:publicar",
     "revistas:ler", "revistas:criar", "revistas:editar",
     "categorias:ler", "categorias:criar", "categorias:editar",
     "entidades:ler", "entidades:criar", "entidades:editar",
-    "fontes:ler", "fontes:criar", "fontes:editar",
+    "fontes:ler", "fontes:criar", "fontes:editar", "fontes:confidencial",
     "curadoria:ler", "curadoria:aprovar", "curadoria:gerir",
     "midia:ler", "midia:criar", "midia:editar",
     "podcasts:ler", "podcasts:criar", "podcasts:editar",
@@ -87,7 +89,7 @@ const permissoesPorPerfil: Record<string, string[]> = {
     "midia:ler",
     "podcasts:ler",
   ],
-  juridico_erp: ["artigos:ler", "artigos:editar", "curadoria:ler", "fontes:ler"],
+  juridico_erp: ["artigos:ler", "artigos:editar", "artigos:editar_todos", "curadoria:ler", "fontes:ler"],
   leitor_portal: ["portal:salvar"],
   autor_portal: ["portal:salvar", "portal:comentar"],
 };

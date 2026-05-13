@@ -46,7 +46,8 @@ interface ArticleFormProps {
     titulo: string;
     edicao: string;
   }>;
-  userRole: string;
+  canPublish: boolean;
+  canEditLegal: boolean;
   initialData?: InitialData | null;
   revistaId?: string | null;
   revistaTitulo?: string | null;
@@ -80,7 +81,8 @@ export default function ArticleForm({
   categories,
   politicians,
   revistas,
-  userRole,
+  canPublish,
+  canEditLegal,
   initialData,
   revistaId,
   revistaTitulo,
@@ -146,8 +148,6 @@ export default function ArticleForm({
       }
     });
   };
-
-  const canPublish = userRole === "admin" || userRole === "editor";
 
   return (
     <div className="space-y-8">
@@ -531,7 +531,7 @@ export default function ArticleForm({
                     <CustomSelect
                       name="statusLegal"
                       defaultValue={initialData?.statusLegal || "pendente"}
-                      disabled={userRole === "reporter"}
+                      disabled={!canEditLegal}
                       options={[
                         { value: "pendente", label: "Pendente" },
                         { value: "em_analise", label: "Em Análise" },
@@ -547,7 +547,7 @@ export default function ArticleForm({
                       name="observacoesLegais" 
                       rows={3}
                       defaultValue={initialData?.observacoesLegais || ""}
-                      readOnly={userRole === "reporter"}
+                      readOnly={!canEditLegal}
                       className="w-full bg-white border border-gray-200 rounded-lg shadow-sm p-3 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-sm resize-none disabled:bg-gray-50 placeholder:italic"
                       placeholder="Observações do departamento jurídico..."
                     ></textarea>

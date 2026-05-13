@@ -1,4 +1,4 @@
-import { exigirAlgumaPermissao } from "@/lib/auth";
+import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
 
 import { prisma } from "@/lib/prisma";
 import ArticleForm, { InitialData } from "../../components/ArticleForm";
@@ -48,7 +48,7 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
   }
 
   // Prevenção Rigorosa de Edição se Reporter tentar editar artigo de outros
-  if (session.user.role === "reporter" && artigo.autorId !== session.user.id) {
+  if (!temPermissao(session, "artigos:editar_todos") && artigo.autorId !== session.user.id) {
     redirect("/erp/artigos");
   }
 
@@ -92,7 +92,8 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
         categories={categories}
         politicians={politicians}
         revistas={revistas}
-        userRole={session.user.role}
+        canPublish={temPermissao(session, "artigos:publicar")}
+        canEditLegal={temPermissao(session, "artigos:editar")}
         initialData={artigo}
         revistaTitulo={revistaAtual?.titulo}
       />

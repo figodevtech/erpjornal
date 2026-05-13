@@ -15,8 +15,7 @@ export default async function FonteDetailPage({ params }: PageProps) {
   const { id } = await params;
   const session = await exigirPermissao("fontes:ler");
 
-  const role = session.user.role;
-  const isPrivileged = role === "admin" || role === "editor";
+  const podeVerConfidenciais = temPermissao(session, "fontes:confidencial");
   const podeEditar = temPermissao(session, "fontes:editar");
 
   const fonte = await prisma.fonte.findUnique({
@@ -34,7 +33,7 @@ export default async function FonteDetailPage({ params }: PageProps) {
   });
 
   if (!fonte) redirect("/erp/fontes");
-  if (fonte.nivelSigilo === "confidencial" && !isPrivileged) redirect("/erp/fontes");
+  if (fonte.nivelSigilo === "confidencial" && !podeVerConfidenciais) redirect("/erp/fontes");
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

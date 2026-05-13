@@ -34,12 +34,12 @@ function LoginForm() {
 
       const response = await fetch("/api/auth/me", { cache: "no-store" });
       const data = response.ok ? await response.json() : null;
-      const role = data?.sessao?.user?.role as string | undefined;
+      const permissoes = (data?.sessao?.user?.permissoes ?? []) as string[];
 
       if (callbackUrl && callbackUrl.startsWith("/")) {
         router.push(callbackUrl);
-      } else if (role && ["admin", "editor", "reporter", "juridico"].includes(role)) {
-        router.push("/erp/artigos");
+      } else if (permissoes.some((permissao) => !permissao.startsWith("portal:"))) {
+        router.push("/erp");
       } else {
         router.push("/");
       }
@@ -135,6 +135,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gray-950 flex">
       <div className="hidden lg:flex lg:w-1/2 relative bg-gray-900 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-red-900/40 to-gray-950 z-10" />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src="https://images.unsplash.com/photo-1495020689067-958852a7765e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1469&q=80"
           className="absolute inset-0 w-full h-full object-cover opacity-30"

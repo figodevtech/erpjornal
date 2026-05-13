@@ -5,14 +5,9 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { criarClienteSupabaseServer } from "@/lib/supabase/server";
 
-const mapaPerfisLegados: Record<string, string> = {
-  admin_erp: "admin",
-  editor_erp: "editor",
-  reporter_erp: "reporter",
-  juridico_erp: "juridico",
-  leitor_portal: "assinante",
-  autor_portal: "autor_portal",
-};
+export function isPermissaoErp(permissao: string) {
+  return !permissao.startsWith("portal:");
+}
 
 function normalizarRole(perfis: string[]) {
   if (perfis.includes("admin_erp")) return "admin";
@@ -115,14 +110,7 @@ export async function exigirSessao() {
   return sessao;
 }
 
-export function temPerfil(sessao: SessaoAplicacao, perfisAceitos: string[]) {
-  return sessao.user.perfis.some(
-    (perfil) => perfisAceitos.includes(perfil) || perfisAceitos.includes(mapaPerfisLegados[perfil] ?? "")
-  );
-}
-
 export function temPermissao(sessao: SessaoAplicacao, permissao: string) {
-  if (sessao.user.role === "admin") return true;
   return sessao.user.permissoes.includes(permissao);
 }
 
@@ -131,27 +119,13 @@ export function temAlgumaPermissao(sessao: SessaoAplicacao, permissoes: string[]
 }
 
 export function podeAcessarErp(sessao: SessaoAplicacao) {
-  return (
-    sessao.user.tipoConta === "erp" ||
-    sessao.user.tipoConta === "misto" ||
-    temPerfil(sessao, ["admin_erp", "editor_erp", "reporter_erp", "juridico_erp", "admin", "editor", "reporter", "juridico"])
-  );
+  return sessao.user.permissoes.some(isPermissaoErp);
 }
 
 export async function exigirAcessoErp() {
   const sessao = await exigirSessao();
 
   if (!podeAcessarErp(sessao)) {
-    redirect("/403");
-  }
-
-  return sessao;
-}
-
-export async function exigirPerfis(perfisAceitos: string[]) {
-  const sessao = await exigirAcessoErp();
-
-  if (!temPerfil(sessao, perfisAceitos)) {
     redirect("/403");
   }
 

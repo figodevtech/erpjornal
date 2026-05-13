@@ -21,6 +21,7 @@ interface AuthPortalProps {
       name: string | null;
       email: string | null;
       role: string;
+      permissoes?: string[];
     };
   } | null;
 }
@@ -75,9 +76,9 @@ export default function AuthPortal({ session }: AuthPortalProps) {
       router.refresh();
 
       const sessaoAtualizada = await buscarSessaoAtualizada();
-      const role = sessaoAtualizada?.user?.role;
+      const permissoes = sessaoAtualizada?.user?.permissoes ?? [];
 
-      if (role && ["admin", "editor", "reporter", "juridico"].includes(role)) {
+      if (permissoes.some((permissao) => !permissao.startsWith("portal:"))) {
         router.push("/erp");
       } else {
         router.refresh();
@@ -150,7 +151,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
                 Minha Conta
               </Link>
 
-              {["admin", "editor", "reporter", "juridico"].includes(user.role) && (
+              {user.permissoes?.some((permissao) => !permissao.startsWith("portal:")) && (
                 <Link
                   href="/erp"
                   className="flex items-center gap-3 px-5 py-3 text-sm text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700 dark:hover:text-red-400 transition-all font-bold"

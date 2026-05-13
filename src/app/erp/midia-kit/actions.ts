@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { exigirPermissao, obterSessao } from "@/lib/auth";
-import { MediaKitStatus } from "@prisma/client";
+import { MediaKitStatus, Prisma } from "@prisma/client";
 import { MediaKitTheme, MediaKitSectionWithData } from "@/types/media-kit";
 
 /**
@@ -62,7 +62,7 @@ export async function updateMediaKit(id: string, data: {
     where: { id },
     data: {
       ...data,
-      tema: data.tema ? (data.tema as any) : undefined,
+      tema: data.tema ? (data.tema as unknown as Prisma.InputJsonValue) : undefined,
     },
   });
 
@@ -105,14 +105,18 @@ export async function deleteMediaKit(id: string) {
 export async function saveMediaKitSections(mediaKitId: string, sections: Partial<MediaKitSectionWithData>[]) {
   await exigirPermissao("midia-kit:editar");
 
-  // Usamos uma transação para garantir consistência
+  const sectionsToKeep = sections.filter(s => s.id && !s.id.startsWith("temp-")).map(s => s.id);
+
   await prisma.$transaction(async (tx) => {
-    // Para simplificar o MVP, deletamos as seções atuais e recriamos 
-    // ou fazemos um merge baseado no ID. Aqui faremos merge.
-    
+    await tx.mediaKitSection.deleteMany({
+      where: {
+        mediaKitId,
+        id: { notIn: sectionsToKeep as string[] }
+      }
+    });
+
     for (const section of sections) {
       if (section.id && !section.id.startsWith("temp-")) {
-        // Update
         await tx.mediaKitSection.update({
           where: { id: section.id },
           data: {
@@ -124,7 +128,6 @@ export async function saveMediaKitSections(mediaKitId: string, sections: Partial
           },
         });
       } else {
-        // Create
         await tx.mediaKitSection.create({
           data: {
             mediaKitId,
@@ -140,6 +143,12 @@ export async function saveMediaKitSections(mediaKitId: string, sections: Partial
   });
 
   revalidatePath(`/erp/midia-kit/${mediaKitId}/editor`);
+  
+  const updated = await prisma.mediaKitSection.findMany({
+    where: { mediaKitId },
+    orderBy: { ordem: 'asc' }
+  });
+  return updated;
 }
 
 /**
@@ -196,7 +205,7 @@ export async function publishMediaKit(id: string) {
     prisma.mediaKitVersion.create({
       data: {
         mediaKitId: id,
-        snapshot: snapshot as any,
+        snapshot: snapshot as unknown as Prisma.InputJsonValue,
         usuarioId: sessao?.user.id,
       }
     }),

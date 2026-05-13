@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function renderSection(section: MediaKitSectionWithData, theme: MediaKitTheme, index: number) {
+function renderSection(section: MediaKitSectionWithData, theme: MediaKitTheme) {
   if (!section.ativo) return null;
 
   const key = `${section.tipo}-${section.id}`;
@@ -102,7 +102,7 @@ export default async function MidiaKitPublicPage({ params }: Props) {
 
       {/* Sections */}
       <main>
-        {kit.secoes.map((section, index) => renderSection(section as MediaKitSectionWithData, theme, index))}
+        {kit.secoes.map((section) => renderSection(section as MediaKitSectionWithData, theme))}
       </main>
 
       {/* Floating CTA */}

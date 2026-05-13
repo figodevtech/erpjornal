@@ -21,8 +21,8 @@ export default function NovoMediaKitDialog({ emptyState }: Props) {
     startTransition(async () => {
       try {
         await createMediaKit(formData);
-      } catch (err: any) {
-        setError(err.message ?? "Ocorreu um erro.");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Ocorreu um erro.");
       }
     });
   }

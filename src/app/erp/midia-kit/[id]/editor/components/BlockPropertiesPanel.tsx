@@ -1,7 +1,15 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import { MediaKitSectionWithData } from "@/types/media-kit";
+import { 
+  MediaKitSectionWithData,
+  MediaKitHeroData,
+  MediaKitAboutData,
+  MediaKitFeaturesData,
+  MediaKitStatsData,
+  MediaKitTestimonialsData,
+  MediaKitContactData
+} from "@/types/media-kit";
 import HeroForm from "./forms/HeroForm";
 import AboutForm from "./forms/AboutForm";
 import FeaturesForm from "./forms/FeaturesForm";
@@ -15,7 +23,7 @@ interface Props {
 }
 
 export default function BlockPropertiesPanel({ section, onChange }: Props) {
-  function handleDataChange(newData: any) {
+  function handleDataChange(newData: Record<string, unknown>) {
     onChange({ data: { ...section.data, ...newData } });
   }
 
@@ -23,17 +31,17 @@ export default function BlockPropertiesPanel({ section, onChange }: Props) {
   const renderSpecificForm = () => {
     switch (section.tipo) {
       case "hero":
-        return <HeroForm data={section.data as any} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
+        return <HeroForm data={section.data as MediaKitHeroData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
       case "about":
-        return <AboutForm data={section.data as any} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
+        return <AboutForm data={section.data as MediaKitAboutData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
       case "features":
-        return <FeaturesForm data={section.data as any} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
+        return <FeaturesForm data={section.data as MediaKitFeaturesData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
       case "stats":
-        return <StatsForm data={section.data as any} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
+        return <StatsForm data={section.data as MediaKitStatsData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
       case "testimonials":
-        return <TestimonialsForm data={section.data as any} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
+        return <TestimonialsForm data={section.data as MediaKitTestimonialsData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
       case "contact":
-        return <ContactForm data={section.data as any} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
+        return <ContactForm data={section.data as MediaKitContactData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
       default:
         return <p className="text-sm text-gray-500">Tipo de bloco desconhecido.</p>;
     }
@@ -67,7 +75,7 @@ export default function BlockPropertiesPanel({ section, onChange }: Props) {
         <h3 className="text-base font-bold text-gray-900">Configuração Geral</h3>
         
         <div>
-          <label className="mb-1.5 block text-sm font-semibold text-gray-700">Título Interno (apenas para o painel)</label>
+          <label className="mb-1.5 block text-sm font-semibold text-gray-900">Título Interno (apenas para o painel)</label>
           <input
             type="text"
             value={section.titulo ?? ""}

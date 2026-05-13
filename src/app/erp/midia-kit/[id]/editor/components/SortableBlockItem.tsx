@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2, EyeOff, LayoutTemplate } from "lucide-react";
+import { GripVertical, Trash2, EyeOff } from "lucide-react";
 import { MediaKitSectionWithData } from "@/types/media-kit";
 
 interface Props {

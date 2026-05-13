@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { UploadCloud, Loader2, X } from "lucide-react";
+import Image from "next/image";
 
 interface Props {
   mediaKitId: string;
@@ -38,23 +39,28 @@ export default function ImageUploadField({ mediaKitId, value, onChange, label = 
         }
 
         onChange(data.url);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Erro no upload");
       }
     });
   }
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-semibold text-gray-700">{label}</label>
+      <label className="block text-sm font-semibold text-gray-900">{label}</label>
       
       {value ? (
-        <div className="relative overflow-hidden rounded-xl border border-gray-200">
-          <img src={value} alt="Preview" className="h-40 w-full object-cover" />
+        <div className="relative aspect-video overflow-hidden rounded-xl border border-gray-200">
+          <Image 
+            src={value} 
+            alt="Preview" 
+            fill 
+            className="object-cover" 
+          />
           <button
             type="button"
             onClick={() => onChange("")}
-            className="absolute top-2 right-2 rounded-full bg-white/90 p-1.5 text-gray-700 shadow-sm hover:bg-red-50 hover:text-red-600 transition"
+            className="absolute top-2 right-2 rounded-full bg-white/90 p-1.5 text-gray-900 shadow-sm hover:bg-red-50 hover:text-red-600 transition"
           >
             <X className="h-4 w-4" />
           </button>

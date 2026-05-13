@@ -62,15 +62,16 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(asset);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { digest?: string; message?: string };
     // Se for erro de redirecionamento do Next.js (403), repassamos
-    if (error.digest?.includes("NEXT_REDIRECT")) {
+    if (err.digest?.includes("NEXT_REDIRECT")) {
       throw error;
     }
 
     console.error("Upload Route Error:", error);
     return NextResponse.json(
-      { error: error.message || "Erro interno no servidor" },
+      { error: err.message || "Erro interno no servidor" },
       { status: 500 }
     );
   }

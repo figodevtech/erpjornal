@@ -16,12 +16,13 @@ import {
   sortableKeyboardCoordinates, 
   verticalListSortingStrategy 
 } from "@dnd-kit/sortable";
-import { Plus, Save, MousePointerClick, CheckCircle2 } from "lucide-react";
+import { Plus, Save, MousePointerClick } from "lucide-react";
 
 import { MediaKitSectionWithData } from "@/types/media-kit";
 import { saveMediaKitSections, updateSectionOrder } from "../../../actions";
 import SortableBlockItem from "./SortableBlockItem";
 import BlockPropertiesPanel from "./BlockPropertiesPanel";
+import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 
 interface Props {
   mediaKitId: string;
@@ -34,6 +35,7 @@ export default function BlockEditorManager({ mediaKitId, initialSections }: Prop
   const [isPending, startTransition] = useTransition();
   const [isDirty, setIsDirty] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [sectionToDelete, setSectionToDelete] = useState<string | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -71,7 +73,7 @@ export default function BlockEditorManager({ mediaKitId, initialSections }: Prop
 
   function handleAddBlock(tipo: MediaKitSectionWithData["tipo"]) {
     const newSection: MediaKitSectionWithData = {
-      id: `temp-${Date.now()}`,
+      id: `temp-${crypto.randomUUID()}`,
       mediaKitId,
       tipo,
       titulo: `Novo bloco ${tipo}`,
@@ -94,18 +96,23 @@ export default function BlockEditorManager({ mediaKitId, initialSections }: Prop
   }
 
   function handleDeleteSection(id: string) {
-    if (!confirm("Remover este bloco?")) return;
-    setSections(prev => prev.filter(s => s.id !== id));
-    if (activeSectionId === id) setActiveSectionId(null);
+    setSectionToDelete(id);
+  }
+
+  function confirmDelete() {
+    if (!sectionToDelete) return;
+    setSections(prev => prev.filter(s => s.id !== sectionToDelete));
+    if (activeSectionId === sectionToDelete) setActiveSectionId(null);
     setIsDirty(true);
+    setSectionToDelete(null);
   }
 
   function handleSaveAll() {
     startTransition(async () => {
       try {
-        await saveMediaKitSections(mediaKitId, sections);
+        const updatedSections = await saveMediaKitSections(mediaKitId, sections);
+        setSections(updatedSections);
         setIsDirty(false);
-        // Refresh na página seria bom, mas as actions já dão revalidatePath
       } catch (err) {
         alert("Erro ao salvar: " + err);
       }
@@ -163,7 +170,7 @@ export default function BlockEditorManager({ mediaKitId, initialSections }: Prop
               {["hero", "about", "features", "stats", "testimonials", "contact"].map(t => (
                 <button
                   key={t}
-                  onClick={() => handleAddBlock(t as any)}
+                  onClick={() => handleAddBlock(t as MediaKitSectionWithData["tipo"])}
                   className="w-full text-left px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-rose-400 hover:text-rose-600 transition"
                 >
                   Bloco: <span className="capitalize">{t}</span>
@@ -199,6 +206,16 @@ export default function BlockEditorManager({ mediaKitId, initialSections }: Prop
           </div>
         )}
       </div>
+
+      <ConfirmationDialog
+        open={!!sectionToDelete}
+        title="Remover Bloco"
+        description="Tem certeza que deseja remover este bloco? Esta ação não pode ser desfeita após salvar as alterações."
+        confirmLabel="Remover"
+        tone="danger"
+        onConfirm={confirmDelete}
+        onClose={() => setSectionToDelete(null)}
+      />
     </div>
   );
 }

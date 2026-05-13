@@ -107,7 +107,7 @@ export interface MediaKitSectionWithData {
   titulo: string | null;
   ordem: number;
   ativo: boolean;
-  data: any;
+  data: SectionDataMap[MediaKitSectionType];
   criadoEm: Date;
   atualizadoEm?: Date;
 }

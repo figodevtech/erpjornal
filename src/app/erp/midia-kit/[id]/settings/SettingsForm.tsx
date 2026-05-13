@@ -43,8 +43,8 @@ export default function SettingsForm({ kit, podePublicar }: Props) {
           },
         });
         setSuccess("Configurações salvas com sucesso.");
-      } catch (err: any) {
-        setError(err.message ?? "Erro ao salvar.");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Erro ao salvar.");
       }
     });
   }
@@ -55,8 +55,8 @@ export default function SettingsForm({ kit, podePublicar }: Props) {
       try {
         await publishMediaKit(kit.id);
         setSuccess("Mídia Kit publicado com sucesso!");
-      } catch (err: any) {
-        setError(err.message ?? "Erro ao publicar.");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Erro ao publicar.");
       }
     });
   }
@@ -68,8 +68,8 @@ export default function SettingsForm({ kit, podePublicar }: Props) {
         await updateMediaKit(kit.id, { status: "ARCHIVED" as MediaKitStatus });
         setSuccess("Mídia Kit arquivado.");
         router.refresh();
-      } catch (err: any) {
-        setError(err.message ?? "Erro ao arquivar.");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Erro ao arquivar.");
       }
     });
   }
@@ -79,8 +79,8 @@ export default function SettingsForm({ kit, podePublicar }: Props) {
     startTransition(async () => {
       try {
         await deleteMediaKit(kit.id);
-      } catch (err: any) {
-        setError(err.message ?? "Erro ao excluir.");
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : "Erro ao excluir.");
       }
     });
   }

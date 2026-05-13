@@ -1,4 +1,5 @@
 import { MediaKitTestimonialsData, MediaKitTheme } from "@/types/media-kit";
+import Image from "next/image";
 import { Quote } from "lucide-react";
 
 interface Props {
@@ -59,13 +60,14 @@ export default function TestimonialsSection({ data, theme }: Props) {
               {/* Author */}
               <div className="flex items-center gap-4 border-t pt-5" style={{ borderColor: `${theme.textColor}11` }}>
                 {item.avatarUrl ? (
-                  <img
-                    src={item.avatarUrl}
-                    alt={item.author}
-                    className="h-12 w-12 rounded-full object-cover ring-2 ring-offset-2"
-                    style={{ ringColor: `${theme.primaryColor}33` } as any}
-                    loading="lazy"
-                  />
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full ring-2 ring-offset-2" style={{ "--tw-ring-color": `${theme.primaryColor}33` } as React.CSSProperties}>
+                    <Image
+                      src={item.avatarUrl}
+                      alt={item.author}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
                 ) : (
                   <div
                     className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-black"

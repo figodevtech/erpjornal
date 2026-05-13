@@ -12,7 +12,7 @@ interface Props {
   kitName: string;
 }
 
-export default function MidiaKitHeader({ theme, navItems, kitName }: Props) {
+export default function MidiaKitHeader({ theme, navItems }: Omit<Props, "kitName">) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 

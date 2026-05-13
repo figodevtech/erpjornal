@@ -28,19 +28,19 @@ export default function TestimonialsForm({ mediaKitId, data, onChange }: Props) 
   return (
     <div className="space-y-6">
       <div>
-        <label className="mb-1.5 block text-sm font-semibold text-gray-700">Título da Seção</label>
+        <label className="mb-1.5 block text-sm font-semibold text-gray-900">Título da Seção</label>
         <input
           type="text"
           value={data.title || ""}
           onChange={(e) => onChange({ title: e.target.value })}
-          className="w-full rounded-xl border border-gray-200 px-4 py-2 text-sm focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100"
+          className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-900 focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100"
           placeholder="Ex: O que dizem nossos parceiros"
         />
       </div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <label className="block text-sm font-semibold text-gray-700">Depoimentos</label>
+          <label className="block text-sm font-semibold text-gray-900">Depoimentos</label>
           <button
             type="button"
             onClick={addItem}

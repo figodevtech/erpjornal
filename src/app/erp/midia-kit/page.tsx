@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { LayoutTemplate, Plus, Globe, FileEdit, Archive } from "lucide-react";
+import { LayoutTemplate, Globe, FileEdit, Archive } from "lucide-react";
 
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MediaKitStatus } from "@prisma/client";
+import { MediaKitTheme } from "@/types/media-kit";
 import NovoMediaKitDialog from "./components/NovoMediaKitDialog";
 
 const statusConfig: Record<MediaKitStatus, { label: string; className: string }> = {
@@ -65,7 +66,7 @@ export default async function MidiaKitPage() {
                   className="flex h-24 items-center justify-center"
                   style={{
                     backgroundColor:
-                      (kit.tema as any)?.primaryColor ?? "#0f172a",
+                      (kit.tema as unknown as MediaKitTheme)?.primaryColor ?? "#0f172a",
                   }}
                 >
                   <LayoutTemplate className="h-10 w-10 text-white/60" />

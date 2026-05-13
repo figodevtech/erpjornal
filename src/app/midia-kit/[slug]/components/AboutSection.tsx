@@ -1,4 +1,5 @@
 import { MediaKitAboutData, MediaKitTheme } from "@/types/media-kit";
+import Image from "next/image";
 
 interface Props {
   data: MediaKitAboutData;
@@ -51,12 +52,14 @@ export default function AboutSection({ data, theme }: Props) {
                 className="absolute -inset-4 -z-10 rounded-3xl opacity-10"
                 style={{ backgroundColor: theme.primaryColor }}
               />
-              <img
-                src={data.imageUrl}
-                alt={data.title || "Sobre nós"}
-                className="w-full rounded-2xl object-cover shadow-2xl"
-                loading="lazy"
-              />
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-2xl">
+                <Image
+                  src={data.imageUrl}
+                  alt={data.title || "Sobre nós"}
+                  fill
+                  className="object-cover"
+                />
+              </div>
             </div>
           )}
         </div>

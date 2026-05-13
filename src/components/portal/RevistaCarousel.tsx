@@ -92,9 +92,9 @@ export default function RevistaCarousel({ revistas }: RevistaCarouselProps) {
               }}
               href={`/revistas/${revista.id}`}
               onFocus={() => setActivePage(Math.floor(index / PAGE_SIZE))}
-              className="group relative min-w-[calc((100%-60px)/4)] max-w-[calc((100%-60px)/4)] snap-start overflow-hidden rounded-lg border border-white/10 bg-gray-900 shadow-lg transition hover:-translate-y-0.5 hover:border-red-500/70 max-lg:min-w-[210px] max-lg:max-w-[210px] max-sm:min-w-[170px] max-sm:max-w-[170px]"
+              className="group relative min-w-[calc((100%-60px)/4)] max-w-[calc((100%-60px)/4)] snap-start overflow-hidden rounded-lg border border-white/10 bg-gray-900 shadow-lg transition hover:-translate-y-0.5 hover:border-red-500/70 max-lg:min-w-52.5 max-lg:max-w-52.5 max-sm:min-w-42.5 max-sm:max-w-42.5"
             >
-              <div className="relative aspect-[3/4] bg-gray-900">
+              <div className="relative aspect-3/4 bg-gray-900">
                 {revista.capaUrl ? (
                   <Image
                     src={revista.capaUrl}
@@ -109,7 +109,7 @@ export default function RevistaCarousel({ revistas }: RevistaCarouselProps) {
                   </div>
                 )}
               </div>
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/70 to-transparent p-3">
+              <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black via-black/70 to-transparent p-3">
                 <p className="text-[10px] font-black uppercase tracking-widest text-red-300">Edição {revista.edicao}</p>
                 <p className="mt-1 line-clamp-2 text-sm font-black leading-tight text-white">{revista.titulo}</p>
               </div>

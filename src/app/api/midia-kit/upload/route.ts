@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { criarClienteSupabaseServer } from "@/lib/supabase/server";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -20,9 +20,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const supabase = await criarClienteSupabaseServer();
+    const supabase = criarClienteSupabaseAdmin();
 
-    // 2. Upload para o bucket 'media-kit-assets'
+    // 2. Garantir que o bucket 'media-kit-assets' existe
+    const { data: buckets } = await supabase.storage.listBuckets();
+    const bucketExists = buckets?.some((b) => b.name === "media-kit-assets");
+
+    if (!bucketExists) {
+      console.log("Criando bucket 'media-kit-assets'...");
+      const { error: createError } = await supabase.storage.createBucket(
+        "media-kit-assets",
+        {
+          public: true,
+          fileSizeLimit: 10485760, // 10MB
+        }
+      );
+      if (createError) {
+        console.error("Erro ao criar bucket:", createError);
+        return NextResponse.json(
+          { error: "Erro ao configurar storage: " + createError.message },
+          { status: 500 }
+        );
+      }
+    }
+
+    // 3. Upload para o bucket 'media-kit-assets'
     // Estrutura: media-kit-id/timestamp-random.ext
     const fileExt = file.name.split(".").pop();
     const fileName = `${mediaKitId}/${Date.now()}-${Math.random()

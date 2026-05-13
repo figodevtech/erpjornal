@@ -165,17 +165,19 @@ export default function BlockEditorManager({ mediaKitId, initialSections }: Prop
               <Plus className="h-4 w-4" /> Adicionar Bloco
             </button>
           ) : (
-            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-3 space-y-2">
-              <p className="text-xs font-semibold text-gray-500 mb-2">Selecione o tipo:</p>
-              {["hero", "about", "features", "stats", "testimonials", "contact"].map(t => (
-                <button
-                  key={t}
-                  onClick={() => handleAddBlock(t as MediaKitSectionWithData["tipo"])}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-rose-400 hover:text-rose-600 transition"
-                >
-                  Bloco: <span className="capitalize">{t}</span>
-                </button>
-              ))}
+            <div className="mt-4 rounded-xl border border-gray-200 bg-gray-100 p-4 space-y-2">
+              <p className="text-xs font-bold text-gray-900 mb-3 uppercase tracking-wider">Selecione o tipo de bloco:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {["hero", "about", "features", "stats", "testimonials", "contact"].map(t => (
+                  <button
+                    key={t}
+                    onClick={() => handleAddBlock(t as MediaKitSectionWithData["tipo"])}
+                    className="w-full text-left px-4 py-2.5 text-sm font-bold text-gray-900 bg-white border border-gray-300 rounded-xl hover:border-rose-400 hover:text-rose-600 hover:shadow-sm transition"
+                  >
+                    Bloco: <span className="capitalize">{t}</span>
+                  </button>
+                ))}
+              </div>
               <button 
                 onClick={() => setShowAddMenu(false)}
                 className="w-full text-center mt-2 text-xs text-gray-400 hover:text-gray-600"

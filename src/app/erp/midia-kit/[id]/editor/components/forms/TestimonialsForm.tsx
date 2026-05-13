@@ -61,7 +61,7 @@ export default function TestimonialsForm({ mediaKitId, data, onChange }: Props) 
                 <textarea
                   value={item.quote}
                   onChange={(e) => updateItem(index, { quote: e.target.value })}
-                  className="w-full text-sm text-gray-900 font-medium italic focus:outline-none placeholder-gray-300 resize-none"
+                  className="w-full text-sm text-gray-900 font-medium italic bg-white border border-gray-100 rounded-lg p-2 focus:border-rose-400 focus:outline-none placeholder-gray-400 resize-none"
                   placeholder="&quot;O retorno da campanha foi excelente...&quot;"
                   rows={2}
                 />
@@ -80,14 +80,14 @@ export default function TestimonialsForm({ mediaKitId, data, onChange }: Props) 
                     type="text"
                     value={item.author}
                     onChange={(e) => updateItem(index, { author: e.target.value })}
-                    className="w-full text-sm font-bold text-gray-900 focus:outline-none placeholder-gray-400"
+                    className="w-full text-sm font-bold text-gray-900 bg-transparent focus:outline-none placeholder-gray-500"
                     placeholder="Nome do Cliente"
                   />
                   <input
                     type="text"
                     value={item.role || ""}
                     onChange={(e) => updateItem(index, { role: e.target.value })}
-                    className="w-full text-xs text-gray-500 focus:outline-none placeholder-gray-400"
+                    className="w-full text-xs text-gray-700 font-semibold bg-transparent focus:outline-none placeholder-gray-500"
                     placeholder="Cargo e Empresa"
                   />
                 </div>

@@ -61,13 +61,13 @@ export default function FeaturesForm({ data, onChange }: Props) {
                   type="text"
                   value={item.title}
                   onChange={(e) => updateItem(index, { title: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-bold"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-bold text-gray-900 focus:border-rose-400 focus:outline-none"
                   placeholder="Título do diferencial"
                 />
                 <textarea
                   value={item.description}
                   onChange={(e) => updateItem(index, { description: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs text-gray-900 focus:border-rose-400 focus:outline-none"
                   placeholder="Descrição..."
                   rows={2}
                 />
@@ -75,7 +75,7 @@ export default function FeaturesForm({ data, onChange }: Props) {
                   type="text"
                   value={item.icon || ""}
                   onChange={(e) => updateItem(index, { icon: e.target.value })}
-                  className="w-full rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-mono"
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-mono text-gray-900 focus:border-rose-400 focus:outline-none"
                   placeholder="Nome do ícone (ex: star, users, activity)"
                 />
               </div>

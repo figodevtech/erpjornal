@@ -61,7 +61,7 @@ export default function StatsForm({ data, onChange }: Props) {
                   type="text"
                   value={item.value}
                   onChange={(e) => updateItem(index, { value: e.target.value })}
-                  className="w-full font-bold text-xl text-gray-900 focus:outline-none placeholder-gray-300"
+                  className="w-full font-bold text-xl text-gray-900 bg-transparent focus:outline-none placeholder-gray-400"
                   placeholder="Ex: +10k"
                 />
                 <button
@@ -76,14 +76,14 @@ export default function StatsForm({ data, onChange }: Props) {
                 type="text"
                 value={item.label}
                 onChange={(e) => updateItem(index, { label: e.target.value })}
-                className="w-full text-xs text-gray-500 uppercase tracking-wider font-semibold focus:outline-none placeholder-gray-300"
+                className="w-full text-xs text-gray-600 uppercase tracking-wider font-bold bg-transparent focus:outline-none placeholder-gray-400"
                 placeholder="Ex: Seguidores Ativos"
               />
               <input
                 type="text"
                 value={item.suffix || ""}
                 onChange={(e) => updateItem(index, { suffix: e.target.value })}
-                className="w-full text-xs text-gray-400 focus:outline-none mt-1"
+                className="w-full text-xs text-gray-600 bg-transparent focus:outline-none mt-1 placeholder-gray-400"
                 placeholder="Sufixo opcional (ex: mensal)"
               />
             </div>

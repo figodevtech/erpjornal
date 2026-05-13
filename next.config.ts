@@ -61,6 +61,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'admin.cnnbrasil.com.br',
+      },
+      {
+        protocol: 'https',
+        hostname: 'mopkeehlcrmydlqrgdfe.supabase.co',
       }
     ],
   },

@@ -10,8 +10,9 @@ import { redis, redisKeys } from "@/lib/redis";
 export const getCachedCategories = unstable_cache(
   async () => {
     // 1. Tenta buscar do Redis (Cache Distribuído)
+    type Category = { id: string; nome: string; slug: string };
     try {
-      const cached = await redis.get<any[]>(redisKeys.categoryCache("all"));
+      const cached = await redis.get<Category[]>(redisKeys.categoryCache("all"));
       if (cached) return cached;
     } catch (e) {
       console.error("Redis Cache Error (Categories):", e);
@@ -32,7 +33,8 @@ export const getCachedCategories = unstable_cache(
     // 3. Salva no Redis por 1 hora
     try {
       await redis.set(redisKeys.categoryCache("all"), categories, { ex: 3600 });
-    } catch (e) {}
+    } catch {
+    }
 
     return categories;
   },

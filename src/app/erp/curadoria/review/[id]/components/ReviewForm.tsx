@@ -1,9 +1,11 @@
 "use client";
 
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
+import CoverImageManager from "@/app/erp/artigos/components/CoverImageManager";
 import RichTextEditor from "@/components/ui/RichTextEditor";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useState } from "react";
 import {
   CheckCircle2,
@@ -19,15 +21,39 @@ import {
   rewriteWithAI,
 } from "../../../actions";
 
+type ReviewItem = {
+  id: string;
+  tituloOriginal: string;
+  thumbnail?: string | null;
+  dataPublicacao: Date | string;
+  source: {
+    name: string;
+  };
+};
+
+type ReviewAIData = {
+  ai_title?: string | null;
+  ai_lead?: string | null;
+  ai_body?: string | null;
+};
+
+type ReviewUser = {
+  name?: string | null;
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Erro interno. Tente novamente.";
+}
+
 export function ReviewForm({
   item,
   aiData,
   user,
   categories,
 }: {
-  item: any;
-  aiData: any;
-  user: any;
+  item: ReviewItem;
+  aiData: ReviewAIData | null;
+  user: ReviewUser;
   categories: Array<{ id: string; nome: string }>;
 }) {
   const [loadingIA, setLoadingIA] = useState(false);
@@ -38,6 +64,7 @@ export function ReviewForm({
   const [titulo, setTitulo] = useState(aiData?.ai_title || item.tituloOriginal);
   const [resumo, setResumo] = useState(aiData?.ai_lead || "");
   const [corpo, setCorpo] = useState(aiData?.ai_body || "");
+  const [imagemCapa, setImagemCapa] = useState(item.thumbnail || "");
   const [categoriaId, setCategoriaId] = useState("");
 
   async function handleAI() {
@@ -50,8 +77,8 @@ export function ReviewForm({
         setCorpo(res.aiResponse.ai_body);
         toast.success("IA gerou uma nova versao.");
       }
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setLoadingIA(false);
     }
@@ -70,14 +97,15 @@ export function ReviewForm({
         resumo,
         corpoTexto: corpo,
         categoriaId: categoriaId || undefined,
+        urlImagemOg: imagemCapa || undefined,
       });
       if (res.success) {
         toast.success("Artigo publicado com sucesso.");
         setConfirmarAcao(null);
         router.push("/erp/artigos");
       }
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setActionLoading(false);
     }
@@ -91,14 +119,14 @@ export function ReviewForm({
 
     setActionLoading(true);
     try {
-      const res = await republishOriginalWithCredits(item.id, categoriaId || undefined);
+      const res = await republishOriginalWithCredits(item.id, categoriaId || undefined, imagemCapa || undefined);
       if (res.success) {
         toast.success("Conteudo original republicado com creditos.");
         setConfirmarAcao(null);
         router.push("/erp/artigos");
       }
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setActionLoading(false);
     }
@@ -111,8 +139,8 @@ export function ReviewForm({
       toast.info("Item rejeitado.");
       setConfirmarAcao(null);
       router.push("/erp/curadoria/dashboard");
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setActionLoading(false);
     }
@@ -122,10 +150,12 @@ export function ReviewForm({
     <div className="space-y-8 animate-in fade-in duration-1000">
       {item.thumbnail && (
         <div className="relative h-64 w-full overflow-hidden rounded-[40px] border-4 border-white shadow-2xl md:h-96">
-          <img
+          <Image
             src={item.thumbnail}
             alt="Preview do RSS"
-            className="h-full w-full object-cover shadow-inner transition-transform duration-700 group-hover:scale-105"
+            fill
+            sizes="(max-width: 768px) 100vw, 900px"
+            className="object-cover shadow-inner transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-x-0 bottom-0 flex items-end bg-gradient-to-t from-gray-900 to-transparent px-8 py-10">
             <span className="flex items-center gap-2 rounded-full border border-white/20 bg-white/20 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white backdrop-blur-md">
@@ -141,7 +171,7 @@ export function ReviewForm({
         <div className="relative z-10 text-center md:text-left">
           <h3 className="flex items-center justify-center gap-2 text-xl font-black uppercase tracking-tight md:justify-start">
             <Sparkles className="h-6 w-6 text-indigo-400" />
-            Reescrita IA (Gemini)
+            Reescrita IA (GPT)
           </h3>
           <p className="mt-1 text-xs font-bold uppercase tracking-widest text-white/50">
             Gere uma versao original e exclusiva do conteudo
@@ -159,6 +189,16 @@ export function ReviewForm({
       </div>
 
       <div className="space-y-8 rounded-[40px] border border-gray-200 bg-white p-6 shadow-sm md:p-10">
+        <CoverImageManager
+          value={imagemCapa}
+          onChange={setImagemCapa}
+          title={titulo}
+          resumo={resumo}
+          corpoTexto={corpo}
+          referenceImageUrl={item.thumbnail}
+          allowRecreateFromReference
+        />
+
         <div className="space-y-2">
           <label className="ml-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
             Categoria

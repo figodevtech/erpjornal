@@ -30,7 +30,7 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
 
       setSubscribed(true);
       toast.success("Inscrição realizada com sucesso!");
-    } catch (err) {
+    } catch {
       toast.error("Erro ao realizar inscrição. Tente novamente.");
     } finally {
       setLoading(false);
@@ -82,18 +82,18 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
   }
 
   return (
-    <div className="bg-gray-900 dark:bg-gray-900/40 rounded-[40px] p-8 md:p-12 relative overflow-hidden shadow-2xl border-l-[8px] border-red-700 transition-colors">
+    <div className="bg-gray-600 dark:bg-gray-700/40 rounded-[40px] p-8 md:p-12 relative overflow-hidden shadow-2xl border-l-[8px] border-red-700 transition-colors">
       <div className="absolute top-0 right-0 w-64 h-64 bg-red-700/20 rounded-full -mr-32 -mt-32 blur-3xl pointer-events-none" />
       
       <div className="relative z-10">
         <div className="flex items-center gap-2 mb-4">
-          <span className="w-2 h-2 bg-red-600 rounded-full animate-pulse" />
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-500">Exclusivo Revista Gestão</span>
+          <span className="w-2 h-2 bg-red-300 rounded-full animate-pulse" />
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-red-300">Exclusivo Revista Gestão</span>
         </div>
         <h3 className="text-3xl md:text-4xl font-black text-white dark:text-gray-50 tracking-tighter mb-4 leading-none uppercase">
-          A política antes de virar <span className="text-red-700">notícia</span>.
+          A política antes de virar <span className="text-red-400">notícia</span>.
         </h3>
-        <p className="text-gray-200 dark:text-gray-300 text-lg mb-8 max-w-lg font-medium">
+        <p className="text-gray-200 dark:text-gray-300 text-lg mb-8  font-medium">
           Receba bastidores exclusivos e análises profundas no seu e-mail toda manhã.
         </p>
 
@@ -107,7 +107,7 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
               aria-label="E-mail exclusivo Revista Gestão"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-14 px-8 rounded-2xl bg-white/5 border-2 border-white/10 text-white placeholder:text-gray-500 focus:border-red-700 focus:ring-2 focus:ring-red-700/20 outline-none font-bold transition-all"
+              className=" placeholder:text-gray-200 w-full h-14 px-8 rounded-2xl bg-white/5 border-2 border-white/10 text-white focus:border-red-700 focus:ring-2 focus:ring-red-700/20 outline-none font-bold transition-all"
             />
           </div>
           <button 
@@ -119,8 +119,8 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
           </button>
         </form>
         
-        <p className="mt-6 text-[10px] text-gray-400 dark:text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
-          <CheckCircle2 className="w-3 h-3 text-red-600" /> Sem spam. Apenas política levada a sério.
+        <p className="mt-6 text-[10px] text-gray-200 dark:text-gray-500 font-black uppercase tracking-widest flex items-center gap-2">
+          <CheckCircle2 className="w-3 h-3 text-red-300" /> Sem spam. Apenas política levada a sério.
         </p>
       </div>
     </div>

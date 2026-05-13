@@ -39,6 +39,7 @@ model Usuario {
   fontesCriadas     Fonte[]              @relation("FonteCriador")
   notasFonte        NotaFonte[]          @relation("NotaFonteAutor")
   versoesArtigo     VersaoArtigo[]
+  versoesMediaKit   MediaKitVersion[]
 
   @@map("usuarios")
 }
@@ -375,4 +376,74 @@ model LogReescrita {
   itemRss          ItemRssBruto  @relation(fields: [itemRssId], references: [id], onDelete: Cascade)
 
   @@map("logs_reescrita")
+}
+
+enum MediaKitStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+
+  @@map("media_kit_status")
+}
+
+model MediaKit {
+  id            String            @id @default(uuid()) @db.Uuid
+  nome          String
+  slug          String            @unique
+  status        MediaKitStatus    @default(DRAFT)
+  tema          Json?             @map("tema")
+  idioma        String            @default("pt-BR")
+  publicadoEm   DateTime?         @map("publicado_em")
+  criadoEm      DateTime          @default(now()) @map("criado_em")
+  atualizadoEm  DateTime          @updatedAt @map("atualizado_em")
+  
+  secoes        MediaKitSection[]
+  versoes       MediaKitVersion[]
+  assets        MediaKitAsset[]
+
+  @@map("media_kits")
+}
+
+model MediaKitSection {
+  id          String   @id @default(uuid()) @db.Uuid
+  mediaKitId  String   @db.Uuid @map("media_kit_id")
+  tipo        String   
+  titulo      String?
+  ordem       Int
+  ativo       Boolean  @default(true)
+  data        Json     
+  criadoEm    DateTime @default(now()) @map("criado_em")
+  
+  mediaKit    MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
+
+  @@map("media_kit_sections")
+}
+
+model MediaKitVersion {
+  id          String   @id @default(uuid()) @db.Uuid
+  mediaKitId  String   @db.Uuid @map("media_kit_id")
+  snapshot    Json     
+  usuarioId   String?  @db.Uuid @map("usuario_id")
+  criadoEm    DateTime @default(now()) @map("criado_em")
+  
+  mediaKit    MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
+  usuario     Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@map("media_kit_versions")
+}
+
+model MediaKitAsset {
+  id          String   @id @default(uuid()) @db.Uuid
+  mediaKitId  String   @db.Uuid @map("media_kit_id")
+  nome        String
+  url         String
+  altText     String?  @map("alt_text")
+  tipo        String   
+  tamanho     Int?
+  dimensoes   String?
+  criadoEm    DateTime @default(now()) @map("criado_em")
+  
+  mediaKit    MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
+
+  @@map("media_kit_assets")
 }

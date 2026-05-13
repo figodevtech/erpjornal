@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, Command } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { SearchResult } from "@/lib/services/search-service";
 import SearchSuggestions from "../search/SearchSuggestions";
 import RecentSearches from "../search/RecentSearches";
@@ -163,16 +163,13 @@ export default function SearchBar() {
     <div className="relative" ref={containerRef} role="search">
       <button
         onClick={open}
-        className="flex items-center gap-2 text-gray-900 dark:text-gray-100 hover:text-red-700 transition-all p-2 focus-visible:ring-2 focus-visible:ring-red-700 rounded-full outline-none group bg-gray-50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 sm:pr-4 sm:pl-3"
-        aria-label="Abrir pesquisa (Ctrl+K)"
+        className="group flex items-center gap-2 rounded-full border border-gray-200 bg-gray-100 px-3 py-2 text-gray-800 shadow-sm outline-none transition-all hover:border-red-700/30 hover:bg-white hover:text-red-800 focus-visible:ring-2 focus-visible:ring-red-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 dark:hover:border-red-400/40 dark:hover:bg-gray-800 dark:hover:text-red-100 sm:px-4"
+        aria-label="Abrir pesquisa"
         aria-expanded={isOpen}
       >
         <Search className="w-5 h-5 group-hover:scale-110 transition-transform" strokeWidth={2.5} />
-        <span className="hidden sm:inline text-[13px] font-bold text-gray-400 group-hover:text-red-700">
+        <span className="hidden sm:inline text-[13px] font-black">
           Buscar...
-        </span>
-        <span className="hidden sm:flex items-center gap-0.5 ml-1 border border-gray-200 dark:border-gray-700 px-1.5 py-0.5 rounded text-[10px] text-gray-400 font-bold">
-          <Command className="w-2.5 h-2.5" />K
         </span>
       </button>
 
@@ -252,25 +249,6 @@ export default function SearchBar() {
                   />
                 )}
               </div>
-
-              {/* Rodapé com atalhos */}
-              <div className="hidden border-t border-gray-200 bg-gray-50 p-2.5 px-4 dark:border-gray-800 dark:bg-gray-900/70 sm:grid sm:grid-cols-3 sm:items-center">
-                <div className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 font-black text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">↑</kbd>
-                    <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 font-black text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">↓</kbd>
-                    Navegar
-                </div>
-                <div className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    <kbd className="rounded border border-gray-300 bg-white px-1.5 py-0.5 font-black text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">Enter</kbd>
-                    Selecionar
-                </div>
-                <div className="flex items-center justify-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
-                    <kbd className="flex items-center gap-0.5 rounded border border-gray-300 bg-white px-1.5 py-0.5 font-black text-gray-900 shadow-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100">
-                      <Command className="w-2.5 h-2.5" />K
-                    </kbd>
-                    Abrir/Fechar
-                </div>
-              </div>
             </motion.div>
           </>
         )}
@@ -278,4 +256,5 @@ export default function SearchBar() {
     </div>
   );
 }
+
 

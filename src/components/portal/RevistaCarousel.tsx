@@ -13,23 +13,27 @@ export type RevistaCarouselItem = {
   dataPublicacao: string | null;
   capaUrl: string | null;
   totalArtigos: number;
+  ultimaPublicacaoArtigo?: string | null;
 };
 
 type RevistaCarouselProps = {
   revistas: RevistaCarouselItem[];
 };
 
+const PAGE_SIZE = 4;
+const MAX_PAGES = 20;
+
 export default function RevistaCarousel({ revistas }: RevistaCarouselProps) {
   const itemRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const [activePage, setActivePage] = useState(0);
-  const pageSize = 4;
-  const totalPages = Math.ceil(revistas.length / pageSize);
+  const totalPages = Math.min(MAX_PAGES, Math.ceil(revistas.length / PAGE_SIZE));
+  const visibleRevistas = revistas.slice(0, PAGE_SIZE * MAX_PAGES);
 
-  if (revistas.length === 0) return null;
+  if (visibleRevistas.length === 0) return null;
 
   function scrollToPage(page: number) {
     const nextPage = Math.max(0, Math.min(page, totalPages - 1));
-    const targetIndex = nextPage * pageSize;
+    const targetIndex = nextPage * PAGE_SIZE;
     setActivePage(nextPage);
     itemRefs.current[targetIndex]?.scrollIntoView({
       behavior: "smooth",
@@ -43,14 +47,21 @@ export default function RevistaCarousel({ revistas }: RevistaCarouselProps) {
   }
 
   return (
-    <section className="mb-14 rounded-2xl bg-gray-950 px-4 py-8 text-white shadow-sm sm:px-6 lg:px-8">
+    <section className="mb-14 overflow-hidden rounded-2xl bg-gray-950 px-4 py-8 text-white shadow-sm sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 flex items-end justify-between gap-4">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-[11px] font-black uppercase tracking-[0.28em] text-red-400">Revista Gestão</p>
-            <h2 className="mt-1 text-2xl font-black tracking-tight md:text-3xl">Edições</h2>
+            <p className="mt-1 text-sm font-normal text-gray-300">Últimas edições publicadas</p>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/edicoes-anteriores"
+              className="rounded-full border border-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-gray-100 transition hover:border-red-500 hover:text-white"
+            >
+              Edições anteriores
+            </Link>
             <button
               type="button"
               onClick={() => scroll("left")}
@@ -73,15 +84,15 @@ export default function RevistaCarousel({ revistas }: RevistaCarouselProps) {
         </div>
 
         <div className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {revistas.map((revista, index) => (
+          {visibleRevistas.map((revista, index) => (
             <Link
               key={revista.id}
               ref={(node) => {
                 itemRefs.current[index] = node;
               }}
               href={`/revistas/${revista.id}`}
-              onFocus={() => setActivePage(Math.floor(index / pageSize))}
-              className="group relative min-w-[calc((100%-60px)/4)] max-w-[calc((100%-60px)/4)] snap-start overflow-hidden rounded-md border border-white/10 bg-gray-900 shadow-lg transition hover:-translate-y-0.5 hover:border-red-500/70 max-lg:min-w-[210px] max-lg:max-w-[210px] max-sm:min-w-[170px] max-sm:max-w-[170px]"
+              onFocus={() => setActivePage(Math.floor(index / PAGE_SIZE))}
+              className="group relative min-w-[calc((100%-60px)/4)] max-w-[calc((100%-60px)/4)] snap-start overflow-hidden rounded-lg border border-white/10 bg-gray-900 shadow-lg transition hover:-translate-y-0.5 hover:border-red-500/70 max-lg:min-w-[210px] max-lg:max-w-[210px] max-sm:min-w-[170px] max-sm:max-w-[170px]"
             >
               <div className="relative aspect-[3/4] bg-gray-900">
                 {revista.capaUrl ? (

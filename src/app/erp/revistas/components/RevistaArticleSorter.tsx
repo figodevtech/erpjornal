@@ -22,6 +22,8 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Pencil } from "lucide-react";
 
 import { updateRevistaArticleOrder } from "../actions";
+import { ArticleStatus } from "@/lib/types/artigo-status";
+import { ar } from "date-fns/locale";
 
 type RevistaArticle = {
   id: string;
@@ -38,8 +40,23 @@ type RevistaArticleSorterProps = {
   podeEditar: boolean;
 };
 
-function SortableArticleRow({ artigo, index, podeEditar }: { artigo: RevistaArticle; index: number; podeEditar: boolean }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: artigo.id });
+function SortableArticleRow({
+  artigo,
+  index,
+  podeEditar,
+}: {
+  artigo: RevistaArticle;
+  index: number;
+  podeEditar: boolean;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: artigo.id });
 
   return (
     <tr
@@ -58,17 +75,30 @@ function SortableArticleRow({ artigo, index, podeEditar }: { artigo: RevistaArti
           <GripVertical className="h-4 w-4" />
         </button>
       </td>
-      <td className="w-16 px-4 py-4 text-sm font-bold text-gray-400">{index + 1}</td>
+      <td className="w-16 px-4 py-4 text-sm font-bold text-gray-400">
+        {index + 1}
+      </td>
       <td className="px-4 py-4">
         <div className="font-semibold text-gray-900">{artigo.titulo}</div>
         <div className="mt-1 text-xs text-gray-500">
-          {artigo.categoria?.nome ?? "Sem categoria"} · {artigo.autor?.nome ?? "Sem autor"}
+          {artigo.categoria?.nome ?? "Sem categoria"} ·{" "}
+          {artigo.autor?.nome ?? "Sem autor"}
         </div>
       </td>
       <td className="px-4 py-4">
-        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-700">{artigo.status}</span>
+        <span
+          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${artigo.status === ArticleStatus.publicado ? "bg-emerald-100 text-emerald-800" : ""} ${artigo.status === ArticleStatus.em_revisao ? "bg-amber-100 text-amber-800" : ""} ${artigo.status === ArticleStatus.rascunho ? "bg-gray-100 text-gray-800" : ""}`}
+        >
+          {artigo.status === ArticleStatus.publicado
+            ? "Publicado"
+            : artigo.status === ArticleStatus.em_revisao
+              ? "Em Revisão"
+              : "Rascunho"}
+        </span>
       </td>
-      <td className="px-4 py-4 text-sm text-gray-500">{new Date(artigo.criadoEm).toLocaleDateString("pt-BR")}</td>
+      <td className="px-4 py-4 text-sm text-gray-500">
+        {new Date(artigo.criadoEm).toLocaleDateString("pt-BR")}
+      </td>
       <td className="px-4 py-4 text-right">
         {podeEditar && (
           <Link
@@ -84,7 +114,11 @@ function SortableArticleRow({ artigo, index, podeEditar }: { artigo: RevistaArti
   );
 }
 
-export default function RevistaArticleSorter({ revistaId, artigos, podeEditar }: RevistaArticleSorterProps) {
+export default function RevistaArticleSorter({
+  revistaId,
+  artigos,
+  podeEditar,
+}: RevistaArticleSorterProps) {
   const [items, setItems] = useState(artigos);
   const [isPending, startTransition] = useTransition();
   const ids = useMemo(() => items.map((item) => item.id), [items]);
@@ -92,7 +126,7 @@ export default function RevistaArticleSorter({ revistaId, artigos, podeEditar }:
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   function handleDragEnd(event: DragEndEvent) {
@@ -105,14 +139,19 @@ export default function RevistaArticleSorter({ revistaId, artigos, podeEditar }:
     setItems(reordered);
 
     startTransition(async () => {
-      await updateRevistaArticleOrder(revistaId, reordered.map((item) => item.id));
+      await updateRevistaArticleOrder(
+        revistaId,
+        reordered.map((item) => item.id),
+      );
     });
   }
 
   if (items.length === 0) {
     return (
       <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 py-16 text-center">
-        <p className="font-medium text-gray-500">Nenhum artigo vinculado a esta revista.</p>
+        <p className="font-medium text-gray-500">
+          Nenhum artigo vinculado a esta revista.
+        </p>
       </div>
     );
   }
@@ -120,11 +159,21 @@ export default function RevistaArticleSorter({ revistaId, artigos, podeEditar }:
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-gray-100 px-5 py-3">
-        <p className="text-sm font-semibold text-gray-700">{items.length} artigos na edição</p>
-        {isPending && <span className="text-xs font-medium text-indigo-600">Salvando ordem...</span>}
+        <p className="text-sm font-semibold text-gray-700">
+          {items.length} artigos na edição
+        </p>
+        {isPending && (
+          <span className="text-xs font-medium text-indigo-600">
+            Salvando ordem...
+          </span>
+        )}
       </div>
       <div className="overflow-x-auto">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext items={ids} strategy={verticalListSortingStrategy}>
             <table className="w-full text-left text-sm">
               <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
@@ -139,7 +188,12 @@ export default function RevistaArticleSorter({ revistaId, artigos, podeEditar }:
               </thead>
               <tbody>
                 {items.map((artigo, index) => (
-                  <SortableArticleRow key={artigo.id} artigo={artigo} index={index} podeEditar={podeEditar} />
+                  <SortableArticleRow
+                    key={artigo.id}
+                    artigo={artigo}
+                    index={index}
+                    podeEditar={podeEditar}
+                  />
                 ))}
               </tbody>
             </table>

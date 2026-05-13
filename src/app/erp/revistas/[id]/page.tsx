@@ -52,7 +52,7 @@ export default async function RevistaDetalhePage({ params }: { params: Promise<{
         {podeCriar && (
           <Link
             href={`/erp/artigos/novo?revistaId=${revista.id}`}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
+            className="inline-flex text-nowrap items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
           >
             <Plus className="h-4 w-4" />
             Adicionar artigo

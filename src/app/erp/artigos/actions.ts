@@ -26,6 +26,7 @@ export async function saveArticle(formData: FormData) {
   const urlFonte = (formData.get("urlFonte") as string) || null;
   const autorExterno = (formData.get("autorExterno") as string) || null;
   const revistaId = (formData.get("revistaId") as string) || null;
+  const urlImagemOg = (formData.get("urlImagemOg") as string) || null;
 
   if (!titulo || !slug || !corpoTexto) {
     throw new Error("Campos obrigatorios ausentes");
@@ -70,6 +71,7 @@ export async function saveArticle(formData: FormData) {
     urlFonte,
     autorExterno,
     revistaId,
+    urlImagemOg,
   };
 
   const factChecksCount = parseInt((formData.get("checagensFato_count") as string) || "0");

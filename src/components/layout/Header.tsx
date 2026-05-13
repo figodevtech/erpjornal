@@ -20,7 +20,7 @@ export default async function Header() {
     <header className="sticky top-0 z-50 w-full border-b-[4px] border-red-700 bg-[#0f172a] shadow-md transition-colors duration-300">
       {/* 1. TOP BAR */}
       <div className="hidden md:flex bg-slate-950 text-slate-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 justify-between items-center font-bold tracking-widest uppercase border-b border-slate-800/50">
-        <span suppressHydrationWarning>Atualizado: {new Date().toLocaleDateString("pt-BR")}</span>
+        <span suppressHydrationWarning></span>
         <div className="flex gap-6 items-center">
           <Link href="/sobre" className="text-slate-300 hover:text-white transition-colors hover:underline underline-offset-4">Institucional</Link>
           <Link href="/contato" className="text-slate-300 hover:text-white transition-colors hover:underline underline-offset-4">Fale Conosco</Link>

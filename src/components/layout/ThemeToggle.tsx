@@ -58,7 +58,7 @@ export default function ThemeToggle() {
       {isOpen && (
         <div className="absolute right-0 z-[100] mt-3 w-44 overflow-hidden rounded-xl border border-gray-200 bg-white py-2 shadow-2xl transition-colors animate-in fade-in zoom-in duration-200 dark:border-gray-700 dark:bg-gray-900">
           <div className="mb-1 border-b border-gray-200 px-3 py-2 dark:border-gray-700">
-            <p className="text-[10px] font-black uppercase tracking-widest text-gray-200 dark:text-gray-200">
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-800 dark:text-gray-200">
               Tema Visual
             </p>
           </div>

@@ -7,7 +7,7 @@ interface Props {
   onChange: (data: Partial<MediaKitStatsData>) => void;
 }
 
-export default function StatsForm({ data, onChange }: Props) {
+export default function StatsForm({ mediaKitId, data, onChange }: Props) {
   const items = data.items || [];
 
   function addItem() {
@@ -50,40 +50,46 @@ export default function StatsForm({ data, onChange }: Props) {
         </div>
 
         {items.length === 0 && (
-          <p className="text-xs text-gray-500 text-center py-4 border border-dashed rounded-xl">Nenhuma métrica adicionada.</p>
+          <p className="text-xs text-slate-600 text-center py-4 border border-dashed rounded-xl">Nenhuma métrica adicionada.</p>
         )}
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           {items.map((item, index) => (
             <div key={index} className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-white p-3">
               <div className="flex justify-between items-start">
-                <input
-                  type="text"
-                  value={item.value}
-                  onChange={(e) => updateItem(index, { value: e.target.value })}
-                  className="w-full font-bold text-xl text-gray-900 bg-transparent focus:outline-none placeholder-gray-400"
-                  placeholder="Ex: +10k"
-                />
+                <div className="flex-1">
+                  <label className="text-[10px] font-bold text-slate-600 uppercase ml-1">Número / Valor</label>
+                  <input
+                    type="text"
+                    value={item.value}
+                    onChange={(e) => updateItem(index, { value: e.target.value })}
+                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-bold text-gray-900 focus:border-rose-400 focus:outline-none"
+                    placeholder="Ex: 50k+"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  className="text-gray-400 hover:text-red-600"
+                  className="text-slate-600 hover:text-red-600 mt-6"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-              <input
-                type="text"
-                value={item.label}
-                onChange={(e) => updateItem(index, { label: e.target.value })}
-                className="w-full text-xs text-gray-600 uppercase tracking-wider font-bold bg-transparent focus:outline-none placeholder-gray-400"
-                placeholder="Ex: Seguidores Ativos"
-              />
+              <div className="flex-1">
+                <label className="text-[10px] font-bold text-slate-600 uppercase ml-1">Rótulo / Descrição</label>
+                <input
+                  type="text"
+                  value={item.label}
+                  onChange={(e) => updateItem(index, { label: e.target.value })}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-900 focus:border-rose-400 focus:outline-none"
+                  placeholder="Ex: Seguidores"
+                />
+              </div>
               <input
                 type="text"
                 value={item.suffix || ""}
                 onChange={(e) => updateItem(index, { suffix: e.target.value })}
-                className="w-full text-xs text-gray-600 bg-transparent focus:outline-none mt-1 placeholder-gray-400"
+                className="w-full text-xs text-gray-900 bg-transparent focus:outline-none mt-1 placeholder-slate-600"
                 placeholder="Sufixo opcional (ex: mensal)"
               />
             </div>

@@ -12,6 +12,8 @@ import AboutSection from "./components/AboutSection";
 import FeaturesSection from "./components/FeaturesSection";
 import TestimonialsSection from "./components/TestimonialsSection";
 import ContactSection from "./components/ContactSection";
+import AdvertisingSection from "./components/AdvertisingSection";
+import FreeCanvasSection from "./components/FreeCanvasSection";
 import MidiaKitHeader from "./components/MidiaKitHeader";
 import FloatingCTA from "./components/FloatingCTA";
 
@@ -60,6 +62,10 @@ function renderSection(section: MediaKitSectionWithData, theme: MediaKitTheme) {
       return <TestimonialsSection key={key} data={data} theme={theme} />;
     case "contact":
       return <ContactSection key={key} data={data} theme={theme} />;
+    case "advertising":
+      return <AdvertisingSection key={key} data={data} theme={theme} />;
+    case "free_canvas":
+      return <FreeCanvasSection key={key} data={data} theme={theme} />;
     default:
       return null;
   }

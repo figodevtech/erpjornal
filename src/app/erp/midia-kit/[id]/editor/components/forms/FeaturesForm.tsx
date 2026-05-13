@@ -7,7 +7,7 @@ interface Props {
   onChange: (data: Partial<MediaKitFeaturesData>) => void;
 }
 
-export default function FeaturesForm({ data, onChange }: Props) {
+export default function FeaturesForm({ mediaKitId, data, onChange }: Props) {
   const items = data.items || [];
 
   function addItem() {
@@ -50,7 +50,7 @@ export default function FeaturesForm({ data, onChange }: Props) {
         </div>
 
         {items.length === 0 && (
-          <p className="text-xs text-gray-500 text-center py-4 border border-dashed rounded-xl">Nenhum item adicionado.</p>
+          <p className="text-xs text-slate-500 text-center py-4 border border-dashed rounded-xl">Nenhum item adicionado.</p>
         )}
 
         <div className="space-y-3">
@@ -82,7 +82,7 @@ export default function FeaturesForm({ data, onChange }: Props) {
               <button
                 type="button"
                 onClick={() => removeItem(index)}
-                className="text-gray-400 hover:text-red-600 h-fit p-1"
+                className="text-slate-500 hover:text-red-600 h-fit p-1"
               >
                 <Trash2 className="h-4 w-4" />
               </button>

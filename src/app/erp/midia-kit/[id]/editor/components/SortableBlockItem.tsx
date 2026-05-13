@@ -24,27 +24,29 @@ export default function SortableBlockItem({ section, isActive, onClick, onDelete
     <div
       ref={setNodeRef}
       style={style}
-      className={`group relative flex items-center gap-3 rounded-xl border p-3 transition-all ${
+      className={`group relative flex items-center gap-2 rounded-xl border px-3 py-2 transition-all min-w-[140px] max-w-[200px] ${
         isDragging ? "z-50 shadow-xl opacity-90 border-rose-400 bg-rose-50" :
-        isActive ? "border-rose-300 bg-rose-50 shadow-sm" : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
+        isActive ? "border-rose-400 bg-rose-50 shadow-md ring-2 ring-rose-100" : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
       }`}
       onClick={onClick}
     >
       <button
         type="button"
-        className="cursor-grab text-gray-400 hover:text-gray-900 active:cursor-grabbing"
+        className="cursor-grab text-gray-300 hover:text-rose-500 active:cursor-grabbing transition-colors"
         {...attributes}
         {...listeners}
       >
-        <GripVertical className="h-4 w-4" />
+        <GripVertical className="h-3.5 w-3.5" />
       </button>
 
       <div className="flex-1 min-w-0 cursor-pointer">
-        <div className="flex items-center gap-2">
-          {!section.ativo && <EyeOff className="h-3 w-3 text-red-500" />}
-          <h4 className="truncate text-sm font-bold text-gray-900">{section.titulo}</h4>
+        <div className="flex items-center gap-1.5">
+          {!section.ativo && <EyeOff className="h-2.5 w-2.5 text-red-500 shrink-0" />}
+          <h4 className="truncate text-[11px] font-black text-slate-900 uppercase tracking-tight">
+            {section.titulo}
+          </h4>
         </div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-500 mt-0.5">
+        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest truncate">
           {section.tipo}
         </p>
       </div>
@@ -54,11 +56,11 @@ export default function SortableBlockItem({ section, isActive, onClick, onDelete
           e.stopPropagation();
           onDelete();
         }}
-        className={`rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 transition ${
+        className={`rounded-lg p-1 text-gray-300 hover:bg-red-50 hover:text-red-600 transition-all ${
           isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
         }`}
       >
-        <Trash2 className="h-4 w-4" />
+        <Trash2 className="h-3 w-3" />
       </button>
     </div>
   );

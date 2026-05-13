@@ -6,6 +6,8 @@ export type MediaKitSectionType =
   | 'features' 
   | 'stats' 
   | 'testimonials' 
+  | 'advertising'
+  | 'free_canvas'
   | 'contact';
 
 export interface MediaKitTheme {
@@ -66,6 +68,52 @@ export interface MediaKitTestimonialsData {
   items: MediaKitTestimonialItem[];
 }
 
+export interface MediaKitAdvertisingItem {
+  id: string;
+  modalidade: string;
+  descricao: string;
+  imageUrl?: string;
+  preco: string;
+  destaque: boolean;
+}
+
+export interface MediaKitAdvertisingData {
+  title?: string;
+  subtitle?: string;
+  items: MediaKitAdvertisingItem[];
+}
+
+export type CanvasElementType = 'text' | 'image' | 'shape';
+
+export interface CanvasElement {
+  id: string;
+  type: CanvasElementType;
+  x: number; // pixels
+  y: number; // pixels
+  width: number; // pixels
+  height: number; // pixels
+  rotation?: number; // degrees
+  content?: string;
+  imageUrl?: string;
+  style?: {
+    color?: string;
+    fontSize?: number;
+    backgroundColor?: string;
+    borderRadius?: number;
+    textAlign?: 'left' | 'center' | 'right';
+    fontWeight?: string;
+    fontFamily?: string;
+    opacity?: number;
+  };
+  zIndex: number;
+}
+
+export interface MediaKitFreeCanvasData {
+  canvasHeight: number; // base height in px
+  backgroundColor?: string;
+  elements: CanvasElement[];
+}
+
 export interface MediaKitContactData {
   title?: string;
   email?: string;
@@ -84,6 +132,8 @@ export type SectionDataMap = {
   features: MediaKitFeaturesData;
   stats: MediaKitStatsData;
   testimonials: MediaKitTestimonialsData;
+  advertising: MediaKitAdvertisingData;
+  free_canvas: MediaKitFreeCanvasData;
   contact: MediaKitContactData;
 };
 

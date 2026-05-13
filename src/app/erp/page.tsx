@@ -23,7 +23,7 @@ export default async function ERPDashboardPage() {
   ];
 
   return (
-    <div className="space-y-10 py-6">
+    <div className="mx-auto max-w-6xl p-4 md:px-8 md:py-6 space-y-10 py-6">
       <div>
         <h1 className="text-3xl font-black tracking-tight text-gray-900">Dashboard Editorial</h1>
         <p className="mt-1 text-gray-500">Indicadores de performance e monitoramento de conteudo em tempo real.</p>

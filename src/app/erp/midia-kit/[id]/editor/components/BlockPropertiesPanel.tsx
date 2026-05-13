@@ -8,6 +8,8 @@ import {
   MediaKitFeaturesData,
   MediaKitStatsData,
   MediaKitTestimonialsData,
+  MediaKitAdvertisingData,
+  MediaKitFreeCanvasData,
   MediaKitContactData
 } from "@/types/media-kit";
 import HeroForm from "./forms/HeroForm";
@@ -16,6 +18,8 @@ import FeaturesForm from "./forms/FeaturesForm";
 import StatsForm from "./forms/StatsForm";
 import TestimonialsForm from "./forms/TestimonialsForm";
 import ContactForm from "./forms/ContactForm";
+import AdvertisingForm from "./forms/AdvertisingForm";
+import FreeCanvasForm from "./forms/FreeCanvasForm";
 
 interface Props {
   section: MediaKitSectionWithData;
@@ -42,17 +46,21 @@ export default function BlockPropertiesPanel({ section, onChange }: Props) {
         return <TestimonialsForm data={section.data as MediaKitTestimonialsData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
       case "contact":
         return <ContactForm data={section.data as MediaKitContactData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
+      case "advertising":
+        return <AdvertisingForm data={section.data as MediaKitAdvertisingData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
+      case "free_canvas":
+        return <FreeCanvasForm data={section.data as MediaKitFreeCanvasData} onChange={handleDataChange} mediaKitId={section.mediaKitId} />;
       default:
         return <p className="text-sm text-gray-500">Tipo de bloco desconhecido.</p>;
     }
   };
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8 animate-in fade-in duration-300">
+    <div className={`${section.tipo === 'free_canvas' ? 'max-w-none' : 'max-w-3xl'} mx-auto space-y-8 animate-in fade-in duration-300`}>
       <div className="flex items-center justify-between border-b border-gray-200 pb-5">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Editar {section.tipo}</h2>
-          <p className="mt-1 text-sm text-gray-500">Ajuste os campos para este bloco.</p>
+          <p className="mt-1 text-sm text-slate-600">Ajuste os campos para este bloco.</p>
         </div>
         
         <button
@@ -87,8 +95,10 @@ export default function BlockPropertiesPanel({ section, onChange }: Props) {
       </div>
 
       {/* Specific Form Fields */}
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-        <h3 className="mb-5 text-base font-bold text-gray-900">Conteúdo do Bloco</h3>
+      <div className={section.tipo === 'free_canvas' ? '' : 'rounded-2xl border border-gray-200 bg-white p-6 shadow-sm'}>
+        {section.tipo !== 'free_canvas' && (
+          <h3 className="mb-5 text-base font-bold text-gray-900">Conteúdo do Bloco</h3>
+        )}
         {renderSpecificForm()}
       </div>
     </div>

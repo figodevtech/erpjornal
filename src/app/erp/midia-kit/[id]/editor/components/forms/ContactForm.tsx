@@ -6,7 +6,7 @@ interface Props {
   onChange: (data: Partial<MediaKitContactData>) => void;
 }
 
-export default function ContactForm({ data, onChange }: Props) {
+export default function ContactForm({ mediaKitId, data, onChange }: Props) {
   return (
     <div className="space-y-4">
       <div>

@@ -51,7 +51,7 @@ export default function TestimonialsForm({ mediaKitId, data, onChange }: Props) 
         </div>
 
         {items.length === 0 && (
-          <p className="text-xs text-gray-500 text-center py-4 border border-dashed rounded-xl">Nenhum depoimento adicionado.</p>
+          <p className="text-xs text-slate-600 text-center py-4 border border-dashed rounded-xl">Nenhum depoimento adicionado.</p>
         )}
 
         <div className="space-y-4">

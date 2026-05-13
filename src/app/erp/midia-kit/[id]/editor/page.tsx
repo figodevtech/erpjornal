@@ -39,7 +39,7 @@ export default async function MidiaKitEditorPage({ params }: Props) {
   })) as MediaKitSectionWithData[];
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-gray-50 -m-6 animate-in fade-in duration-500">
+    <div className="flex h-[calc(100vh-4rem)] flex-col bg-gray-50 animate-in fade-in duration-500 overflow-hidden">
       {/* Editor Header */}
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6 shadow-sm z-10">
         <div className="flex items-center gap-4">

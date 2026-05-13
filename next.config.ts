@@ -31,6 +31,7 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
@@ -51,6 +52,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'agenciabrasil.ebc.com.br',
+      },
+      {
+        protocol: 'https',
+        hostname: 'admin.cnnbrasil.com.br',
       }
     ],
   },

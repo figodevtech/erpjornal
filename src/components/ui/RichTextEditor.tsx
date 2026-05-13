@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from 'react';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -192,7 +193,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
   );
 };
 
-export default function RichTextEditor({ content, onChange, placeholder }: RichTextEditorProps) {
+export default function RichTextEditor({ content, onChange }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -220,6 +221,17 @@ export default function RichTextEditor({ content, onChange, placeholder }: RichT
       },
     },
   });
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const currentContent = editor.getHTML();
+    const nextContent = content || "";
+
+    if (nextContent !== currentContent) {
+      editor.commands.setContent(nextContent, { emitUpdate: false });
+    }
+  }, [content, editor]);
 
   return (
     <div className="w-full bg-white border border-gray-100 rounded-[32px] focus-within:ring-4 focus-within:ring-blue-100 focus-within:border-blue-500 transition-all overflow-hidden flex flex-col group shadow-sm hover:shadow-md">

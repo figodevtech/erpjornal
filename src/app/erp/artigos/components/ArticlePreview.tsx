@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { User, Calendar, Tag, Share2, Printer, Bookmark } from "lucide-react";
@@ -14,6 +15,7 @@ interface ArticlePreviewProps {
   data?: Date | null;
   regiao?: string | null;
   estado?: string | null;
+  urlImagemOg?: string | null;
 }
 
 export function ArticlePreview({
@@ -25,6 +27,7 @@ export function ArticlePreview({
   data,
   regiao,
   estado,
+  urlImagemOg,
 }: ArticlePreviewProps) {
   const publishedDate = data || new Date();
 
@@ -97,6 +100,23 @@ export function ArticlePreview({
             </div>
           </div>
         </header>
+
+        {urlImagemOg && (
+          <figure className="overflow-hidden rounded-3xl border border-gray-100 bg-gray-100 shadow-2xl">
+            <div className="relative aspect-video w-full">
+              <Image
+                src={urlImagemOg}
+                alt={titulo || "Imagem de capa da noticia"}
+                fill
+                sizes="(max-width: 768px) 100vw, 896px"
+                className="object-cover"
+              />
+            </div>
+            <figcaption className="border-t border-gray-100 bg-gray-50 px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              Imagem de capa da materia
+            </figcaption>
+          </figure>
+        )}
 
         {/* Article Body */}
         <article 

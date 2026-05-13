@@ -1,6 +1,5 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import Parser from "rss-parser";
 import { revalidatePath } from "next/cache";
 import { gunzipSync, inflateSync } from "node:zlib";
@@ -10,7 +9,119 @@ import { prisma } from "@/lib/prisma";
 import { extractPlainTextFromHtml, sanitizeHtmlForRender } from "@/lib/tts-utils";
 import { ArticleStatus } from "@/lib/types/article-status";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
+const DEFAULT_GPT_MODEL = "gpt-5.4-mini";
+
+type CuradoriaAIResponse = {
+  ai_title: string;
+  ai_lead: string;
+  ai_body: string;
+  ai_tags: string[];
+  word_count: number;
+};
+
+type OpenAIResponseBody = {
+  output_text?: string;
+  output?: Array<{
+    content?: Array<{
+      text?: string;
+    }>;
+  }>;
+  error?: {
+    message?: string;
+  };
+};
+
+type SessionUserWithName = {
+  name?: string | null;
+  nome?: string | null;
+};
+
+const curadoriaRewriteSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["ai_title", "ai_lead", "ai_body", "ai_tags", "word_count"],
+  properties: {
+    ai_title: { type: "string" },
+    ai_lead: { type: "string" },
+    ai_body: { type: "string" },
+    ai_tags: {
+      type: "array",
+      items: { type: "string" },
+    },
+    word_count: { type: "integer" },
+  },
+} as const;
+
+function getOpenAIApiKey() {
+  const apiKey = process.env.GPT_API_KEY || process.env.OPENAI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Configure GPT_API_KEY ou OPENAI_API_KEY no ambiente do servidor.");
+  }
+
+  return apiKey;
+}
+
+function extractOpenAIText(body: OpenAIResponseBody) {
+  if (typeof body.output_text === "string" && body.output_text.trim()) {
+    return body.output_text.trim();
+  }
+
+  const contentText = body.output
+    ?.flatMap((item) => item.content || [])
+    .map((content) => content.text)
+    .find((text) => typeof text === "string" && text.trim());
+
+  if (!contentText) {
+    throw new Error("A IA nao retornou o corpo da materia.");
+  }
+
+  return contentText.trim();
+}
+
+function parseCuradoriaAIResponse(value: string): CuradoriaAIResponse {
+  const parsed = JSON.parse(value) as Partial<CuradoriaAIResponse>;
+
+  if (
+    typeof parsed.ai_title !== "string" ||
+    typeof parsed.ai_lead !== "string" ||
+    typeof parsed.ai_body !== "string" ||
+    !Array.isArray(parsed.ai_tags) ||
+    typeof parsed.word_count !== "number"
+  ) {
+    throw new Error("A IA respondeu em um formato inesperado.");
+  }
+
+  const plainBody = extractPlainTextFromHtml(parsed.ai_body);
+  if (plainBody.length < 200) {
+    throw new Error("A IA nao gerou corpo suficiente para a materia. Tente novamente.");
+  }
+
+  return {
+    ai_title: parsed.ai_title,
+    ai_lead: parsed.ai_lead,
+    ai_body: parsed.ai_body,
+    ai_tags: parsed.ai_tags,
+    word_count: parsed.word_count,
+  };
+}
+
+function mapOpenAIError(status: number, message?: string) {
+  if (status === 401 || status === 403) {
+    return new Error("A chave da OpenAI foi recusada. Verifique GPT_API_KEY no servidor.");
+  }
+
+  if (status === 429) {
+    return new Error("A fila da IA esta ocupada ou sem cota. Aguarde alguns segundos e tente novamente.");
+  }
+
+  if (status >= 500) {
+    return new Error("A OpenAI esta indisponivel no momento. Tente novamente em instantes.");
+  }
+
+  return new Error(message || "Erro ao comunicar com a OpenAI.");
+}
 
 type RssItem = {
   title?: string;
@@ -69,12 +180,12 @@ export async function saveRSSSource(formData: FormData) {
 
     revalidatePath("/erp/curadoria/fontes");
     return { success: true };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Erro ao salvar fonte:", error);
-    if (error?.code === "P2002") {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
       throw new Error("Ja existe uma fonte com esta URL de feed.");
     }
-    throw new Error(error?.message || "Erro ao salvar fonte");
+    throw new Error(error instanceof Error ? error.message : "Erro ao salvar fonte");
   }
 }
 
@@ -507,22 +618,59 @@ export async function rewriteWithAI(itemId: string) {
   });
   if (!item) throw new Error("Item nao encontrado");
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-  const cleanDescription = (item.description || "").replace(/<img[^>]*>/g, "");
+  let sourceContent = item.description || "";
+  let thumbnail = item.thumbnail;
+
+  if (extractPlainTextFromHtml(sourceContent).length < 900) {
+    const refreshedFeedItem = await findFeedItemInSource(item.source.urlFeed, item.guid, item.linkOriginal);
+    if (refreshedFeedItem) {
+      sourceContent =
+        refreshedFeedItem["content:encoded"] ||
+        refreshedFeedItem.content ||
+        refreshedFeedItem.contentSnippet ||
+        refreshedFeedItem.description ||
+        sourceContent;
+      thumbnail =
+        extractImage(refreshedFeedItem) ||
+        thumbnail ||
+        (refreshedFeedItem.link ? await fetchOriginalPageImage(refreshedFeedItem.link) : null);
+
+      await prisma.itemRssBruto.update({
+        where: { id: item.id },
+        data: {
+          description: sourceContent,
+          thumbnail,
+        },
+      });
+    }
+  }
+
+  const cleanDescription = sanitizeHtmlForRender(sourceContent)
+    .replace(/<img[^>]*>/gi, "")
+    .replace(/<figure[\s\S]*?<\/figure>/gi, "")
+    .trim();
+  const originalPlainText = extractPlainTextFromHtml(cleanDescription);
+
+  if (originalPlainText.length < 80) {
+    throw new Error("O feed nao trouxe conteudo suficiente para gerar a materia.");
+  }
 
   const prompt = `
     Voce e um editor senior da Revista Gestao, sediada em Brasilia.
     Seu publico sao executivos, politicos e tomadores de decisao.
 
-    TAREFA: Reescreva esta noticia para torna-la exclusiva, profissional e adaptada ao nosso tom.
+    TAREFA: Reescreva esta noticia para torna-la uma materia original, profissional e adaptada ao nosso tom.
 
     DIRETRIZES:
     - Tom de voz: ${item.source.tone || "Profissional e Executivo"}
     - Foco Regional: ${item.source.regiao || "Brasil/Nacional"}
     - Titulo: Deve ser impactante e serio.
     - Lead: Um resumo que prenda a atencao do tomador de decisao.
-    - Corpo HTML (ai_body): Use HTML basico (<h2>, <p>).
+    - Corpo HTML (ai_body): campo obrigatorio. Gere uma materia completa em HTML com pelo menos 4 paragrafos.
+    - Use apenas HTML basico no corpo: <h2>, <p>, <strong>, <ul>, <li>, <blockquote>.
     - IMPORTANTE: Nao inclua nenhuma imagem (tags <img>) ou referencias a midias no corpo do texto.
+    - Nao invente nomes, numeros, cargos, datas ou falas que nao estejam no material original.
+    - Quando o RSS trouxer pouco conteudo, amplie com contexto editorial prudente e analise, sem afirmar fatos novos.
     - Tags: Gere 3 a 5 tags relevantes baseadas no conteudo.
 
     DADOS ORIGINAIS:
@@ -530,23 +678,47 @@ export async function rewriteWithAI(itemId: string) {
     Descricao: ${cleanDescription}
     Fonte original: ${item.source.name}
 
-    RETORNE APENAS UM JSON VALIDO NO SEGUINTE FORMATO:
-    {
-      "ai_title": "...",
-      "ai_lead": "...",
-      "ai_body": "...",
-      "ai_tags": ["tag1", "tag2"],
-      "word_count": 0
-    }
+    RETORNE APENAS JSON VALIDO.
   `;
 
   try {
-    const result = await model.generateContent(prompt);
-    const textResponse = result.response.text().trim();
-    const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) throw new Error("Falha ao gerar formato JSON");
+    const response = await fetch(OPENAI_RESPONSES_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getOpenAIApiKey()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: process.env.GPT_MODEL || DEFAULT_GPT_MODEL,
+        input: [
+          {
+            role: "system",
+            content:
+              "Voce e um editor jornalistico brasileiro. Responda somente em JSON valido, seguindo exatamente o schema solicitado.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "curadoria_rewrite",
+            strict: true,
+            schema: curadoriaRewriteSchema,
+          },
+        },
+      }),
+    });
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    const body = (await response.json()) as OpenAIResponseBody;
+
+    if (!response.ok) {
+      throw mapOpenAIError(response.status, body.error?.message);
+    }
+
+    const parsed = parseCuradoriaAIResponse(extractOpenAIText(body));
     const finalResponse = {
       ...parsed,
       original_source: item.source.name,
@@ -569,15 +741,23 @@ export async function rewriteWithAI(itemId: string) {
 
     revalidatePath(`/erp/curadoria/review/${itemId}`);
     return { success: true, aiResponse: finalResponse };
-  } catch (error: any) {
-    console.error("Erro Gemini:", error);
-    throw new Error("Erro na comunicacao com a IA: " + error.message);
+  } catch (error) {
+    console.error("Erro GPT:", error);
+    throw new Error(
+      "Erro na comunicacao com a IA: " + (error instanceof Error ? error.message : "erro desconhecido"),
+    );
   }
 }
 
 export async function approveAndPublish(
   itemId: string,
-  finalData: { titulo: string; resumo: string; corpoTexto: string; categoriaId?: string | null }
+  finalData: {
+    titulo: string;
+    resumo: string;
+    corpoTexto: string;
+    categoriaId?: string | null;
+    urlImagemOg?: string | null;
+  }
 ) {
   const session = await exigirPermissao("curadoria:aprovar");
 
@@ -605,10 +785,11 @@ export async function approveAndPublish(
       dataPublicacao: new Date(),
       ehPremium: false,
       canaisPublicacao: ["portal"],
-      urlImagemOg: item.thumbnail,
+      urlImagemOg: finalData.urlImagemOg || item.thumbnail,
       urlFonte: item.linkOriginal,
       autorExterno: item.source.name,
-      revisorHumano: (session.user as any).name || (session.user as any).nome || "Editor",
+      revisorHumano:
+        (session.user as SessionUserWithName).name || (session.user as SessionUserWithName).nome || "Editor",
       itemRssId: item.id,
     },
   });
@@ -625,7 +806,11 @@ export async function approveAndPublish(
   return { success: true, artigoId: artigo.id };
 }
 
-export async function republishOriginalWithCredits(itemId: string, categoriaId?: string | null) {
+export async function republishOriginalWithCredits(
+  itemId: string,
+  categoriaId?: string | null,
+  coverImageUrl?: string | null
+) {
   const session = await exigirPermissao("curadoria:aprovar");
 
   const item = await prisma.itemRssBruto.findUnique({
@@ -692,10 +877,11 @@ export async function republishOriginalWithCredits(itemId: string, categoriaId?:
       dataPublicacao: new Date(),
       ehPremium: false,
       canaisPublicacao: ["portal"],
-      urlImagemOg: thumbnail,
+      urlImagemOg: coverImageUrl || thumbnail,
       urlFonte: item.linkOriginal,
       autorExterno: item.source.name,
-      revisorHumano: (session.user as any).name || (session.user as any).nome || "Editor",
+      revisorHumano:
+        (session.user as SessionUserWithName).name || (session.user as SessionUserWithName).nome || "Editor",
       itemRssId: item.id,
     },
   });

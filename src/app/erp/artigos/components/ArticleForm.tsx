@@ -28,6 +28,7 @@ export interface InitialData {
   urlFonte?: string | null;
   autorExterno?: string | null;
   revistaId?: string | null;
+  urlImagemOg?: string | null;
 }
 
 interface Politician {
@@ -73,6 +74,7 @@ import { SEOSidebar } from "./SEOSidebar";
 import { ArticlePreview } from "./ArticlePreview";
 import EntityRelationCombobox from "./EntityRelationCombobox";
 import { rephraseArticleContent } from "../ai-actions";
+import CoverImageManager from "./CoverImageManager";
 
 export default function ArticleForm({
   categories,
@@ -90,10 +92,9 @@ export default function ArticleForm({
   const [currentText, setCurrentText] = useState(initialData?.corpoTexto || "");
   const [currentTitle, setCurrentTitle] = useState(initialData?.titulo || "");
   const [currentResumo, setCurrentResumo] = useState(initialData?.resumo || "");
-  const [importUrl, setImportUrl] = useState("");
-  const [isImporting, setIsImporting] = useState(false);
   const [sourceUrl, setSourceUrl] = useState(initialData?.urlFonte || "");
   const [externalAuthor, setExternalAuthor] = useState(initialData?.autorExterno || "");
+  const [coverImageUrl, setCoverImageUrl] = useState(initialData?.urlImagemOg || "");
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [viewMode, setViewMode] = useState<"edit" | "preview" | "split">("edit");
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
@@ -108,7 +109,7 @@ export default function ArticleForm({
     ? new Date(initialData.dataPublicacao.getTime() - initialData.dataPublicacao.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
     : "";
 
-  const handleAiRefactor = async (e: React.MouseEvent) => {
+  const handleAiRefactor = async () => {
     if (!currentTitle || !currentText) {
       sonnerToast.error("Preencha o título e o corpo do texto antes de usar a IA.");
       return;
@@ -320,11 +321,20 @@ export default function ArticleForm({
                     categoria={categories.find(c => c.id === selectedCategoryId)?.nome}
                     regiao={initialData?.regiao}
                     estado={initialData?.estado}
+                    urlImagemOg={coverImageUrl}
                   />
                 </div>
              </div>
           ) : (
             <div className="space-y-6">
+              <CoverImageManager
+                value={coverImageUrl}
+                onChange={setCoverImageUrl}
+                title={currentTitle}
+                resumo={currentResumo}
+                corpoTexto={currentText}
+              />
+
               <SEOSidebar title={currentTitle} resumo={currentResumo} content={currentText} />
               
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-200/60 shadow-sm">
@@ -603,6 +613,7 @@ export default function ArticleForm({
               categoria={categories.find(c => c.id === selectedCategoryId)?.nome}
               regiao={initialData?.regiao}
               estado={initialData?.estado}
+              urlImagemOg={coverImageUrl}
             />
           </div>
         </div>

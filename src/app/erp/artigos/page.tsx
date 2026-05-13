@@ -64,7 +64,7 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
 
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="min-w-[720px] text-left text-sm">
             <thead className="border-b border-gray-200 bg-gray-50 text-gray-600">
               <tr>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Titulo</th>

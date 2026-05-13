@@ -135,7 +135,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
   const activeArticle = artigos.find((art) => art.id === activeId);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 min-h-[calc(100vh-120px)] p-6 overflow-x-auto overflow-y-hidden">
+    <div className="flex h-full min-h-[calc(100vh-120px)] flex-col overflow-x-auto overflow-y-hidden bg-gray-50 p-4 sm:p-6">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
@@ -143,7 +143,7 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
       >
-        <div className="flex gap-6 h-full min-w-max pb-8">
+        <div className="flex h-full min-w-max gap-4 pb-8 sm:gap-6">
           {COLUMNS.map((column) => (
             <KanbanColumn
               key={column.id}

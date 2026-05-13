@@ -9,12 +9,27 @@ import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 
 import { rejectRSSItem, republishOriginalWithCredits, selectRSSItem } from "../../actions";
 
+type SelectionItem = {
+  id: string;
+  thumbnail?: string | null;
+  source: { name: string };
+  dataPublicacao: Date | string;
+  autorOriginal?: string | null;
+  tituloOriginal: string;
+  description?: string | null;
+  linkOriginal: string;
+};
+
+function getErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : "Erro ao processar a acao.";
+}
+
 export function SelectionCard({
   item,
   categories,
   podeAprovar,
 }: {
-  item: any;
+  item: SelectionItem;
   categories: Array<{ id: string; nome: string }>;
   podeAprovar: boolean;
 }) {
@@ -29,8 +44,8 @@ export function SelectionCard({
       await selectRSSItem(item.id);
       toast.success("Noticia selecionada!");
       router.push(`/erp/curadoria/review/${item.id}`);
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -42,8 +57,8 @@ export function SelectionCard({
       await rejectRSSItem(item.id);
       toast.info("Noticia descartada");
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -61,8 +76,8 @@ export function SelectionCard({
       toast.success("Conteudo original republicado com creditos.");
       router.push("/erp/artigos");
       router.refresh();
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err));
     } finally {
       setLoading(false);
     }
@@ -73,6 +88,7 @@ export function SelectionCard({
       <div className="group relative flex flex-col overflow-hidden rounded-[32px] border border-gray-200 bg-white shadow-sm transition-all hover:shadow-xl">
         <div className="pointer-events-none relative h-44 shrink-0 overflow-hidden bg-gray-100">
           {item.thumbnail ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={item.thumbnail}
               alt=""
@@ -93,12 +109,12 @@ export function SelectionCard({
         </div>
 
         <div className="flex flex-1 flex-col p-6">
-          <div className="mb-3 flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400">
+          <div className="mb-3 flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400">
             <span className="flex items-center gap-1 whitespace-nowrap">
               <Clock className="h-3 w-3" />
               {new Date(item.dataPublicacao).toLocaleDateString("pt-BR")}
             </span>
-            <span className="line-clamp-1 flex items-center gap-1">
+            <span className="line-clamp-1 flex min-w-0 items-center gap-1">
               <User className="h-3 w-3 text-gray-300" />
               {item.autorOriginal}
             </span>

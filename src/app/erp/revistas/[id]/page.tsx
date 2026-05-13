@@ -41,7 +41,7 @@ export default async function RevistaDetalhePage({ params }: { params: Promise<{
           canEdit={podeEditar}
         />
 
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <Link href="/erp/revistas" className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900">
             <ArrowLeft className="h-4 w-4" />
@@ -61,7 +61,7 @@ export default async function RevistaDetalhePage({ params }: { params: Promise<{
         {podeCriar && (
           <Link
             href={`/erp/artigos/novo?revistaId=${revista.id}`}
-            className="inline-flex text-nowrap items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700 sm:w-fit sm:whitespace-nowrap"
           >
             <Plus className="h-4 w-4" />
             Adicionar artigo

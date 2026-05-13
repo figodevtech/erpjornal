@@ -152,26 +152,26 @@ export default function ArticleForm({
   return (
     <div className="space-y-8">
       {/* Toolbar Superior de Modos de Visualização */}
-      <div className="sticky top-4 z-50 flex items-center justify-between bg-white/80 backdrop-blur-md p-3 rounded-2xl border border-gray-200 shadow-xl mx-auto max-w-fit gap-2">
-        <div className="flex bg-gray-100 p-1 rounded-xl">
+      <div className="sticky top-4 z-50 mx-auto flex max-w-full items-center gap-2 overflow-x-auto rounded-2xl border border-gray-200 bg-white/80 p-3 shadow-xl backdrop-blur-md">
+        <div className="flex shrink-0 bg-gray-100 p-1 rounded-xl">
           <button
             type="button"
             onClick={() => setViewMode("edit")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "edit" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
+            className={`flex shrink-0 items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "edit" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
           >
             <Edit3 size={14} /> Editor
           </button>
           <button
             type="button"
             onClick={() => setViewMode("split")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "split" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
+            className={`flex shrink-0 items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "split" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
           >
             <Columns size={14} /> Split View
           </button>
           <button
             type="button"
             onClick={() => setViewMode("preview")}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "preview" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
+            className={`flex shrink-0 items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${viewMode === "preview" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"}`}
           >
             <Eye size={14} /> Preview Real
           </button>
@@ -180,7 +180,7 @@ export default function ArticleForm({
         {viewMode !== "edit" && (
           <>
             <div className="w-px h-6 bg-gray-200 mx-2" />
-            <div className="flex bg-gray-100 p-1 rounded-xl">
+            <div className="flex shrink-0 bg-gray-100 p-1 rounded-xl">
               <button
                 type="button"
                 onClick={() => setPreviewDevice("mobile")}
@@ -212,7 +212,7 @@ export default function ArticleForm({
           type="button"
           disabled={isAiLoading}
           onClick={handleAiRefactor}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black transition-all group overflow-hidden relative ${
+          className={`group relative flex shrink-0 items-center gap-2 overflow-hidden rounded-xl px-4 py-2 text-xs font-black transition-all ${
             isAiLoading 
             ? "bg-gray-100 text-gray-400 cursor-not-allowed" 
             : "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 hover:scale-105"
@@ -580,22 +580,22 @@ export default function ArticleForm({
       {/* Modo Preview Full Screen */}
       {viewMode === "preview" && (
         <div className="fixed inset-0 z-[60] bg-slate-100 overflow-y-auto p-4 md:p-8 animate-in fade-in duration-300">
-          <div className="flex justify-center mb-8">
-            <div className="bg-white p-2 rounded-2xl shadow-xl border border-gray-200 flex items-center gap-4">
-              <div className="flex bg-gray-100 p-1 rounded-xl">
-                <button onClick={() => setViewMode("split")} className="p-2 text-gray-500 hover:text-blue-600 transition-all font-bold text-xs flex items-center gap-2">
+          <div className="mb-8 flex justify-center">
+            <div className="flex max-w-full items-center gap-3 overflow-x-auto rounded-2xl border border-gray-200 bg-white p-2 shadow-xl">
+              <div className="flex shrink-0 bg-gray-100 p-1 rounded-xl">
+                <button onClick={() => setViewMode("split")} className="flex shrink-0 items-center gap-2 p-2 text-xs font-bold text-gray-500 transition-all hover:text-blue-600">
                   <ArrowLeftRight size={14} /> Voltar ao Editor
                 </button>
               </div>
-              <div className="w-px h-6 bg-gray-200" />
-              <div className="flex bg-gray-100 p-1 rounded-xl">
+              <div className="h-6 w-px shrink-0 bg-gray-200" />
+              <div className="flex shrink-0 bg-gray-100 p-1 rounded-xl">
                 <button onClick={() => setPreviewDevice("mobile")} className={`p-2 rounded-lg transition-all ${previewDevice === "mobile" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}><Smartphone size={16} /></button>
                 <button onClick={() => setPreviewDevice("tablet")} className={`p-2 rounded-lg transition-all ${previewDevice === "tablet" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}><Tablet size={16} /></button>
                 <button onClick={() => setPreviewDevice("desktop")} className={`p-2 rounded-lg transition-all ${previewDevice === "desktop" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500"}`}><Monitor size={16} /></button>
               </div>
               <button 
                 onClick={() => setViewMode("edit")}
-                className="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30"
+                className="shrink-0 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-lg shadow-blue-500/30 transition-all hover:bg-blue-700"
               >
                 Concluir Visualização
               </button>

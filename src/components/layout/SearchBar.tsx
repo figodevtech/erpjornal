@@ -191,7 +191,7 @@ export default function SearchBar() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.98 }}
               transition={{ duration: 0.15 }}
-              className="absolute top-0 right-0 sm:top-full mt-0 sm:mt-4 w-screen h-[100vh] sm:h-auto sm:w-[520px] bg-white dark:bg-gray-950 shadow-2xl sm:border border-gray-200 dark:border-gray-800 sm:rounded-2xl overflow-hidden z-[110] flex flex-col"
+              className="fixed inset-0 z-[110] flex h-dvh w-screen flex-col overflow-hidden bg-white shadow-2xl dark:bg-gray-950 sm:absolute sm:inset-auto sm:right-0 sm:top-full sm:mt-4 sm:h-auto sm:w-[520px] sm:rounded-2xl sm:border sm:border-gray-200 dark:sm:border-gray-800"
             >
               {/* Input */}
               <div className="p-4 bg-gray-50/50 dark:bg-gray-900/30 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">

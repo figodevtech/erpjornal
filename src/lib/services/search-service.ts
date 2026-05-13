@@ -114,6 +114,7 @@ export class SearchService {
     const now = new Date();
     const where: Prisma.ArtigoWhereInput = {
       status: ArticleStatus.publicado,
+      revistaId: null,
     };
 
     // OR de texto apenas quando houver query
@@ -333,6 +334,7 @@ export class SearchService {
     const suggestions = await prisma.artigo.findMany({
       where: {
         status: ArticleStatus.publicado,
+        revistaId: null,
         titulo: { contains: query, mode: "insensitive" },
       },
       take: 8,

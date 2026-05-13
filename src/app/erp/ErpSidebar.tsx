@@ -12,6 +12,7 @@ import {
   Home,
   Image as ImageIcon,
   LogOut,
+  Megaphone,
   MicVocal,
   Newspaper,
   Rss,
@@ -31,6 +32,7 @@ type ErpSidebarProps = {
   podeGerirEntidades: boolean;
   podeVerFontes: boolean;
   podeVerMidia: boolean;
+  podeVerAnuncios: boolean;
   podeVerMidiaKit: boolean;
   podeVerPodcasts: boolean;
   podeVerCuradoria: boolean;
@@ -105,6 +107,7 @@ export default function ErpSidebar({
   podeGerirEntidades,
   podeVerFontes,
   podeVerMidia,
+  podeVerAnuncios,
   podeVerMidiaKit,
   podeVerPodcasts,
   podeVerCuradoria,
@@ -215,6 +218,15 @@ export default function ErpSidebar({
               icon={<ImageIcon className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/midia")}
+            />
+          )}
+          {podeVerAnuncios && (
+            <SidebarLink
+              href="/erp/anuncios"
+              label="Anuncios"
+              icon={<Megaphone className="h-4 w-4 text-red-400" />}
+              collapsed={collapsed}
+              active={isActive("/erp/anuncios")}
             />
           )}
           {podeVerFontes && (

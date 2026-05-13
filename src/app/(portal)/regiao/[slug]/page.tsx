@@ -2,6 +2,7 @@ import PortalEmptyState from "@/components/portal/PortalEmptyState";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
+import { Prisma } from "@prisma/client";
 import { Globe, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -58,8 +59,9 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
 
   let title = "Noticias regionais";
   let description = "Acompanhe as noticias politicas da sua regiao.";
-  const whereClause: { status: ArticleStatus; regiao?: string; estado?: string } = {
+  const whereClause: Prisma.ArtigoWhereInput = {
     status: ArticleStatus.publicado,
+    revistaId: null,
   };
 
   if (slug === "nacional") {

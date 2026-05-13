@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
+import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 
 export const revalidate = 300;
 
@@ -32,6 +33,12 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
   if (!revista) {
     notFound();
   }
+
+  const [hasLateralAds, hasFeedAds] = await Promise.all([
+    hasActiveAds("revista", "lateral"),
+    hasActiveAds("revista", "feed"),
+  ]);
+  const hasSidebarAds = hasLateralAds || hasFeedAds;
 
   return (
     <div className="portal-page w-full pb-20 transition-colors duration-300">
@@ -68,6 +75,8 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <AdSlot pagina="revista" posicao="topo" className="mb-10" />
+
         <div className="portal-muted-surface mb-8 flex items-center justify-between border-l-[6px] border-red-700 px-5 py-3">
           <h2 className="portal-section-title text-xl font-black uppercase tracking-wide">Artigos da edição</h2>
           <span className="portal-card-meta text-xs font-black uppercase tracking-widest">{revista.artigos.length} artigos</span>
@@ -78,7 +87,8 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
             <p className="font-bold text-gray-500">Nenhum artigo publicado nesta edição.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          <div className={hasSidebarAds ? "grid gap-10 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start" : ""}>
+            <div className={`grid grid-cols-1 gap-8 md:grid-cols-2 ${hasSidebarAds ? "lg:grid-cols-3 xl:grid-cols-2" : "lg:grid-cols-3"}`}>
             {revista.artigos.map((artigo) => (
               <Link
                 key={artigo.id}
@@ -111,7 +121,15 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
                   Por {artigo.autor?.nome || "Redação"}
                 </div>
               </Link>
-            ))}
+              ))}
+            </div>
+
+            {hasSidebarAds && (
+              <div className="hidden space-y-8 xl:block">
+                {hasLateralAds && <AdSlot pagina="revista" posicao="lateral" />}
+                {hasFeedAds && <AdSlot pagina="revista" posicao="feed" />}
+              </div>
+            )}
           </div>
         )}
       </section>

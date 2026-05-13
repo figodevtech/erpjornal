@@ -4,7 +4,16 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { prisma } from "@/lib/prisma";
-import { MediaKitTheme, MediaKitSectionWithData } from "@/types/media-kit";
+import {
+  MediaKitAboutData,
+  MediaKitContactData,
+  MediaKitFeaturesData,
+  MediaKitHeroData,
+  MediaKitStatsData,
+  MediaKitTestimonialsData,
+  MediaKitTheme,
+  MediaKitSectionWithData,
+} from "@/types/media-kit";
 
 import HeroSection from "./components/HeroSection";
 import StatsSection from "./components/StatsSection";
@@ -49,17 +58,17 @@ function renderSection(section: MediaKitSectionWithData, theme: MediaKitTheme) {
 
   switch (section.tipo) {
     case "hero":
-      return <HeroSection key={key} data={data} theme={theme} />;
+      return <HeroSection key={key} data={data as MediaKitHeroData} theme={theme} />;
     case "stats":
-      return <StatsSection key={key} data={data} theme={theme} />;
+      return <StatsSection key={key} data={data as MediaKitStatsData} theme={theme} />;
     case "about":
-      return <AboutSection key={key} data={data} theme={theme} />;
+      return <AboutSection key={key} data={data as MediaKitAboutData} theme={theme} />;
     case "features":
-      return <FeaturesSection key={key} data={data} theme={theme} />;
+      return <FeaturesSection key={key} data={data as MediaKitFeaturesData} theme={theme} />;
     case "testimonials":
-      return <TestimonialsSection key={key} data={data} theme={theme} />;
+      return <TestimonialsSection key={key} data={data as MediaKitTestimonialsData} theme={theme} />;
     case "contact":
-      return <ContactSection key={key} data={data} theme={theme} />;
+      return <ContactSection key={key} data={data as MediaKitContactData} theme={theme} />;
     default:
       return null;
   }
@@ -98,7 +107,7 @@ export default async function MidiaKitPublicPage({ params }: Props) {
   return (
     <div className="min-h-screen" style={{ backgroundColor: theme.backgroundColor, color: theme.textColor }}>
       {/* Standalone Header for Mídia Kit */}
-      <MidiaKitHeader theme={theme} navItems={navItems} kitName={kit.nome} />
+      <MidiaKitHeader theme={theme} navItems={navItems} />
 
       {/* Sections */}
       <main>

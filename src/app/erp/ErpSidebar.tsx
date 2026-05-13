@@ -19,6 +19,7 @@ import {
   UserSquare2,
   Users,
   Waypoints,
+  LayoutTemplate,
 } from "lucide-react";
 
 type ErpSidebarProps = {
@@ -30,6 +31,7 @@ type ErpSidebarProps = {
   podeGerirEntidades: boolean;
   podeVerFontes: boolean;
   podeVerMidia: boolean;
+  podeVerMidiaKit: boolean;
   podeVerPodcasts: boolean;
   podeVerCuradoria: boolean;
   podeGerirCuradoria: boolean;
@@ -103,6 +105,7 @@ export default function ErpSidebar({
   podeGerirEntidades,
   podeVerFontes,
   podeVerMidia,
+  podeVerMidiaKit,
   podeVerPodcasts,
   podeVerCuradoria,
   podeGerirCuradoria,
@@ -176,6 +179,15 @@ export default function ErpSidebar({
               icon={<Newspaper className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/revistas")}
+            />
+          )}
+          {podeVerMidiaKit && (
+            <SidebarLink
+              href="/erp/midia-kit"
+              label="Mídia Kit"
+              icon={<LayoutTemplate className="h-4 w-4 text-red-400" />}
+              collapsed={collapsed}
+              active={isActive("/erp/midia-kit")}
             />
           )}
           {podeGerirCategorias && (

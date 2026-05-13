@@ -47,6 +47,7 @@ Thumbs.db
 
 # AI Agents & Assistants
 .agent/
+.planning/
 .gemini/
 .stitch/
 .project_data/

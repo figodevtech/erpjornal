@@ -122,6 +122,7 @@ export function temPerfil(sessao: SessaoAplicacao, perfisAceitos: string[]) {
 }
 
 export function temPermissao(sessao: SessaoAplicacao, permissao: string) {
+  if (sessao.user.role === "admin") return true;
   return sessao.user.permissoes.includes(permissao);
 }
 

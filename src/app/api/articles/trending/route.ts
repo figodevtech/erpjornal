@@ -15,6 +15,7 @@ export async function GET() {
     const artigos = await prisma.artigo.findMany({
       where: {
         status: ArticleStatus.publicado,
+        revistaId: null,
         dataPublicacao: { lte: new Date() },
         visualizacoes: { gt: 0 },
       },

@@ -25,6 +25,7 @@ export async function GET(request: Request) {
     // Apenas listamos matérias oficiais que já chegaram no horário configurado
     const whereClause: Prisma.ArtigoWhereInput = {
       status: ArticleStatus.publicado,
+      revistaId: null,
       dataPublicacao: {
         lte: new Date(),
       },

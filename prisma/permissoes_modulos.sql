@@ -3,6 +3,7 @@ values
   (gen_random_uuid(), 'artigos', 'ler', 'Visualizar artigos'),
   (gen_random_uuid(), 'artigos', 'criar', 'Criar artigos'),
   (gen_random_uuid(), 'artigos', 'editar', 'Editar artigos'),
+  (gen_random_uuid(), 'artigos', 'editar_todos', 'Editar artigos de qualquer autor'),
   (gen_random_uuid(), 'artigos', 'publicar', 'Publicar artigos'),
   (gen_random_uuid(), 'revistas', 'ler', 'Visualizar revistas'),
   (gen_random_uuid(), 'revistas', 'criar', 'Criar revistas'),
@@ -16,12 +17,16 @@ values
   (gen_random_uuid(), 'fontes', 'ler', 'Visualizar fontes'),
   (gen_random_uuid(), 'fontes', 'criar', 'Criar fontes'),
   (gen_random_uuid(), 'fontes', 'editar', 'Editar fontes'),
+  (gen_random_uuid(), 'fontes', 'confidencial', 'Visualizar fontes confidenciais'),
   (gen_random_uuid(), 'curadoria', 'ler', 'Visualizar curadoria'),
   (gen_random_uuid(), 'curadoria', 'aprovar', 'Aprovar itens de curadoria'),
   (gen_random_uuid(), 'curadoria', 'gerir', 'Gerenciar feeds e coleta RSS'),
   (gen_random_uuid(), 'midia', 'ler', 'Visualizar biblioteca de mídia'),
   (gen_random_uuid(), 'midia', 'criar', 'Cadastrar ativos de mídia'),
   (gen_random_uuid(), 'midia', 'editar', 'Editar ativos de mídia'),
+  (gen_random_uuid(), 'anuncios', 'ler', 'Visualizar anuncios'),
+  (gen_random_uuid(), 'anuncios', 'criar', 'Criar anuncios'),
+  (gen_random_uuid(), 'anuncios', 'editar', 'Editar anuncios'),
   (gen_random_uuid(), 'podcasts', 'ler', 'Visualizar podcasts'),
   (gen_random_uuid(), 'podcasts', 'criar', 'Criar episódios de podcast'),
   (gen_random_uuid(), 'podcasts', 'editar', 'Editar episódios de podcast'),
@@ -30,6 +35,39 @@ values
   (gen_random_uuid(), 'usuarios', 'gerir', 'Gerenciar acessos')
 on conflict (modulo, acao) do update
 set descricao = excluded.descricao;
+
+insert into public.perfis_permissoes (perfil_id, permissao_id)
+select pp.perfil_id, nova.id
+from public.perfis_permissoes pp
+join public.permissoes antiga on antiga.id = pp.permissao_id
+join public.permissoes nova on nova.modulo = 'artigos' and nova.acao = 'editar_todos'
+where antiga.modulo = 'artigos'
+  and antiga.acao = 'publicar'
+on conflict do nothing;
+
+insert into public.perfis_permissoes (perfil_id, permissao_id)
+select pp.perfil_id, nova.id
+from public.perfis_permissoes pp
+join public.permissoes antiga on antiga.id = pp.permissao_id
+join public.permissoes nova on nova.modulo = 'artigos' and nova.acao = 'editar_todos'
+where antiga.modulo = 'artigos'
+  and antiga.acao = 'editar'
+  and exists (
+    select 1
+    from public.perfis p
+    where p.id = pp.perfil_id
+      and p.nome = 'juridico_erp'
+  )
+on conflict do nothing;
+
+insert into public.perfis_permissoes (perfil_id, permissao_id)
+select pp.perfil_id, nova.id
+from public.perfis_permissoes pp
+join public.permissoes antiga on antiga.id = pp.permissao_id
+join public.permissoes nova on nova.modulo = 'fontes' and nova.acao = 'confidencial'
+where antiga.modulo = 'fontes'
+  and antiga.acao = 'editar'
+on conflict do nothing;
 
 insert into public.perfis_permissoes (perfil_id, permissao_id)
 select pp.perfil_id, nova.id

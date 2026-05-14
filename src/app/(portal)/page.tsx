@@ -1,4 +1,5 @@
 import NewsletterForm from "@/components/portal/NewsletterForm";
+import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 import RevistaCarousel from "@/components/portal/RevistaCarousel";
 import type { RevistaCarouselItem } from "@/components/portal/RevistaCarousel";
 import { prisma } from "@/lib/prisma";
@@ -17,6 +18,7 @@ export default async function PortalHome() {
   const artigosBrutos = await prisma.artigo.findMany({
     where: {
       status: ArticleStatus.publicado,
+      revistaId: null,
       OR: [
         { dataPublicacao: { lte: publicationCutoff } },
         { dataPublicacao: null },
@@ -98,10 +100,17 @@ export default async function PortalHome() {
       const bDate = b.ultimaPublicacaoArtigo ?? b.dataPublicacao ?? "";
       return bDate.localeCompare(aDate);
     });
+  const [hasHomeLateralAds, hasHomeFeedAds] = await Promise.all([
+    hasActiveAds("home", "lateral"),
+    hasActiveAds("home", "feed"),
+  ]);
+  const hasHomeSidebarAds = hasHomeLateralAds || hasHomeFeedAds;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {revistas.length > 0 && <RevistaCarousel revistas={revistas} />}
+
+      <AdSlot pagina="home" posicao="topo" className="mb-10" />
 
       <section className="mb-12 border-b-2 border-gray-200 pb-12 dark:border-gray-800">
         {featured.length > 0 ? (
@@ -205,6 +214,8 @@ export default async function PortalHome() {
         <NewsletterForm origem="home" />
       </section>
 
+      <AdSlot pagina="home" posicao="meio" className="mb-14" />
+
       {recent.length > 0 && (
         <section>
           <div className="mb-10 flex items-center justify-between border-l-[6px] border-red-700 bg-gray-100 px-5 py-3 dark:bg-gray-900">
@@ -213,9 +224,10 @@ export default async function PortalHome() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 gap-10 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
-            {recent.map((art) => (
-              <Link key={art.id} href={`/noticia/${art.slug}`} className="group flex h-full flex-col items-start">
+          <div className={hasHomeSidebarAds ? "grid gap-10 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-start" : ""}>
+            <div className={`grid grid-cols-1 gap-10 gap-y-12 md:grid-cols-2 ${hasHomeSidebarAds ? "lg:grid-cols-3 xl:grid-cols-2" : "lg:grid-cols-3"}`}>
+              {recent.map((art) => (
+                <Link key={art.id} href={`/noticia/${art.slug}`} className="group flex h-full flex-col items-start">
                 <div className="relative mb-4 rounded-xl aspect-[4/3] w-full overflow-hidden border border-gray-200 bg-gray-100 transition-colors duration-300 group-hover:border-red-700 dark:border-gray-800 dark:bg-gray-900">
                   {art.urlImagemOg ? (
                     <Image
@@ -261,8 +273,16 @@ export default async function PortalHome() {
                     minute: "2-digit",
                   })}
                 </div>
-              </Link>
-            ))}
+                </Link>
+              ))}
+            </div>
+
+            {hasHomeSidebarAds && (
+              <div className="hidden space-y-8 xl:block">
+                {hasHomeLateralAds && <AdSlot pagina="home" posicao="lateral" />}
+                {hasHomeFeedAds && <AdSlot pagina="home" posicao="feed" />}
+              </div>
+            )}
           </div>
         </section>
       )}

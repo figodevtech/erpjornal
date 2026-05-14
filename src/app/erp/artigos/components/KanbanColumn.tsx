@@ -35,7 +35,7 @@ export function KanbanColumn({ id, label, artigos }: KanbanColumnProps) {
   const { setNodeRef } = useDroppable({ id });
 
   return (
-    <div className="flex flex-col w-screen md:w-[280px] bg-[#f8f9ff] rounded-xl overflow-hidden shadow-sm">
+    <div className="flex w-[calc(100vw-2rem)] max-w-[320px] flex-col overflow-hidden rounded-xl bg-[#f8f9ff] shadow-sm md:w-[280px]">
       <div className="p-4 flex items-center justify-between border-b border-gray-100 bg-white shadow-sm">
         <h3 className="font-bold text-gray-800 text-sm flex items-center">
           <span className="mr-2 uppercase tracking-widest text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-500 font-bold">

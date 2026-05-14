@@ -148,42 +148,44 @@ export default async function CuradoriaDashboardPage({
         </h2>
 
         <div className="overflow-hidden rounded-[32px] border border-gray-200 bg-white shadow-sm">
-          <table className="w-full text-left">
-            <thead className="border-b border-gray-100 bg-gray-50">
-              <tr className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-                <th className="px-6 py-4">Materia</th>
-                <th className="px-6 py-4">Fonte</th>
-                <th className="px-6 py-4">Revisor</th>
-                <th className="px-6 py-4">Data</th>
-                <th className="px-6 py-4 text-right">Acoes</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {publicados.map((artigo) => (
-                <tr key={artigo.id} className="transition-colors hover:bg-gray-50/60">
-                  <td className="px-6 py-4">
-                    <p className="line-clamp-1 text-sm font-bold text-gray-900">{artigo.titulo}</p>
-                    <p className="mt-0.5 text-[10px] font-black uppercase tracking-widest text-indigo-500">
-                      {artigo.categoria?.nome}
-                    </p>
-                  </td>
-                  <td className="px-6 py-4 text-xs font-medium text-gray-500">{artigo.autorExterno}</td>
-                  <td className="px-6 py-4 text-xs font-medium italic text-gray-500">{artigo.revisorHumano}</td>
-                  <td className="px-6 py-4 text-xs font-medium text-gray-400">
-                    {artigo.criadoEm.toLocaleDateString("pt-BR")}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <Link
-                      href={`/erp/artigos/${artigo.id}`}
-                      className="text-xs font-bold uppercase text-indigo-600 underline hover:text-indigo-700"
-                    >
-                      Editar
-                    </Link>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="min-w-[760px] text-left">
+              <thead className="border-b border-gray-100 bg-gray-50">
+                <tr className="text-[10px] font-black uppercase tracking-widest text-gray-400">
+                  <th className="px-6 py-4">Materia</th>
+                  <th className="px-6 py-4">Fonte</th>
+                  <th className="px-6 py-4">Revisor</th>
+                  <th className="px-6 py-4">Data</th>
+                  <th className="px-6 py-4 text-right">Acoes</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {publicados.map((artigo) => (
+                  <tr key={artigo.id} className="transition-colors hover:bg-gray-50/60">
+                    <td className="px-6 py-4">
+                      <p className="line-clamp-1 text-sm font-bold text-gray-900">{artigo.titulo}</p>
+                      <p className="mt-0.5 text-[10px] font-black uppercase tracking-widest text-indigo-500">
+                        {artigo.categoria?.nome}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-xs font-medium text-gray-500">{artigo.autorExterno}</td>
+                    <td className="px-6 py-4 text-xs font-medium italic text-gray-500">{artigo.revisorHumano}</td>
+                    <td className="px-6 py-4 text-xs font-medium text-gray-400">
+                      {artigo.criadoEm.toLocaleDateString("pt-BR")}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <Link
+                        href={`/erp/artigos/${artigo.id}`}
+                        className="text-xs font-bold uppercase text-indigo-600 underline hover:text-indigo-700"
+                      >
+                        Editar
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

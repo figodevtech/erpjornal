@@ -1,6 +1,7 @@
 import SearchFilters from "@/components/search/SearchFilters";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { prisma } from "@/lib/prisma";
+import type { SearchOptions } from "@/lib/services/search-service";
 import { SearchService } from "@/lib/services/search-service";
 import Image from "next/image";
 import Link from "next/link";
@@ -55,8 +56,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     query: query || "",
     category,
     author,
-    sortBy: sortBy as any,
-    dateRange: dateRange as any,
+    sortBy: sortBy as SearchOptions["sortBy"],
+    dateRange: dateRange as SearchOptions["dateRange"],
     type: ["noticia"],
     limit: 100,
   });
@@ -92,7 +93,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         title={
           query ? (
             <>
-              Resultados para <span className="italic text-red-700">"{query}"</span>
+              Resultados para <span className="italic text-red-700">&quot;{query}&quot;</span>
             </>
           ) : category ? (
             <>
@@ -206,7 +207,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                     </Link>
 
                     <div className="flex flex-1 flex-col pt-1">
-                      <div className="mb-4 flex items-center gap-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
+                      <div className="mb-4 flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400 sm:gap-4">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3 w-3 text-red-700" />
                           {art.date ? new Date(art.date).toLocaleDateString("pt-BR") : "Data indisponivel"}

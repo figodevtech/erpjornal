@@ -82,9 +82,9 @@ export default function FonteForm({ onCancel }: FonteFormProps) {
             name="nivelSigilo"
             defaultValue="publico"
             options={[
-              { value: "publico", label: "Público - Visível a todos os repórteres" },
-              { value: "reservado", label: "Reservado - Apenas editores e admin" },
-              { value: "confidencial", label: "Confidencial - Apenas admin" },
+              { value: "publico", label: "Publico - Visivel com permissao de leitura" },
+              { value: "reservado", label: "Reservado - Acesso controlado" },
+              { value: "confidencial", label: "Confidencial - Requer permissao especifica" },
             ]}
           />
         </div>

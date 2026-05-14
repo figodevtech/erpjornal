@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { exigirPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 import ArticleForm from "../components/ArticleForm";
@@ -67,7 +67,8 @@ export default async function NovoArtigoPage({
         categories={categories}
         politicians={politicians}
         revistas={revistas}
-        userRole={session.user.role}
+        canPublish={temPermissao(session, "artigos:publicar")}
+        canEditLegal={temPermissao(session, "artigos:editar")}
         revistaId={revista?.id}
         revistaTitulo={revista?.titulo}
       />

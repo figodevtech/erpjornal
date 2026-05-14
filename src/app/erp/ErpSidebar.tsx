@@ -12,6 +12,8 @@ import {
   Home,
   Image as ImageIcon,
   LogOut,
+  Menu,
+  Megaphone,
   MicVocal,
   Newspaper,
   Rss,
@@ -20,6 +22,7 @@ import {
   Users,
   Waypoints,
   LayoutTemplate,
+  X,
 } from "lucide-react";
 
 type ErpSidebarProps = {
@@ -31,6 +34,7 @@ type ErpSidebarProps = {
   podeGerirEntidades: boolean;
   podeVerFontes: boolean;
   podeVerMidia: boolean;
+  podeVerAnuncios: boolean;
   podeVerMidiaKit: boolean;
   podeVerPodcasts: boolean;
   podeVerCuradoria: boolean;
@@ -68,6 +72,7 @@ function SidebarLink({
   collapsed,
   active,
   subtle = false,
+  onNavigate,
 }: {
   href: string;
   label: string;
@@ -75,10 +80,12 @@ function SidebarLink({
   collapsed: boolean;
   active: boolean;
   subtle?: boolean;
+  onNavigate?: () => void;
 }) {
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       title={collapsed ? label : undefined}
       className={`flex items-center rounded-xl px-3 py-2.5 transition-colors ${
         collapsed ? "justify-center" : "gap-3"
@@ -105,6 +112,7 @@ export default function ErpSidebar({
   podeGerirEntidades,
   podeVerFontes,
   podeVerMidia,
+  podeVerAnuncios,
   podeVerMidiaKit,
   podeVerPodcasts,
   podeVerCuradoria,
@@ -114,20 +122,53 @@ export default function ErpSidebar({
 }: ErpSidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(() => /^\/erp\/revistas\/(?!nova(?:\/|$))[^/]+/.test(pathname));
+  const [mobileOpen, setMobileOpen] = useState(false);
   const iniciais = obterIniciais(usuario.nome, usuario.email);
   const perfilPrincipal = formatarPerfil(usuario.perfis, usuario.role);
 
   const isActive = (href: string) => pathname === href || (href !== "/erp" && pathname.startsWith(`${href}/`));
+  const closeMobile = () => setMobileOpen(false);
 
   return (
+    <>
+    <button
+      type="button"
+      onClick={() => setMobileOpen(true)}
+      className="fixed left-4 top-4 z-[900] inline-flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-950 px-3 py-2 text-sm font-bold text-white shadow-2xl transition hover:bg-gray-900 md:hidden"
+      aria-label="Abrir menu do ERP"
+    >
+      <Menu className="h-5 w-5 text-red-400" />
+      Menu
+    </button>
+
+    {mobileOpen && (
+      <button
+        type="button"
+        className="fixed inset-0 z-[950] bg-gray-950/70 backdrop-blur-sm md:hidden"
+        aria-label="Fechar menu do ERP"
+        onClick={closeMobile}
+      />
+    )}
+
     <aside
-      className={`w-full bg-gray-900 px-4 py-3 text-white md:sticky md:top-0 md:h-screen md:self-start md:overflow-hidden md:transition-[width] md:duration-200 ${
+      className={`fixed inset-y-0 left-0 z-[960] w-80 max-w-[86vw] -translate-x-full bg-gray-900 px-4 py-3 text-white shadow-2xl transition-transform duration-200 md:sticky md:top-0 md:z-auto md:h-screen md:max-w-none md:translate-x-0 md:self-start md:overflow-hidden md:shadow-none md:transition-[width] md:duration-200 ${
+        mobileOpen ? "translate-x-0" : ""
+      } ${
         collapsed ? "md:w-24" : "md:w-72"
       }`}
     >
       <div className="flex h-full flex-col">
         <div className={`mb-4 flex items-center ${collapsed ? "justify-center" : "justify-between gap-3"}`}>
           {!collapsed && <h2 className="text-2xl font-black tracking-tight text-nowrap">Gestao ERP</h2>}
+          <button
+            type="button"
+            onClick={closeMobile}
+            className="rounded-xl border border-gray-800 bg-gray-800/60 p-2 text-gray-300 transition hover:bg-gray-800 hover:text-white md:hidden"
+            aria-label="Fechar sidebar"
+            title="Fechar sidebar"
+          >
+            <X className="h-5 w-5" />
+          </button>
           <button
             type="button"
             onClick={() => setCollapsed((value) => !value)}
@@ -151,6 +192,7 @@ export default function ErpSidebar({
             collapsed={collapsed}
             active={false}
             subtle
+            onNavigate={closeMobile}
           />
 
           <SidebarLink
@@ -159,6 +201,7 @@ export default function ErpSidebar({
             icon={<Home className="h-4 w-4 text-red-500" />}
             collapsed={collapsed}
             active={isActive("/erp")}
+            onNavigate={closeMobile}
           />
 
           <div className="my-2 h-px bg-gray-800" />
@@ -170,6 +213,7 @@ export default function ErpSidebar({
               icon={<FileText className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/artigos")}
+              onNavigate={closeMobile}
             />
           )}
           {podeVerRevistas && (
@@ -179,6 +223,7 @@ export default function ErpSidebar({
               icon={<Newspaper className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/revistas")}
+              onNavigate={closeMobile}
             />
           )}
           {podeVerMidiaKit && (
@@ -188,6 +233,7 @@ export default function ErpSidebar({
               icon={<LayoutTemplate className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/midia-kit")}
+              onNavigate={closeMobile}
             />
           )}
           {podeGerirCategorias && (
@@ -197,6 +243,7 @@ export default function ErpSidebar({
               icon={<BookOpen className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/categorias")}
+              onNavigate={closeMobile}
             />
           )}
           {podeGerirEntidades && (
@@ -206,6 +253,7 @@ export default function ErpSidebar({
               icon={<Users className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/entidades")}
+              onNavigate={closeMobile}
             />
           )}
           {mediaEnabled && podeVerMidia && (
@@ -215,6 +263,17 @@ export default function ErpSidebar({
               icon={<ImageIcon className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/midia")}
+              onNavigate={closeMobile}
+            />
+          )}
+          {podeVerAnuncios && (
+            <SidebarLink
+              href="/erp/anuncios"
+              label="Anuncios"
+              icon={<Megaphone className="h-4 w-4 text-red-400" />}
+              collapsed={collapsed}
+              active={isActive("/erp/anuncios")}
+              onNavigate={closeMobile}
             />
           )}
           {podeVerFontes && (
@@ -224,6 +283,7 @@ export default function ErpSidebar({
               icon={<UserSquare2 className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/fontes")}
+              onNavigate={closeMobile}
             />
           )}
           {podcastsEnabled && podeVerPodcasts && (
@@ -233,6 +293,7 @@ export default function ErpSidebar({
               icon={<MicVocal className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/podcasts")}
+              onNavigate={closeMobile}
             />
           )}
 
@@ -250,6 +311,7 @@ export default function ErpSidebar({
                 icon={<Users className="h-4 w-4 text-red-400" />}
                 collapsed={collapsed}
                 active={isActive("/erp/usuarios")}
+                onNavigate={closeMobile}
               />
               <SidebarLink
                 href="/erp/permissoes"
@@ -257,6 +319,7 @@ export default function ErpSidebar({
                 icon={<Shield className="h-4 w-4 text-red-400" />}
                 collapsed={collapsed}
                 active={isActive("/erp/permissoes")}
+                onNavigate={closeMobile}
               />
             </>
           )}
@@ -277,6 +340,7 @@ export default function ErpSidebar({
                   icon={<Waypoints className="h-4 w-4 text-indigo-400" />}
                   collapsed={collapsed}
                   active={isActive("/erp/curadoria/dashboard")}
+                  onNavigate={closeMobile}
                 />
               )}
               {podeGerirCuradoria && (
@@ -286,6 +350,7 @@ export default function ErpSidebar({
                   icon={<Rss className="h-4 w-4 text-indigo-400" />}
                   collapsed={collapsed}
                   active={isActive("/erp/curadoria/fontes")}
+                  onNavigate={closeMobile}
                 />
               )}
             </>
@@ -343,5 +408,6 @@ export default function ErpSidebar({
         </div>
       </div>
     </aside>
+    </>
   );
 }

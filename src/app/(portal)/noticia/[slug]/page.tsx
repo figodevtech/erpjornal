@@ -8,6 +8,7 @@ import { obterSessao } from "@/lib/auth";
 
 import { Lock, Crown } from "lucide-react";
 import NewsletterForm from "@/components/portal/NewsletterForm";
+import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 import TTSPlayer from "@/components/portal/TTSPlayer";
 import { ViewCounter } from "@/components/portal/ViewCounter";
 import { getArticleViews } from "@/app/actions/analytics";
@@ -17,6 +18,26 @@ export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+function splitArticleHtmlForAd(html: string) {
+  const blocks = html.match(/<p\b[^>]*>[\s\S]*?<\/p>/gi);
+
+  if (!blocks || blocks.length < 4) {
+    return { beforeAd: html, afterAd: "" };
+  }
+
+  const middle = Math.max(2, Math.ceil(blocks.length / 2));
+  const beforeBlocks = blocks.slice(0, middle).join("");
+  const afterBlocks = blocks.slice(middle).join("");
+  const firstBlockIndex = html.indexOf(blocks[0]);
+  const lastBlock = blocks[blocks.length - 1];
+  const lastBlockEnd = html.lastIndexOf(lastBlock) + lastBlock.length;
+
+  return {
+    beforeAd: `${html.slice(0, firstBlockIndex)}${beforeBlocks}`,
+    afterAd: `${afterBlocks}${html.slice(lastBlockEnd)}`,
+  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -63,10 +84,14 @@ export default async function NoticiaPage({ params }: PageProps) {
   // Busca visualizações em tempo real (Redis)
   const realTimeViews = await getArticleViews(artigo.id);
   const corpoTextoSanitizado = sanitizeHtmlForRender(artigo.corpoTexto);
+  const { beforeAd: corpoAntesDoAnuncio, afterAd: corpoDepoisDoAnuncio } = splitArticleHtmlForAd(corpoTextoSanitizado);
 
   const isPremium = artigo.ehPremium;
   const isAuthed = !!session;
   const canAccess = !isPremium || isAuthed;
+  const adPageType = artigo.revistaId ? "revista" : "noticia";
+  const isRevistaArticle = Boolean(artigo.revistaId);
+  const hasLateralAds = await hasActiveAds(adPageType, "lateral");
 
   return (
     <div className="w-full bg-background pb-20 overflow-x-hidden transition-colors duration-300">
@@ -85,7 +110,18 @@ export default async function NoticiaPage({ params }: PageProps) {
         </div>
       )}
 
-      <article className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 md:pt-14 font-serif">
+      <div className="mx-auto w-full max-w-[1000px] px-4 pt-6 sm:px-6 lg:px-8">
+        <AdSlot pagina={adPageType} posicao="topo" />
+      </div>
+
+      <div
+        className={`mx-auto w-full gap-10 px-4 sm:px-6 lg:px-8 ${
+          hasLateralAds
+            ? "grid max-w-7xl xl:grid-cols-[minmax(0,1000px)_260px] xl:items-start"
+            : "max-w-[1000px]"
+        }`}
+      >
+      <article className="min-w-0 pt-8 font-serif md:pt-14">
         
         {/* Cabeçalho do Artigo */}
         <header className="mb-10 lg:mb-12 font-sans">
@@ -197,6 +233,10 @@ export default async function NoticiaPage({ params }: PageProps) {
           )}
         </figure>
 
+        <div className="mb-12 font-sans">
+          <AdSlot pagina={adPageType} posicao="apos_imagem" />
+        </div>
+
         {/* Corpo do Texto */}
         <div className={`
           article-prose
@@ -209,10 +249,17 @@ export default async function NoticiaPage({ params }: PageProps) {
           prose-h2:text-gray-950 dark:prose-h2:text-gray-100 prose-h2:font-black prose-h2:mt-12 prose-h2:mb-6
           prose-blockquote:border-red-700 prose-blockquote:italic prose-blockquote:text-gray-800 dark:prose-blockquote:text-gray-200
           prose-a:text-red-700 prose-a:no-underline hover:prose-a:underline
+          ${isRevistaArticle ? "[&_p]:text-justify [&_p]:hyphens-auto [&_p]:leading-[1.9] [&_p]:tracking-normal" : ""}
           ${!canAccess ? 'max-h-[300px] overflow-hidden relative mask-fade-to-bottom' : ''}
         `}>
           {canAccess ? (
-            <div dangerouslySetInnerHTML={{ __html: corpoTextoSanitizado }} />
+            <>
+              <div dangerouslySetInnerHTML={{ __html: corpoAntesDoAnuncio }} />
+              <div className="not-prose my-12 font-sans">
+                <AdSlot pagina={adPageType} posicao="meio" />
+              </div>
+              {corpoDepoisDoAnuncio && <div dangerouslySetInnerHTML={{ __html: corpoDepoisDoAnuncio }} />}
+            </>
           ) : (
             <>
                <div className="pointer-events-none opacity-40" dangerouslySetInnerHTML={{ __html: corpoTextoSanitizado.substring(0, 400) + "..." }} />
@@ -247,6 +294,10 @@ export default async function NoticiaPage({ params }: PageProps) {
           )}
         </div>
 
+        <div className="mt-12 w-full max-w-[760px] mx-auto font-sans">
+          <AdSlot pagina={adPageType} posicao="feed" />
+        </div>
+
         {/* Newsletter CTA at the end of artigo (M1-PLUS-T3-ST3) */}
         <div className="mt-16 w-full max-w-[760px] mx-auto font-sans">
           <NewsletterForm origem={`noticia_${artigo.slug}`} />
@@ -256,6 +307,13 @@ export default async function NoticiaPage({ params }: PageProps) {
         <ViewCounter artigoId={artigo.id} />
 
       </article>
+
+      {hasLateralAds && (
+        <aside className="hidden space-y-8 pt-14 xl:block">
+          <AdSlot pagina={adPageType} posicao="lateral" />
+        </aside>
+      )}
+      </div>
     </div>
   );
 }

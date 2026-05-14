@@ -23,7 +23,6 @@ import { GripVertical, Pencil } from "lucide-react";
 
 import { updateRevistaArticleOrder } from "../actions";
 import { ArticleStatus } from "@/lib/types/artigo-status";
-import { ar } from "date-fns/locale";
 
 type RevistaArticle = {
   id: string;
@@ -175,7 +174,7 @@ export default function RevistaArticleSorter({
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-            <table className="w-full text-left text-sm">
+            <table className="min-w-[720px] text-left text-sm">
               <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
                 <tr>
                   <th className="px-4 py-3 font-semibold"></th>

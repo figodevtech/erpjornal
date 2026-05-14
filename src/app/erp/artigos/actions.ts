@@ -19,8 +19,6 @@ export async function saveArticle(formData: FormData) {
   const corpoTexto = formData.get("corpoTexto") as string;
   const categoriaId = formData.get("categoriaId") as string;
   const status = formData.get("status") as string;
-  const observacoesLegais = (formData.get("observacoesLegais") as string) || null;
-  const statusLegal = (formData.get("statusLegal") as string) || "pendente";
   const rawDate = formData.get("dataPublicacao") as string;
   const canaisPublicacao = formData.getAll("canaisPublicacao") as string[];
   const urlFonte = (formData.get("urlFonte") as string) || null;
@@ -32,9 +30,11 @@ export async function saveArticle(formData: FormData) {
     throw new Error("Campos obrigatorios ausentes");
   }
 
-  const role = session.user.role;
   const podePublicar = temPermissao(session, "artigos:publicar");
   const podeEditar = temPermissao(session, "artigos:editar");
+  const podeEditarTodos = temPermissao(session, "artigos:editar_todos");
+  const observacoesLegais = podeEditar ? (formData.get("observacoesLegais") as string) || null : null;
+  const statusLegal = podeEditar ? (formData.get("statusLegal") as string) || "pendente" : "pendente";
   let finalStatus = status;
 
   if (status === "publicado" && !podePublicar) {
@@ -101,7 +101,7 @@ export async function saveArticle(formData: FormData) {
     if (!existing) throw new Error("Artigo nao encontrado");
     previousRevistaId = existing.revistaId;
 
-    if (role === "reporter" && existing.autorId !== session.user.id) {
+    if (!podeEditarTodos && existing.autorId !== session.user.id) {
       throw new Error("Voce nao tem permissao para editar este artigo.");
     }
 

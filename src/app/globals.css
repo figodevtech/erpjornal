@@ -321,3 +321,35 @@ html:not(.dark) .article-prose figcaption * {
   width: 0;
   height: 0;
 }
+
+.erp-dialog-scrollbar {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(185, 28, 28, 0.55) rgba(243, 244, 246, 0.9);
+}
+
+.erp-dialog-scrollbar::-webkit-scrollbar {
+  width: 12px;
+}
+
+.erp-dialog-scrollbar::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.erp-dialog-scrollbar::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 9999px;
+  border: 3px solid #f9fafb;
+}
+
+.erp-dialog-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ef4444, #991b1b);
+  border-radius: 9999px;
+  border: 3px solid #f9fafb;
+}
+
+.erp-dialog-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #f87171, #b91c1c);
+}

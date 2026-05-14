@@ -20,12 +20,11 @@ const sigiloIcon = {
 export default async function FontesPage() {
   const session = await exigirPermissao("fontes:ler");
 
-  const role = session.user.role as string;
-  const isPrivileged = role === "admin" || role === "editor";
+  const podeVerConfidenciais = temPermissao(session, "fontes:confidencial");
   const podeCriar = temPermissao(session, "fontes:criar");
 
   const fontes = await prisma.fonte.findMany({
-    where: isPrivileged ? {} : { nivelSigilo: { not: "confidencial" } },
+    where: podeVerConfidenciais ? {} : { nivelSigilo: { not: "confidencial" } },
     orderBy: { criadoEm: "desc" },
     include: {
       criador: { select: { nome: true } },
@@ -41,7 +40,7 @@ export default async function FontesPage() {
           <p className="mt-1 text-sm text-gray-500">
             {fontes.length} fonte{fontes.length !== 1 ? "s" : ""} cadastrada
             {fontes.length !== 1 ? "s" : ""}
-            {!isPrivileged && " · fontes confidenciais ocultas"}
+            {!podeVerConfidenciais && " · fontes confidenciais ocultas"}
           </p>
         </div>
         {podeCriar && <NovaFonteDialog />}

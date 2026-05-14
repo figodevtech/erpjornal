@@ -4,8 +4,8 @@ import { ArrowLeft, Globe, Settings, Blocks } from "lucide-react";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { toMediaKitSectionWithData } from "../../section-mappers";
 import BlockEditorManager from "./components/BlockEditorManager";
-import { MediaKitSectionWithData } from "@/types/media-kit";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -26,17 +26,8 @@ export default async function MidiaKitEditorPage({ params }: Props) {
 
   if (!kit) notFound();
 
-  // Convert Json to strong typing for the client
-  const sections = kit.secoes.map((s) => ({
-    id: s.id,
-    mediaKitId: s.mediaKitId,
-    tipo: s.tipo,
-    titulo: s.titulo,
-    ordem: s.ordem,
-    ativo: s.ativo,
-    data: s.data,
-    criadoEm: s.criadoEm,
-  })) as MediaKitSectionWithData[];
+  // Convert Json/string database fields to strong typing for the client.
+  const sections = kit.secoes.map(toMediaKitSectionWithData);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col bg-gray-50 animate-in fade-in duration-500 overflow-hidden">

@@ -127,7 +127,7 @@ export default function ErpSidebar({
     >
       <div className="flex h-full flex-col">
         <div className={`mb-4 flex items-center ${collapsed ? "justify-center" : "justify-between gap-3"}`}>
-          {!collapsed && <h2 className="text-2xl font-black tracking-tight">Gestao ERP</h2>}
+          {!collapsed && <h2 className="text-2xl font-black tracking-tight text-nowrap">Gestao ERP</h2>}
           <button
             type="button"
             onClick={() => setCollapsed((value) => !value)}
@@ -273,7 +273,7 @@ export default function ErpSidebar({
               {podeVerCuradoria && (
                 <SidebarLink
                   href="/erp/curadoria/dashboard"
-                  label="Curadoria RSS"
+                  label="Republicar RSS"
                   icon={<Waypoints className="h-4 w-4 text-indigo-400" />}
                   collapsed={collapsed}
                   active={isActive("/erp/curadoria/dashboard")}

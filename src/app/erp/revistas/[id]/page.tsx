@@ -6,6 +6,7 @@ import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 import RevistaArticleSorter from "../components/RevistaArticleSorter";
+import RevistaCoverUploader from "../components/RevistaCoverUploader";
 
 export default async function RevistaDetalhePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await exigirPermissao("revistas:ler");
@@ -32,7 +33,15 @@ export default async function RevistaDetalhePage({ params }: { params: Promise<{
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        <RevistaCoverUploader
+          revistaId={revista.id}
+          titulo={revista.titulo}
+          initialUrl={revista.capaUrl}
+          canEdit={podeEditar}
+        />
+
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
           <Link href="/erp/revistas" className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900">
             <ArrowLeft className="h-4 w-4" />
@@ -52,12 +61,13 @@ export default async function RevistaDetalhePage({ params }: { params: Promise<{
         {podeCriar && (
           <Link
             href={`/erp/artigos/novo?revistaId=${revista.id}`}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
+            className="inline-flex text-nowrap items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
           >
             <Plus className="h-4 w-4" />
             Adicionar artigo
           </Link>
         )}
+        </div>
       </div>
 
       <RevistaArticleSorter revistaId={revista.id} artigos={revista.artigos} podeEditar={podeEditar} />

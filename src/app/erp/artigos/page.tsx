@@ -96,11 +96,15 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                           art.status === ArticleStatus.publicado ? "bg-emerald-100 text-emerald-800" : ""
-                        } ${art.status === ArticleStatus.revisao ? "bg-amber-100 text-amber-800" : ""} ${
-                          art.status === ArticleStatus.pauta ? "bg-gray-100 text-gray-800" : ""
+                        } ${art.status === ArticleStatus.em_revisao ? "bg-amber-100 text-amber-800" : ""} ${
+                          art.status === ArticleStatus.rascunho ? "bg-gray-100 text-gray-800" : ""
                         }`}
                       >
-                        {art.status}
+                        {art.status === ArticleStatus.publicado
+                          ? "Publicado"
+                          : art.status === ArticleStatus.em_revisao
+                          ? "Em Revisão"
+                          : "Rascunho"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600">{art.autor?.nome || "-"}</td>

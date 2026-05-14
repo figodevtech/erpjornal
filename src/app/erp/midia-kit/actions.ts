@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { exigirPermissao, obterSessao } from "@/lib/auth";
 import { MediaKitStatus, Prisma } from "@prisma/client";
 import { MediaKitTheme, MediaKitSectionWithData } from "@/types/media-kit";
+import { toMediaKitSectionWithData } from "./section-mappers";
 
 /**
  * Cria um novo Mídia Kit vazio.
@@ -102,7 +103,10 @@ export async function deleteMediaKit(id: string) {
 /**
  * Salva ou atualiza as seções de um Mídia Kit em lote.
  */
-export async function saveMediaKitSections(mediaKitId: string, sections: Partial<MediaKitSectionWithData>[]) {
+export async function saveMediaKitSections(
+  mediaKitId: string,
+  sections: Partial<MediaKitSectionWithData>[]
+): Promise<MediaKitSectionWithData[]> {
   await exigirPermissao("midia-kit:editar");
 
   const sectionsToKeep = sections.filter(s => s.id && !s.id.startsWith("temp-")).map(s => s.id);
@@ -124,7 +128,7 @@ export async function saveMediaKitSections(mediaKitId: string, sections: Partial
             titulo: section.titulo,
             ordem: section.ordem,
             ativo: section.ativo,
-            data: section.data,
+            data: section.data as Prisma.InputJsonValue,
           },
         });
       } else {
@@ -135,7 +139,7 @@ export async function saveMediaKitSections(mediaKitId: string, sections: Partial
             titulo: section.titulo,
             ordem: section.ordem!,
             ativo: section.ativo ?? true,
-            data: section.data,
+            data: section.data as Prisma.InputJsonValue,
           },
         });
       }
@@ -148,7 +152,7 @@ export async function saveMediaKitSections(mediaKitId: string, sections: Partial
     where: { mediaKitId },
     orderBy: { ordem: 'asc' }
   });
-  return updated;
+  return updated.map(toMediaKitSectionWithData);
 }
 
 /**

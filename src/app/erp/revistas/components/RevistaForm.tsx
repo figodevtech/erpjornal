@@ -72,17 +72,6 @@ export default function RevistaForm({ initialData, onCancel }: RevistaFormProps)
         </div>
 
         <div className="md:col-span-2">
-          <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">URL da capa</label>
-          <input
-            type="url"
-            name="capaUrl"
-            defaultValue={initialData?.capaUrl ?? ""}
-            className="w-full rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500"
-            placeholder="https://..."
-          />
-        </div>
-
-        <div className="md:col-span-2">
           <label className="mb-2 block text-xs font-bold uppercase tracking-widest text-gray-500">Descrição</label>
           <textarea
             name="descricao"

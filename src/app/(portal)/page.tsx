@@ -108,7 +108,7 @@ export default async function PortalHome() {
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
             <div className="flex flex-col lg:col-span-8">
               <Link href={`/noticia/${featured[0].slug}`} className="group flex w-full flex-col items-start">
-                <div className="relative mb-5 aspect-video w-full overflow-hidden border border-gray-200 bg-gray-200 transition-all duration-500 dark:border-gray-800 dark:bg-gray-800">
+                <div className="rounded-2xl relative mb-5 aspect-video w-full overflow-hidden border border-gray-200 bg-gray-200 transition-all duration-500 dark:border-gray-800 dark:bg-gray-800">
                   {featured[0].urlImagemOg ? (
                     <Image
                       src={featured[0].urlImagemOg}
@@ -166,7 +166,7 @@ export default async function PortalHome() {
                     {art.titulo}
                   </h2>
 
-                  <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden border border-gray-200 bg-gray-100 transition-opacity group-hover:opacity-90 dark:border-gray-800 dark:bg-gray-900">
+                  <div className="relative mb-4 aspect-[16/9] rounded-xl w-full overflow-hidden border border-gray-200 bg-gray-100 transition-opacity group-hover:opacity-90 dark:border-gray-800 dark:bg-gray-900">
                     {art.urlImagemOg ? (
                       <Image
                         src={art.urlImagemOg}
@@ -216,7 +216,7 @@ export default async function PortalHome() {
           <div className="grid grid-cols-1 gap-10 gap-y-12 md:grid-cols-2 lg:grid-cols-3">
             {recent.map((art) => (
               <Link key={art.id} href={`/noticia/${art.slug}`} className="group flex h-full flex-col items-start">
-                <div className="relative mb-4 aspect-[4/3] w-full overflow-hidden border border-gray-200 bg-gray-100 transition-colors duration-300 group-hover:border-red-700 dark:border-gray-800 dark:bg-gray-900">
+                <div className="relative mb-4 rounded-xl aspect-[4/3] w-full overflow-hidden border border-gray-200 bg-gray-100 transition-colors duration-300 group-hover:border-red-700 dark:border-gray-800 dark:bg-gray-900">
                   {art.urlImagemOg ? (
                     <Image
                       src={art.urlImagemOg}

@@ -222,27 +222,27 @@ function AdEditor({
 
           <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Titulo</label>
-            <input name="titulo" required defaultValue={selected.titulo} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
+            <input name="titulo" required defaultValue={selected.titulo} className="w-full rounded-xl border text-gray-600 border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
           </div>
 
           <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Imagem</label>
-            <input name="imagemUrl" type="url" required defaultValue={selected.imagemUrl} placeholder="https://..." className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
+            <input name="imagemUrl" type="url" required defaultValue={selected.imagemUrl} placeholder="https://..." className="text-gray-600 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
           </div>
 
           <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Link</label>
-            <input name="linkUrl" type="url" required defaultValue={selected.linkUrl} placeholder="https://..." className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
+            <input name="linkUrl" type="url" required defaultValue={selected.linkUrl} placeholder="https://..." className="text-gray-600 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
           </div>
 
           <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Texto alternativo</label>
-            <input name="altText" defaultValue={selected.altText ?? ""} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
+            <input name="altText" defaultValue={selected.altText ?? ""} className="text-gray-600 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
           </div>
 
           <div>
             <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Prioridade</label>
-            <input name="prioridade" type="number" defaultValue={selected.prioridade} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
+            <input name="prioridade" type="number" defaultValue={selected.prioridade} className="w-full rounded-xl border text-gray-600 border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
           </div>
 
           <fieldset>
@@ -285,11 +285,11 @@ function AdEditor({
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Inicio</label>
-              <input name="dataInicio" type="date" defaultValue={formatDateInput(selected.dataInicio)} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
+              <input name="dataInicio" type="date" defaultValue={formatDateInput(selected.dataInicio)} className="text-gray-600 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Fim</label>
-              <input name="dataFim" type="date" defaultValue={formatDateInput(selected.dataFim)} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
+              <input name="dataFim" type="date" defaultValue={formatDateInput(selected.dataFim)} className="text-gray-600 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
             </div>
           </div>
 

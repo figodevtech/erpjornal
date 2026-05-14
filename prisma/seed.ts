@@ -56,6 +56,10 @@ const permissoes = [
   { modulo: "midia", acao: "ler", descricao: "Visualizar biblioteca de mídia" },
   { modulo: "midia", acao: "criar", descricao: "Cadastrar ativos de mídia" },
   { modulo: "midia", acao: "editar", descricao: "Editar ativos de mídia" },
+  { modulo: "midia-kit", acao: "ler", descricao: "Visualizar midia kits" },
+  { modulo: "midia-kit", acao: "criar", descricao: "Criar midia kits" },
+  { modulo: "midia-kit", acao: "editar", descricao: "Editar midia kits" },
+  { modulo: "midia-kit", acao: "publicar", descricao: "Publicar midia kits" },
   { modulo: "anuncios", acao: "ler", descricao: "Visualizar anuncios" },
   { modulo: "anuncios", acao: "criar", descricao: "Criar anuncios" },
   { modulo: "anuncios", acao: "editar", descricao: "Editar anuncios" },
@@ -77,6 +81,7 @@ const permissoesPorPerfil: Record<string, string[]> = {
     "fontes:ler", "fontes:criar", "fontes:editar", "fontes:confidencial",
     "curadoria:ler", "curadoria:aprovar", "curadoria:gerir",
     "midia:ler", "midia:criar", "midia:editar",
+    "midia-kit:ler", "midia-kit:criar", "midia-kit:editar", "midia-kit:publicar",
     "podcasts:ler", "podcasts:criar", "podcasts:editar",
   ],
   reporter_erp: [

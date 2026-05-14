@@ -24,6 +24,10 @@ values
   (gen_random_uuid(), 'midia', 'ler', 'Visualizar biblioteca de mídia'),
   (gen_random_uuid(), 'midia', 'criar', 'Cadastrar ativos de mídia'),
   (gen_random_uuid(), 'midia', 'editar', 'Editar ativos de mídia'),
+  (gen_random_uuid(), 'midia-kit', 'ler', 'Visualizar midia kits'),
+  (gen_random_uuid(), 'midia-kit', 'criar', 'Criar midia kits'),
+  (gen_random_uuid(), 'midia-kit', 'editar', 'Editar midia kits'),
+  (gen_random_uuid(), 'midia-kit', 'publicar', 'Publicar midia kits'),
   (gen_random_uuid(), 'anuncios', 'ler', 'Visualizar anuncios'),
   (gen_random_uuid(), 'anuncios', 'criar', 'Criar anuncios'),
   (gen_random_uuid(), 'anuncios', 'editar', 'Editar anuncios'),
@@ -35,6 +39,22 @@ values
   (gen_random_uuid(), 'usuarios', 'gerir', 'Gerenciar acessos')
 on conflict (modulo, acao) do update
 set descricao = excluded.descricao;
+
+insert into public.perfis_permissoes (perfil_id, permissao_id)
+select p.id, perm.id
+from public.perfis p
+cross join public.permissoes perm
+where p.nome = 'admin_erp'
+  and perm.modulo = 'midia-kit'
+on conflict do nothing;
+
+insert into public.perfis_permissoes (perfil_id, permissao_id)
+select p.id, perm.id
+from public.perfis p
+cross join public.permissoes perm
+where p.nome = 'editor_erp'
+  and perm.modulo = 'midia-kit'
+on conflict do nothing;
 
 insert into public.perfis_permissoes (perfil_id, permissao_id)
 select pp.perfil_id, nova.id

@@ -6,8 +6,10 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import {
   MediaKitAboutData,
+  MediaKitAdvertisingData,
   MediaKitContactData,
   MediaKitFeaturesData,
+  MediaKitFreeCanvasData,
   MediaKitHeroData,
   MediaKitStatsData,
   MediaKitTestimonialsData,
@@ -70,11 +72,11 @@ function renderSection(section: MediaKitSectionWithData, theme: MediaKitTheme) {
     case "testimonials":
       return <TestimonialsSection key={key} data={data as MediaKitTestimonialsData} theme={theme} />;
     case "contact":
-      return <ContactSection key={key} data={data} theme={theme} />;
+      return <ContactSection key={key} data={data as MediaKitContactData} theme={theme} />;
     case "advertising":
-      return <AdvertisingSection key={key} data={data} theme={theme} />;
+      return <AdvertisingSection key={key} data={data as MediaKitAdvertisingData} theme={theme} />;
     case "free_canvas":
-      return <FreeCanvasSection key={key} data={data} theme={theme} />;
+      return <FreeCanvasSection key={key} data={data as MediaKitFreeCanvasData} theme={theme} />;
     default:
       return null;
   }

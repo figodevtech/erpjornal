@@ -9,8 +9,6 @@ import Link from "next/link";
 
 export const revalidate = 60;
 
-const HOME_REVISTAS_LIMIT = 80;
-
 export default async function PortalHome() {
   const publicationCutoff = new Date();
   publicationCutoff.setTime(publicationCutoff.getTime() + 60000);
@@ -54,9 +52,13 @@ export default async function PortalHome() {
   const featured = artigos.slice(0, 3);
   const recent = artigos.slice(3);
 
-  const revistasBrutas = await prisma.revista.findMany({
-    orderBy: [{ artigos: { _count: "desc" } }, { dataPublicacao: "desc" }, { createdAt: "desc" }],
-    take: HOME_REVISTAS_LIMIT,
+  const revistaBruta = await prisma.revista.findFirst({
+    where: {
+      artigos: {
+        some: { status: ArticleStatus.publicado },
+      },
+    },
+    orderBy: [{ dataPublicacao: "desc" }, { createdAt: "desc" }],
     select: {
       id: true,
       titulo: true,
@@ -71,35 +73,48 @@ export default async function PortalHome() {
       },
       artigos: {
         where: { status: ArticleStatus.publicado },
-        orderBy: [{ dataPublicacao: "desc" }, { criadoEm: "desc" }],
-        take: 1,
+        orderBy: [{ ordemNaRevista: "asc" }, { dataPublicacao: "desc" }, { criadoEm: "desc" }],
+        take: 8,
         select: {
+          id: true,
+          titulo: true,
+          resumo: true,
+          slug: true,
+          urlImagemOg: true,
           dataPublicacao: true,
           criadoEm: true,
+          categoria: {
+            select: { nome: true },
+          },
+          autor: {
+            select: { nome: true },
+          },
         },
       },
     },
   });
 
-  const revistas: RevistaCarouselItem[] = revistasBrutas
-    .map((revista) => {
-      const ultimoArtigo = revista.artigos[0];
-      return {
-        id: revista.id,
-        titulo: revista.titulo,
-        descricao: revista.descricao,
-        edicao: revista.edicao,
-        dataPublicacao: revista.dataPublicacao?.toISOString() ?? null,
-        capaUrl: revista.capaUrl,
-        totalArtigos: revista._count.artigos,
-        ultimaPublicacaoArtigo: (ultimoArtigo?.dataPublicacao ?? ultimoArtigo?.criadoEm)?.toISOString() ?? null,
-      };
-    })
-    .sort((a, b) => {
-      const aDate = a.ultimaPublicacaoArtigo ?? a.dataPublicacao ?? "";
-      const bDate = b.ultimaPublicacaoArtigo ?? b.dataPublicacao ?? "";
-      return bDate.localeCompare(aDate);
-    });
+  const revista: RevistaCarouselItem | null = revistaBruta
+    ? {
+        id: revistaBruta.id,
+        titulo: revistaBruta.titulo,
+        descricao: revistaBruta.descricao,
+        edicao: revistaBruta.edicao,
+        dataPublicacao: revistaBruta.dataPublicacao?.toISOString() ?? null,
+        capaUrl: revistaBruta.capaUrl,
+        totalArtigos: revistaBruta._count.artigos,
+        artigos: revistaBruta.artigos.map((artigo) => ({
+          id: artigo.id,
+          titulo: artigo.titulo,
+          resumo: artigo.resumo,
+          slug: artigo.slug,
+          urlImagemOg: artigo.urlImagemOg,
+          dataPublicacao: (artigo.dataPublicacao ?? artigo.criadoEm).toISOString(),
+          categoria: artigo.categoria?.nome ?? null,
+          autor: artigo.autor?.nome ?? null,
+        })),
+      }
+    : null;
   const [hasHomeLateralAds, hasHomeFeedAds] = await Promise.all([
     hasActiveAds("home", "lateral"),
     hasActiveAds("home", "feed"),
@@ -108,7 +123,7 @@ export default async function PortalHome() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {revistas.length > 0 && <RevistaCarousel revistas={revistas} />}
+      {revista && <RevistaCarousel revista={revista} />}
 
       <AdSlot pagina="home" posicao="topo" className="mb-10" />
 

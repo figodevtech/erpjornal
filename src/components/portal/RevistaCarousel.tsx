@@ -75,10 +75,10 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
         <div className="min-w-0">
           <p className="text-[11px] font-black uppercase tracking-[0.28em] text-red-400">Revista Gestao</p>
           <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h2 className="text-2xl font-black leading-none tracking-tight md:text-3xl">
-              Edicao {revista.edicao}
+            <h2 className="text-2xl font-black leading-none tracking-tight md:text-2xl">
+              Edição {revista.edicao}
             </h2>
-            <span className="text-base font-medium text-gray-300">/ {formatDate(revista.dataPublicacao)}</span>
+            <span className="text-base font-medium text-gray-300">({formatDate(revista.dataPublicacao)})</span>
           </div>
         </div>
 

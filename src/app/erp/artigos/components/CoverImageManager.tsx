@@ -10,6 +10,7 @@ import {
   recreateArticleCoverImage,
   uploadArticleCoverImage,
 } from "../image-actions";
+import { useConfig } from "../../config/ErpConfigProvider";
 
 type CoverImageManagerProps = {
   value: string;
@@ -32,6 +33,8 @@ export default function CoverImageManager({
 }: CoverImageManagerProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [pendingAction, setPendingAction] = useState<"upload" | "generate" | "recreate" | null>(null);
+  const { config, refreshConfig } = useConfig();
+  const imageQuotaReached = config.imageGenerationUsage >= config.imageGenerationLimit;
 
   const actionContext = {
     title,
@@ -63,6 +66,7 @@ export default function CoverImageManager({
     setPendingAction("generate");
     try {
       const result = await generateArticleCoverImage(actionContext);
+      await refreshConfig();
       onChange(result.url);
       toast.success("Imagem de capa gerada com IA.");
     } catch (error) {
@@ -76,6 +80,7 @@ export default function CoverImageManager({
     setPendingAction("recreate");
     try {
       const result = await recreateArticleCoverImage(actionContext);
+      await refreshConfig();
       onChange(result.url);
       toast.success("Imagem do RSS recriada em alta qualidade.");
     } catch (error) {
@@ -133,23 +138,23 @@ export default function CoverImageManager({
 
         <button
           type="button"
-          disabled={disabled || !title}
+          disabled={disabled || !title || imageQuotaReached}
           onClick={handleGenerate}
           className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-500 disabled:opacity-50"
         >
           <Sparkles className="h-3.5 w-3.5" />
-          {pendingAction === "generate" ? "Gerando..." : "Gerar por IA"}
+          {pendingAction === "generate" ? "Gerando..." : imageQuotaReached ? "Limite de imagens" : "Gerar por IA"}
         </button>
 
         {allowRecreateFromReference && referenceImageUrl && (
           <button
             type="button"
-            disabled={disabled || !title}
+            disabled={disabled || !title || imageQuotaReached}
             onClick={handleRecreate}
             className="flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-amber-800 transition-all hover:bg-amber-100 disabled:opacity-50"
           >
             <RefreshCcw className="h-3.5 w-3.5" />
-            {pendingAction === "recreate" ? "Recriando..." : "Recriar imagem RSS"}
+            {pendingAction === "recreate" ? "Recriando..." : imageQuotaReached ? "Limite de imagens" : "Recriar imagem RSS"}
           </button>
         )}
       </div>

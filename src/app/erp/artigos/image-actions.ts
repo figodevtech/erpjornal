@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 
+import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { exigirAlgumaPermissao } from "@/lib/auth";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
@@ -9,8 +10,6 @@ import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 const ARTICLE_IMAGES_BUCKET = process.env.SUPABASE_ARTICLE_IMAGES_BUCKET || "article-images";
 const OPENAI_IMAGE_GENERATIONS_URL = "https://api.openai.com/v1/images/generations";
 const OPENAI_IMAGE_EDITS_URL = "https://api.openai.com/v1/images/edits";
-const DEFAULT_IMAGE_MODEL = "gpt-image-1.5";
-const DEFAULT_IMAGE_SIZE = "1536x1024";
 
 type ImageActionInput = {
   title: string;
@@ -202,24 +201,28 @@ export async function generateArticleCoverImage(input: ImageActionInput) {
     throw new Error("Informe o titulo da materia antes de gerar a capa.");
   }
 
-  const response = await fetch(OPENAI_IMAGE_GENERATIONS_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${getOpenAIApiKey()}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: process.env.GPT_IMAGE_MODEL || DEFAULT_IMAGE_MODEL,
-      prompt: buildPrompt(input, "create"),
-      size: process.env.GPT_IMAGE_SIZE || DEFAULT_IMAGE_SIZE,
-      quality: "high",
-    }),
-  });
+  const config = await getAppConfigSnapshot();
 
-  const imageBytes = await parseOpenAIImageResponse(response);
-  return {
-    url: await uploadArticleImage(imageBytes, "image/png", input.title),
-  };
+  return withAppQuota("imageGeneration", async () => {
+    const response = await fetch(OPENAI_IMAGE_GENERATIONS_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getOpenAIApiKey()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: config.imageGenerationModel,
+        prompt: buildPrompt(input, "create"),
+        size: config.imageGenerationSize,
+        quality: config.imageGenerationQuality,
+      }),
+    });
+
+    const imageBytes = await parseOpenAIImageResponse(response);
+    return {
+      url: await uploadArticleImage(imageBytes, "image/png", input.title),
+    };
+  });
 }
 
 export async function recreateArticleCoverImage(input: ImageActionInput) {
@@ -247,23 +250,26 @@ export async function recreateArticleCoverImage(input: ImageActionInput) {
 
   const mimeType = sourceResponse.headers.get("content-type") || "image/jpeg";
   const sourceBytes = await sourceResponse.arrayBuffer();
+  const config = await getAppConfigSnapshot();
   const formData = new FormData();
-  formData.append("model", process.env.GPT_IMAGE_MODEL || DEFAULT_IMAGE_MODEL);
+  formData.append("model", config.imageGenerationModel);
   formData.append("prompt", buildPrompt(input, "recreate"));
-  formData.append("size", process.env.GPT_IMAGE_SIZE || DEFAULT_IMAGE_SIZE);
-  formData.append("quality", "high");
+  formData.append("size", config.imageGenerationSize);
+  formData.append("quality", config.imageGenerationQuality);
   formData.append("image", new Blob([sourceBytes], { type: mimeType }), `reference.${extensionFromMimeType(mimeType)}`);
 
-  const response = await fetch(OPENAI_IMAGE_EDITS_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${getOpenAIApiKey()}`,
-    },
-    body: formData,
-  });
+  return withAppQuota("imageGeneration", async () => {
+    const response = await fetch(OPENAI_IMAGE_EDITS_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getOpenAIApiKey()}`,
+      },
+      body: formData,
+    });
 
-  const imageBytes = await parseOpenAIImageResponse(response);
-  return {
-    url: await uploadArticleImage(imageBytes, "image/png", input.title),
-  };
+    const imageBytes = await parseOpenAIImageResponse(response);
+    return {
+      url: await uploadArticleImage(imageBytes, "image/png", input.title),
+    };
+  });
 }

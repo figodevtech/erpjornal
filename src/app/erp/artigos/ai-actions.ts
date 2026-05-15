@@ -1,6 +1,7 @@
 "use server";
 
 import { exigirAlgumaPermissao } from "@/lib/auth";
+import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 
 type RephrasedArticle = {
   new_title: string;
@@ -29,7 +30,6 @@ type OpenAIResponseBody = {
 };
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
-const DEFAULT_MODEL = "gpt-5.4-mini";
 
 const articleRewriteSchema = {
   type: "object",
@@ -120,56 +120,59 @@ export async function rephraseArticleContent(
   await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
 
   const apiKey = getOpenAIApiKey();
-  const model = process.env.GPT_MODEL || DEFAULT_MODEL;
+  const config = await getAppConfigSnapshot();
+  const model = config.articleRewriteModel;
 
-  const response = await fetch(OPENAI_RESPONSES_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      input: [
-        {
-          role: "system",
-          content:
-            "Voce e o assistente editorial da Revista Gestao ERP. Responda sempre em JSON valido, em portugues do Brasil, seguindo exatamente o schema solicitado.",
-        },
-        {
-          role: "user",
-          content: [
-            "Reestruture o texto abaixo para um nivel premium de jornalismo.",
-            "",
-            "Diretrizes:",
-            `- Tom solicitado: ${tone}.`,
-            "- Preserve integralmente as tags HTML existentes e use apenas estrutura HTML editorial basica quando necessario: <h2>, <p>, <strong>, <ul>, <li>, <blockquote>.",
-            "- Melhore fluxo, coesao e impacto editorial.",
-            "- Mantenha fatos, dados, nomes, numeros e rigor tecnico.",
-            "- Nao invente informacoes, fontes ou citacoes.",
-            "",
-            `Titulo original: ${title}`,
-            "Conteudo original:",
-            text,
-          ].join("\n"),
-        },
-      ],
-      text: {
-        format: {
-          type: "json_schema",
-          name: "article_rewrite",
-          strict: true,
-          schema: articleRewriteSchema,
-        },
+  return withAppQuota("articleRewrite", async () => {
+    const response = await fetch(OPENAI_RESPONSES_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
-    }),
+      body: JSON.stringify({
+        model,
+        input: [
+          {
+            role: "system",
+            content:
+              "Voce e o assistente editorial da Revista Gestao ERP. Responda sempre em JSON valido, em portugues do Brasil, seguindo exatamente o schema solicitado.",
+          },
+          {
+            role: "user",
+            content: [
+              "Reestruture o texto abaixo para um nivel premium de jornalismo.",
+              "",
+              "Diretrizes:",
+              `- Tom solicitado: ${tone}.`,
+              "- Preserve integralmente as tags HTML existentes e use apenas estrutura HTML editorial basica quando necessario: <h2>, <p>, <strong>, <ul>, <li>, <blockquote>.",
+              "- Melhore fluxo, coesao e impacto editorial.",
+              "- Mantenha fatos, dados, nomes, numeros e rigor tecnico.",
+              "- Nao invente informacoes, fontes ou citacoes.",
+              "",
+              `Titulo original: ${title}`,
+              "Conteudo original:",
+              text,
+            ].join("\n"),
+          },
+        ],
+        text: {
+          format: {
+            type: "json_schema",
+            name: "article_rewrite",
+            strict: true,
+            schema: articleRewriteSchema,
+          },
+        },
+      }),
+    });
+
+    const body = (await response.json()) as OpenAIResponseBody;
+
+    if (!response.ok) {
+      throw mapOpenAIError(response.status, body.error?.message);
+    }
+
+    return parseRephrasedArticle(extractOpenAIText(body));
   });
-
-  const body = (await response.json()) as OpenAIResponseBody;
-
-  if (!response.ok) {
-    throw mapOpenAIError(response.status, body.error?.message);
-  }
-
-  return parseRephrasedArticle(extractOpenAIText(body));
 }

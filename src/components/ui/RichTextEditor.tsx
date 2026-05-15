@@ -196,7 +196,10 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 export default function RichTextEditor({ content, onChange }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: false,
+        underline: false,
+      }),
       Underline,
       Link.configure({
         openOnClick: false,

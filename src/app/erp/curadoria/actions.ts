@@ -5,12 +5,12 @@ import { revalidatePath } from "next/cache";
 import { gunzipSync, inflateSync } from "node:zlib";
 
 import { exigirPermissao } from "@/lib/auth";
+import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
 import { extractPlainTextFromHtml, sanitizeHtmlForRender } from "@/lib/tts-utils";
 import { ArticleStatus } from "@/lib/types/article-status";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
-const DEFAULT_GPT_MODEL = "gpt-5.4-mini";
 
 type CuradoriaAIResponse = {
   ai_title: string;
@@ -682,43 +682,46 @@ export async function rewriteWithAI(itemId: string) {
   `;
 
   try {
-    const response = await fetch(OPENAI_RESPONSES_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${getOpenAIApiKey()}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: process.env.GPT_MODEL || DEFAULT_GPT_MODEL,
-        input: [
-          {
-            role: "system",
-            content:
-              "Voce e um editor jornalistico brasileiro. Responda somente em JSON valido, seguindo exatamente o schema solicitado.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        text: {
-          format: {
-            type: "json_schema",
-            name: "curadoria_rewrite",
-            strict: true,
-            schema: curadoriaRewriteSchema,
-          },
+    const config = await getAppConfigSnapshot();
+    const parsed = await withAppQuota("articleRewrite", async () => {
+      const response = await fetch(OPENAI_RESPONSES_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${getOpenAIApiKey()}`,
+          "Content-Type": "application/json",
         },
-      }),
+        body: JSON.stringify({
+          model: config.articleRewriteModel,
+          input: [
+            {
+              role: "system",
+              content:
+                "Voce e um editor jornalistico brasileiro. Responda somente em JSON valido, seguindo exatamente o schema solicitado.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+          text: {
+            format: {
+              type: "json_schema",
+              name: "curadoria_rewrite",
+              strict: true,
+              schema: curadoriaRewriteSchema,
+            },
+          },
+        }),
+      });
+
+      const body = (await response.json()) as OpenAIResponseBody;
+
+      if (!response.ok) {
+        throw mapOpenAIError(response.status, body.error?.message);
+      }
+
+      return parseCuradoriaAIResponse(extractOpenAIText(body));
     });
-
-    const body = (await response.json()) as OpenAIResponseBody;
-
-    if (!response.ok) {
-      throw mapOpenAIError(response.status, body.error?.message);
-    }
-
-    const parsed = parseCuradoriaAIResponse(extractOpenAIText(body));
     const finalResponse = {
       ...parsed,
       original_source: item.source.name,

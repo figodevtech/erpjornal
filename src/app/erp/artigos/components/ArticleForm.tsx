@@ -76,6 +76,7 @@ import { ArticlePreview } from "./ArticlePreview";
 import EntityRelationCombobox from "./EntityRelationCombobox";
 import { rephraseArticleContent } from "../ai-actions";
 import CoverImageManager from "./CoverImageManager";
+import { useConfig } from "../../config/ErpConfigProvider";
 
 export default function ArticleForm({
   categories,
@@ -102,6 +103,8 @@ export default function ArticleForm({
   const [previewDevice, setPreviewDevice] = useState<"mobile" | "tablet" | "desktop">("desktop");
   const [selectedCategoryId, setSelectedCategoryId] = useState(initialData?.categoriaId || "");
   const effectiveRevistaId = revistaId ?? initialData?.revistaId ?? null;
+  const { config, refreshConfig } = useConfig();
+  const articleQuotaReached = config.articleRewriteUsage >= config.articleRewriteLimit;
 
   const formatSlug = (val: string) => {
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -120,6 +123,7 @@ export default function ArticleForm({
     setIsAiLoading(true);
     try {
       const result = await rephraseArticleContent(currentTitle, currentText);
+      await refreshConfig();
       
       if (result.new_title) setCurrentTitle(result.new_title);
       if (result.new_text) setCurrentText(result.new_text);
@@ -210,7 +214,7 @@ export default function ArticleForm({
         
         <button
           type="button"
-          disabled={isAiLoading}
+          disabled={isAiLoading || articleQuotaReached}
           onClick={handleAiRefactor}
           className={`group relative flex shrink-0 items-center gap-2 overflow-hidden rounded-xl px-4 py-2 text-xs font-black transition-all ${
             isAiLoading 
@@ -226,7 +230,7 @@ export default function ArticleForm({
           ) : (
             <>
               <Sparkles size={14} className="group-hover:animate-pulse" />
-              Mágica IA
+              {articleQuotaReached ? "Limite IA" : "Mágica IA"}
               <div className="absolute inset-0 bg-white/20 translate-x-full group-hover:translate-x-[-100%] transition-transform duration-1000 skew-x-12" />
             </>
           )}

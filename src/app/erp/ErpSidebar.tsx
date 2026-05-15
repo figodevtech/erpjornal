@@ -17,6 +17,7 @@ import {
   MicVocal,
   Newspaper,
   Rss,
+  Settings,
   Shield,
   UserSquare2,
   Users,
@@ -319,6 +320,14 @@ export default function ErpSidebar({
                 icon={<Shield className="h-4 w-4 text-red-400" />}
                 collapsed={collapsed}
                 active={isActive("/erp/permissoes")}
+                onNavigate={closeMobile}
+              />
+              <SidebarLink
+                href="/erp/configuracoes"
+                label="Configurações"
+                icon={<Settings className="h-4 w-4 text-red-400" />}
+                collapsed={collapsed}
+                active={isActive("/erp/configuracoes")}
                 onNavigate={closeMobile}
               />
             </>

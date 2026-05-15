@@ -93,7 +93,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
 
   return (
     <section className="relative left-1/2 right-1/2 mb-10 w-[calc(100vw-40px)] -translate-x-1/2 overflow-hidden rounded-xl bg-gray-950 px-5 py-4 text-white shadow-sm">
-      <div className="mx-auto w-full max-w-[1440px]">
+      <div className="mx-auto w-full max-w-360">
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-[11px] font-black uppercase tracking-[0.28em] text-red-400">Revista Gestão</p>

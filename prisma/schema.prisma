@@ -123,7 +123,7 @@ model Artigo {
   editor            Usuario?         @relation("ArtigoEditor", fields: [editorId], references: [id])
   revisor           Usuario?         @relation("ArtigoRevisor", fields: [revisorId], references: [id])
   itemRss           ItemRssBruto?    @relation(fields: [itemRssId], references: [id])
-  revista           Revista?         @relation(fields: [revistaId], references: [id], onDelete: SetNull)
+  revista           Revista?         @relation(fields: [revistaId], references: [id], onDelete: Cascade)
   versoes           VersaoArtigo[]
   checagensFato     ChecagemFato[]
   notasFonte        NotaFonte[]

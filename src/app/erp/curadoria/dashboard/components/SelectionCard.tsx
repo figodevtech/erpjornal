@@ -74,7 +74,6 @@ export function SelectionCard({
     try {
       await republishOriginalWithCredits(item.id, categoriaId || undefined);
       toast.success("Conteudo original republicado com creditos.");
-      router.push("/erp/artigos");
       router.refresh();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));

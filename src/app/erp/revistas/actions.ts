@@ -167,18 +167,11 @@ export async function updateRevistaArticleOrder(revistaId: string, articleIds: s
 export async function deleteRevista(id: string) {
   await exigirPermissao("revistas:editar");
 
-  await prisma.$transaction([
-    prisma.artigo.updateMany({
-      where: { revistaId: id },
-      data: {
-        revistaId: null,
-        ordemNaRevista: null,
-      },
-    }),
-    prisma.revista.delete({ where: { id } }),
-  ]);
+  await prisma.revista.delete({ where: { id } });
 
   revalidatePath("/erp/revistas");
+  revalidatePath("/erp/artigos");
+  revalidatePath("/erp/artigos/kanban");
   revalidatePath("/");
   revalidatePath(`/revistas/${id}`);
 }

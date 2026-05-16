@@ -161,7 +161,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
         <div
           ref={scrollerRef}
           onScroll={updateButtons}
-          className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex snap-x snap-mandatory pt-2 gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {revista.artigos.map((artigo) => (
             <Link
@@ -176,7 +176,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
                     alt={artigo.titulo}
                     fill
                     sizes="(max-width: 640px) 238px, 276px"
-                    className="object-cover transition duration-500 group-hover:scale-105"
+                    className="object-cover transition duration-500"
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center text-sm font-black uppercase tracking-widest text-gray-600">

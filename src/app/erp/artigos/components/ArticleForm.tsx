@@ -41,11 +41,6 @@ interface Politician {
 interface ArticleFormProps {
   categories: Category[];
   politicians: Politician[];
-  revistas: Array<{
-    id: string;
-    titulo: string;
-    edicao: string;
-  }>;
   canPublish: boolean;
   canEditLegal: boolean;
   initialData?: InitialData | null;
@@ -77,11 +72,11 @@ import EntityRelationCombobox from "./EntityRelationCombobox";
 import { rephraseArticleContent } from "../ai-actions";
 import CoverImageManager from "./CoverImageManager";
 import { useConfig } from "../../config/ErpConfigProvider";
+import DeleteArticleButton from "./DeleteArticleButton";
 
 export default function ArticleForm({
   categories,
   politicians,
-  revistas,
   canPublish,
   canEditLegal,
   initialData,
@@ -240,6 +235,7 @@ export default function ArticleForm({
       <form action={handleAction} className={`transition-all duration-500 ${viewMode === "preview" ? "opacity-0 invisible h-0" : ""}`}>
         {/* Campo Oculto para UPDATE Dinâmico Controlado por React API Routes */}
         {initialData?.id && <input type="hidden" name="id" value={initialData.id} />}
+        {revistaId && <input type="hidden" name="revistaId" value={revistaId} />}
         {effectiveRevistaId && revistaTitulo && (
           <div className="mb-6 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-medium text-indigo-800">
             Artigo vinculado à revista: {revistaTitulo}
@@ -348,6 +344,19 @@ export default function ArticleForm({
                 
                 <div className="space-y-5">
                   <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <CustomSelect
+                    name="status"
+                    value={statusInput}
+                    onChange={setStatusInput}
+                    options={[
+                      { value: "rascunho", label: "Salvar como Rascunho" },
+                      { value: "em_revisao", label: "Enviar para Revisão" },
+                      ...(canPublish ? [{ value: "publicado", label: "Publicar Oficialmente" }] : []),
+                    ]}
+                  />
+                </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
                     <CustomSelect
                       name="categoriaId"
@@ -361,38 +370,7 @@ export default function ArticleForm({
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Revista</label>
-                    <CustomSelect
-                      name="revistaId"
-                      defaultValue={effectiveRevistaId ?? ""}
-                      placeholder="Sem revista"
-                      options={[
-                        { value: "", label: "Sem revista" },
-                        ...revistas.map((revista) => ({
-                          value: revista.id,
-                          label: `Edição ${revista.edicao} - ${revista.titulo}`,
-                        })),
-                      ]}
-                    />
-                    <p className="mt-2 text-xs text-gray-500">
-                      Vincule esta matéria a uma edição já cadastrada, se ela fizer parte de uma revista.
-                    </p>
-                  </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Status do Workflow</label>
-                  <CustomSelect
-                    name="status"
-                    value={statusInput}
-                    onChange={setStatusInput}
-                    options={[
-                      { value: "rascunho", label: "Salvar como Rascunho" },
-                      { value: "em_revisao", label: "Enviar para Revisão" },
-                      ...(canPublish ? [{ value: "publicado", label: "Publicar Oficialmente" }] : []),
-                    ]}
-                  />
-                </div>
+                
 
                 {statusInput === "publicado" && canPublish && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
@@ -559,7 +537,7 @@ export default function ArticleForm({
                 </div>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-200/80">
+              <div className="mt-8 flex flex-col gap-3 border-t border-gray-200/80 pt-6">
                 <button 
                   type="submit" 
                   disabled={isPending}
@@ -575,6 +553,9 @@ export default function ArticleForm({
                     </span>
                   ) : (initialData?.id ? "Atualizar Matéria" : "Salvar Matéria")}
                 </button>
+                {initialData?.id && (
+                  <DeleteArticleButton articleId={initialData.id} title={currentTitle || initialData.titulo} />
+                )}
               </div>
             </div>
           )}

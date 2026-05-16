@@ -43,6 +43,28 @@ export default function CoverImageManager({
     referenceImageUrl,
   };
 
+  function getMissingAIContextFields() {
+    const missing: string[] = [];
+    const bodyText = (corpoTexto || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/gi, " ").trim();
+
+    if (!title.trim()) missing.push("titulo");
+    if (!resumo?.trim()) missing.push("descricao/resumo");
+    if (!bodyText) missing.push("corpo da materia");
+
+    return missing;
+  }
+
+  function validateAIContext() {
+    const missing = getMissingAIContextFields();
+
+    if (missing.length === 0) return true;
+
+    toast.warning("Preencha as informacoes da materia antes de gerar a imagem.", {
+      description: `Campos obrigatorios: ${missing.join(", ")}.`,
+    });
+    return false;
+  }
+
   async function handleUpload(file?: File) {
     if (!file) return;
 
@@ -63,6 +85,8 @@ export default function CoverImageManager({
   }
 
   async function handleGenerate() {
+    if (!validateAIContext()) return;
+
     setPendingAction("generate");
     try {
       const result = await generateArticleCoverImage(actionContext);
@@ -77,6 +101,8 @@ export default function CoverImageManager({
   }
 
   async function handleRecreate() {
+    if (!validateAIContext()) return;
+
     setPendingAction("recreate");
     try {
       const result = await recreateArticleCoverImage(actionContext);
@@ -138,7 +164,7 @@ export default function CoverImageManager({
 
         <button
           type="button"
-          disabled={disabled || !title || imageQuotaReached}
+          disabled={disabled || imageQuotaReached}
           onClick={handleGenerate}
           className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-white shadow-lg shadow-indigo-500/20 transition-all hover:bg-indigo-500 disabled:opacity-50"
         >
@@ -149,7 +175,7 @@ export default function CoverImageManager({
         {allowRecreateFromReference && referenceImageUrl && (
           <button
             type="button"
-            disabled={disabled || !title || imageQuotaReached}
+            disabled={disabled || imageQuotaReached}
             onClick={handleRecreate}
             className="flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-amber-800 transition-all hover:bg-amber-100 disabled:opacity-50"
           >

@@ -512,15 +512,39 @@ function buildOriginalContentHtml(item: {
   linkOriginal: string;
   dataPublicacao: Date;
 }) {
-  const contentHtml =
-    normalizeArticleHtml(item.description || "") ||
-    "<p>O feed original nao disponibilizou o corpo integral da noticia para republicacao.</p>";
+  const contentHtml = normalizeArticleHtml(item.description || "");
+
+  if (!contentHtml) {
+    return "";
+  }
 
   return `${contentHtml}
     <hr />
     <p><strong>Credito da fonte:</strong> ${escapeHtml(item.source.name)}</p>
     <p><strong>Link original:</strong> <a href="${escapeHtml(item.linkOriginal)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.linkOriginal)}</a></p>
     <p><strong>Data da publicacao original:</strong> ${item.dataPublicacao.toLocaleDateString("pt-BR")} as ${item.dataPublicacao.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>`;
+}
+
+function validateRepublishableArticle(input: {
+  title: string | null;
+  resumo: string | null;
+  bodyHtml: string | null;
+}) {
+  const title = input.title?.trim() || "";
+  const resumo = input.resumo?.trim() || "";
+  const bodyText = extractPlainTextFromHtml(input.bodyHtml || "").trim();
+
+  if (!title || title.toLowerCase() === "sem titulo") {
+    throw new Error("Este item nao esta apto para republicacao: titulo ausente.");
+  }
+
+  if (!resumo) {
+    throw new Error("Este item nao esta apto para republicacao: resumo ausente.");
+  }
+
+  if (!bodyText) {
+    throw new Error("Este item nao esta apto para republicacao: corpo da materia ausente.");
+  }
 }
 
 export async function harvestFeed(sourceId: string, limit: number = 10) {
@@ -774,6 +798,11 @@ export async function approveAndPublish(
     (finalData.categoriaId
       ? await prisma.categoria.findUnique({ where: { id: finalData.categoriaId } })
       : null) || (await prisma.categoria.findFirst());
+  validateRepublishableArticle({
+    title: finalData.titulo,
+    resumo: finalData.resumo,
+    bodyHtml: finalData.corpoTexto,
+  });
   const slug = await createUniqueSlug(finalData.titulo);
 
   const artigo = await prisma.artigo.create({
@@ -789,8 +818,8 @@ export async function approveAndPublish(
       ehPremium: false,
       canaisPublicacao: ["portal"],
       urlImagemOg: finalData.urlImagemOg || item.thumbnail,
-      urlFonte: item.linkOriginal,
-      autorExterno: item.source.name,
+      urlFonte: null,
+      autorExterno: null,
       revisorHumano:
         (session.user as SessionUserWithName).name || (session.user as SessionUserWithName).nome || "Editor",
       itemRssId: item.id,
@@ -861,19 +890,26 @@ export async function republishOriginalWithCredits(
   const resumo =
     plainText.length > 220
       ? `${plainText.slice(0, 217).trim()}...`
-      : plainText || "Conteudo republicado com creditos da fonte original.";
+      : plainText.trim();
+  const corpoTexto = buildOriginalContentHtml({
+    description,
+    source: item.source,
+    linkOriginal: item.linkOriginal,
+    dataPublicacao: item.dataPublicacao,
+  });
+
+  validateRepublishableArticle({
+    title: item.tituloOriginal,
+    resumo,
+    bodyHtml: corpoTexto,
+  });
 
   const artigo = await prisma.artigo.create({
     data: {
       titulo: item.tituloOriginal,
       slug,
       resumo,
-      corpoTexto: buildOriginalContentHtml({
-        description,
-        source: item.source,
-        linkOriginal: item.linkOriginal,
-        dataPublicacao: item.dataPublicacao,
-      }),
+      corpoTexto,
       categoriaId: category?.id,
       autorId: session.user.id,
       status: ArticleStatus.publicado,

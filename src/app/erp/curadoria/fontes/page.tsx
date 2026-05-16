@@ -95,7 +95,7 @@ export default async function FontesCuradoriaPage() {
               <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-6">
                 <div className="flex flex-col">
                   <span className="mb-1 text-[9px] font-black uppercase tracking-widest text-gray-400">
-                    Status da Pulsacao
+                    Status da Pulsação
                   </span>
                   <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-tight text-gray-600">
                     <RefreshCcw className={`h-3.5 w-3.5 text-emerald-500 ${fonte.lastHarvest ? "" : "animate-spin"}`} />

@@ -65,11 +65,6 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
     orderBy: { nome: "asc" }
   });
 
-  const revistas = await prisma.revista.findMany({
-    select: { id: true, titulo: true, edicao: true },
-    orderBy: [{ dataPublicacao: "desc" }, { createdAt: "desc" }],
-  });
-
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center gap-4">
@@ -91,7 +86,6 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
       <ArticleForm
         categories={categories}
         politicians={politicians}
-        revistas={revistas}
         canPublish={temPermissao(session, "artigos:publicar")}
         canEditLegal={temPermissao(session, "artigos:editar")}
         initialData={artigo}

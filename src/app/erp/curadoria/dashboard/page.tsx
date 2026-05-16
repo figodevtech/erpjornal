@@ -156,7 +156,7 @@ export default async function CuradoriaDashboardPage({
                   <th className="px-6 py-4">Fonte</th>
                   <th className="px-6 py-4">Revisor</th>
                   <th className="px-6 py-4">Data</th>
-                  <th className="px-6 py-4 text-right">Acoes</th>
+                  <th className="px-6 py-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">

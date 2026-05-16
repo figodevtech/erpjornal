@@ -23,7 +23,7 @@ export async function saveArticle(formData: FormData) {
   const canaisPublicacao = formData.getAll("canaisPublicacao") as string[];
   const urlFonte = (formData.get("urlFonte") as string) || null;
   const autorExterno = (formData.get("autorExterno") as string) || null;
-  const revistaId = (formData.get("revistaId") as string) || null;
+  const requestedRevistaId = (formData.get("revistaId") as string) || null;
   const urlImagemOg = (formData.get("urlImagemOg") as string) || null;
 
   if (!titulo || !slug || !corpoTexto) {
@@ -70,7 +70,6 @@ export async function saveArticle(formData: FormData) {
     canaisPublicacao,
     urlFonte,
     autorExterno,
-    revistaId,
     urlImagemOg,
   };
 
@@ -112,17 +111,14 @@ export async function saveArticle(formData: FormData) {
       finalPublishDate = null;
     }
 
-    const shouldAssignMagazineOrder = revistaId && existing.revistaId !== revistaId;
-    const ordemNaRevista = shouldAssignMagazineOrder
-      ? (await prisma.artigo.count({ where: { revistaId } })) + 1
-      : revistaId
-        ? existing.ordemNaRevista
-        : null;
+    const revistaId = existing.revistaId;
+    const ordemNaRevista = revistaId ? existing.ordemNaRevista : null;
 
     await prisma.artigo.update({
       where: { id },
       data: {
         ...data,
+        revistaId,
         dataPublicacao: finalPublishDate,
         ordemNaRevista,
         checagensFato: {
@@ -152,11 +148,13 @@ export async function saveArticle(formData: FormData) {
       },
     });
   } else {
+    const revistaId = requestedRevistaId;
     const ordemNaRevista = revistaId ? (await prisma.artigo.count({ where: { revistaId } })) + 1 : null;
 
     const novoArtigo = await prisma.artigo.create({
       data: {
         ...data,
+        revistaId,
         dataPublicacao: finalStatus === "publicado" ? dataPublicacao || new Date() : null,
         autorId: session.user.id,
         ordemNaRevista,
@@ -184,16 +182,17 @@ export async function saveArticle(formData: FormData) {
   }
 
   revalidatePath("/erp/artigos");
-  if (revistaId) {
-    revalidatePath(`/erp/revistas/${revistaId}`);
+  const finalRevistaId = id ? previousRevistaId : requestedRevistaId;
+  if (finalRevistaId) {
+    revalidatePath(`/erp/revistas/${finalRevistaId}`);
   }
-  if (previousRevistaId && previousRevistaId !== revistaId) {
+  if (previousRevistaId && previousRevistaId !== finalRevistaId) {
     revalidatePath(`/erp/revistas/${previousRevistaId}`);
   }
   revalidatePath("/");
   revalidatePath("/noticia/[slug]", "page");
   revalidatePath("/categoria/[slug]", "page");
-  redirect(revistaId ? `/erp/revistas/${revistaId}` : "/erp/artigos");
+  redirect(finalRevistaId ? `/erp/revistas/${finalRevistaId}` : "/erp/artigos");
 }
 
 export async function updateArticleStatus(id: string, newStatus: ArticleStatus) {
@@ -257,6 +256,52 @@ export async function updateArticleStatus(id: string, newStatus: ArticleStatus) 
   revalidatePath("/");
   revalidatePath("/noticia/[slug]", "page");
   revalidatePath("/categoria/[slug]", "page");
+}
+
+export async function deleteArticle(id: string) {
+  const session = await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
+
+  const artigo = await prisma.artigo.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      autorId: true,
+      revistaId: true,
+      slug: true,
+    },
+  });
+
+  if (!artigo) {
+    throw new Error("Artigo nao encontrado.");
+  }
+
+  const podeEditarTodos = temPermissao(session, "artigos:editar_todos");
+  if (!podeEditarTodos && artigo.autorId !== session.user.id) {
+    throw new Error("Voce nao tem permissao para excluir este artigo.");
+  }
+
+  await prisma.artigo.delete({
+    where: { id },
+  });
+
+  await prisma.logAcao.create({
+    data: {
+      usuarioId: session.user.id,
+      acao: "EXCLUSAO_ARTIGO",
+      artigoId: null,
+    },
+  });
+
+  revalidatePath("/erp/artigos");
+  revalidatePath("/erp/artigos/kanban");
+  if (artigo.revistaId) {
+    revalidatePath(`/erp/revistas/${artigo.revistaId}`);
+  }
+  revalidatePath("/");
+  revalidatePath("/noticia/[slug]", "page");
+  revalidatePath("/categoria/[slug]", "page");
+
+  return { success: true, revistaId: artigo.revistaId };
 }
 
 export async function updateArticleAuthor(artigoId: string, newAuthorId: string) {

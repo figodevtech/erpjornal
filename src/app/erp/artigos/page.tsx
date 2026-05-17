@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
 
 import ArticleFilters from "./components/ArticleFilters";
+import ArticleActionsDropdown from "./components/ArticleActionsDropdown";
 
 interface PageProps {
   searchParams: Promise<{ search?: string; status?: string }>;
@@ -20,7 +21,9 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
   const podeEditarFluxo =
     temPermissao(session, "artigos:editar") || temPermissao(session, "artigos:publicar");
 
-  const whereClause: Prisma.ArtigoWhereInput = {};
+  const whereClause: Prisma.ArtigoWhereInput = {
+    revistaId: null,
+  };
   if (search) {
     whereClause.titulo = { contains: search, mode: "insensitive" };
   }
@@ -71,12 +74,13 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Autor</th>
                 <th className="px-6 py-4 font-semibold uppercase tracking-wider">Data</th>
+                <th className="px-6 py-4 text-right font-semibold uppercase tracking-wider">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {artigos.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center font-medium text-gray-500">
+                  <td colSpan={5} className="px-6 py-10 text-center font-medium text-gray-500">
                     Nenhum artigo encontrado.
                   </td>
                 </tr>
@@ -109,6 +113,9 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                     </td>
                     <td className="px-6 py-4 text-gray-600">{art.autor?.nome || "-"}</td>
                     <td className="px-6 py-4 text-gray-600">{art.criadoEm.toLocaleDateString("pt-BR")}</td>
+                    <td className="px-6 py-4">
+                      <ArticleActionsDropdown articleId={art.id} title={art.titulo} canEdit={podeEditarFluxo} />
+                    </td>
                   </tr>
                 ))
               )}

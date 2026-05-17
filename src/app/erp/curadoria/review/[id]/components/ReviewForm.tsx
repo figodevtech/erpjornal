@@ -20,6 +20,7 @@ import {
   republishOriginalWithCredits,
   rewriteWithAI,
 } from "../../../actions";
+import { useConfig } from "../../../../config/ErpConfigProvider";
 
 type ReviewItem = {
   id: string;
@@ -66,12 +67,15 @@ export function ReviewForm({
   const [corpo, setCorpo] = useState(aiData?.ai_body || "");
   const [imagemCapa, setImagemCapa] = useState(item.thumbnail || "");
   const [categoriaId, setCategoriaId] = useState("");
+  const { config, refreshConfig } = useConfig();
+  const articleQuotaReached = config.articleRewriteUsage >= config.articleRewriteLimit;
 
   async function handleAI() {
     setLoadingIA(true);
     try {
       const res = await rewriteWithAI(item.id);
       if (res.success) {
+        await refreshConfig();
         setTitulo(res.aiResponse.ai_title);
         setResumo(res.aiResponse.ai_lead);
         setCorpo(res.aiResponse.ai_body);
@@ -154,6 +158,8 @@ export function ReviewForm({
             src={item.thumbnail}
             alt="Preview do RSS"
             fill
+            priority
+            loading="eager"
             sizes="(max-width: 768px) 100vw, 900px"
             className="object-cover shadow-inner transition-transform duration-700 group-hover:scale-105"
           />
@@ -180,10 +186,10 @@ export function ReviewForm({
         <button
           type="button"
           onClick={handleAI}
-          disabled={loadingIA}
+          disabled={loadingIA || articleQuotaReached}
           className="relative z-10 mt-6 flex items-center gap-3 rounded-2xl bg-white px-8 py-5 text-xs font-black uppercase tracking-widest text-gray-900 shadow-lg transition-all hover:bg-indigo-500 hover:text-white active:scale-95 disabled:opacity-50 md:mt-0"
         >
-          {loadingIA ? "Gerando..." : "Reescrever com IA"}
+          {loadingIA ? "Gerando..." : articleQuotaReached ? "Limite IA" : "Reescrever com IA"}
           <RotateCcw className={`h-4 w-4 ${loadingIA ? "animate-spin" : ""}`} />
         </button>
       </div>

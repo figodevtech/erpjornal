@@ -74,6 +74,11 @@ export default async function NoticiaPage({ params }: PageProps) {
     include: {
       autor: true,
       categoria: true,
+      itemRss: {
+        include: {
+          source: true,
+        },
+      },
     }
   });
 
@@ -92,6 +97,10 @@ export default async function NoticiaPage({ params }: PageProps) {
   const adPageType = artigo.revistaId ? "revista" : "noticia";
   const isRevistaArticle = Boolean(artigo.revistaId);
   const hasLateralAds = await hasActiveAds(adPageType, "lateral");
+  const shouldCreditRssImage =
+    Boolean(artigo.urlImagemOg) &&
+    Boolean(artigo.itemRss?.thumbnail) &&
+    artigo.urlImagemOg === artigo.itemRss?.thumbnail;
 
   return (
     <div className="w-full bg-background pb-20 overflow-x-hidden transition-colors duration-300">
@@ -216,20 +225,27 @@ export default async function NoticiaPage({ params }: PageProps) {
         )}
 
         {/* Hero Image */}
-        <figure className="w-full aspect-video md:aspect-[21/9] bg-gray-100 dark:bg-gray-900 mb-12 relative border border-gray-300 dark:border-gray-800 overflow-hidden group transition-all">
-          {artigo.urlImagemOg ? (
-            <Image 
-              src={artigo.urlImagemOg} 
-              alt={artigo.titulo}
-              fill
-              sizes="(max-width: 768px) 100vw, 1000px"
-              className="object-cover group-hover:scale-105 transition-transform duration-1000"
-              priority
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gray-100/50 dark:bg-gray-900/50 flex items-center justify-center text-gray-400 dark:text-gray-700">
-               <svg className="w-16 h-16 transform group-hover:scale-110 transition-transform duration-500" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-            </div>
+        <figure className="mb-12 w-full">
+          <div className="group relative aspect-video overflow-hidden border border-gray-300 bg-gray-100 transition-all dark:border-gray-800 dark:bg-gray-900 md:aspect-[21/9]">
+            {artigo.urlImagemOg ? (
+              <Image 
+                src={artigo.urlImagemOg} 
+                alt={artigo.titulo}
+                fill
+                sizes="(max-width: 768px) 100vw, 1000px"
+                className="object-cover transition-transform duration-1000 group-hover:scale-105"
+                priority
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50 text-gray-400 dark:bg-gray-900/50 dark:text-gray-700">
+                 <svg className="w-16 h-16 transform group-hover:scale-110 transition-transform duration-500" fill="currentColor" viewBox="0 0 24 24"><path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+              </div>
+            )}
+          </div>
+          {shouldCreditRssImage && (
+            <figcaption className="mt-2 font-sans text-[11px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+              Imagem: {artigo.itemRss?.source.name}
+            </figcaption>
           )}
         </figure>
 

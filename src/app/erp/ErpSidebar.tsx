@@ -17,6 +17,7 @@ import {
   MicVocal,
   Newspaper,
   Rss,
+  Settings,
   Shield,
   UserSquare2,
   Users,
@@ -159,7 +160,11 @@ export default function ErpSidebar({
     >
       <div className="flex h-full flex-col">
         <div className={`mb-4 flex items-center ${collapsed ? "justify-center" : "justify-between gap-3"}`}>
+<<<<<<< HEAD
           {!collapsed && <h2 className="text-2xl font-black tracking-tight text-nowrap">Gestão ERP</h2>}
+=======
+          {!collapsed && <h2 className="text-2xl font-black tracking-tight text-nowrap">Revista Gestão</h2>}
+>>>>>>> 63e146afabce1344c970ed093e496075e24bb8fc
           <button
             type="button"
             onClick={closeMobile}
@@ -319,6 +324,14 @@ export default function ErpSidebar({
                 icon={<Shield className="h-4 w-4 text-red-400" />}
                 collapsed={collapsed}
                 active={isActive("/erp/permissoes")}
+                onNavigate={closeMobile}
+              />
+              <SidebarLink
+                href="/erp/configuracoes"
+                label="Configurações"
+                icon={<Settings className="h-4 w-4 text-red-400" />}
+                collapsed={collapsed}
+                active={isActive("/erp/configuracoes")}
                 onNavigate={closeMobile}
               />
             </>

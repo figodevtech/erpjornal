@@ -12,6 +12,9 @@ export default async function ArticlesKanbanPage() {
   const podeCriar = temPermissao(session, "artigos:criar");
 
   const artigos = await prisma.artigo.findMany({
+    where: {
+      revistaId: null,
+    },
     include: {
       autor: true,
       categoria: true,

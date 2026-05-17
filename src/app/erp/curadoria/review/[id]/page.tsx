@@ -64,7 +64,7 @@ export default async function CuradoriaReviewPage({
           <div className="sticky top-8 rounded-[32px] border border-gray-200 bg-gray-50 p-8">
             <h3 className="mb-6 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-gray-400">
               <Globe className="h-4 w-4" />
-              Materia Original
+              Matéria Original
             </h3>
 
             <div className="space-y-4">

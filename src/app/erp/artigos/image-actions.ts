@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 
+import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { exigirAlgumaPermissao } from "@/lib/auth";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
@@ -9,8 +10,6 @@ import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 const ARTICLE_IMAGES_BUCKET = process.env.SUPABASE_ARTICLE_IMAGES_BUCKET || "article-images";
 const OPENAI_IMAGE_GENERATIONS_URL = "https://api.openai.com/v1/images/generations";
 const OPENAI_IMAGE_EDITS_URL = "https://api.openai.com/v1/images/edits";
-const DEFAULT_IMAGE_MODEL = "gpt-image-1.5";
-const DEFAULT_IMAGE_SIZE = "1536x1024";
 
 type ImageActionInput = {
   title: string;
@@ -93,8 +92,18 @@ async function uploadArticleImage(bytes: Buffer, mimeType: string, title: string
   return data.publicUrl;
 }
 
-function buildPrompt(input: ImageActionInput, mode: "create" | "recreate") {
+function buildArticleContext(input: ImageActionInput) {
   const bodyText = extractPlainTextFromHtml(input.corpoTexto || "").slice(0, 5000);
+
+  return {
+    title: input.title,
+    resumo: input.resumo || "Sem resumo informado.",
+    bodyText: bodyText || "Sem corpo informado. Use o titulo e o resumo como base principal.",
+  };
+}
+
+function buildCreatePrompt(input: ImageActionInput) {
+  const article = buildArticleContext(input);
 
   return `Voce e uma IA especializada em criacao de imagens editoriais para um portal de noticias serio, profissional e confiavel.
 
@@ -112,8 +121,6 @@ Antes de criar a imagem, identifique internamente:
 - O conflito ou problema central;
 - Os personagens, instituicoes ou setores envolvidos;
 - O tom da noticia: crise, analise, explicacao, alerta, investigacao, economia, politica publica ou impacto social.
-
-${mode === "recreate" ? "Use a imagem de referencia apenas como insumo visual. Recrie a capa com composicao original, mais limpa, mais profissional e com melhor qualidade editorial, mantendo o tema central quando fizer sentido." : ""}
 
 Regras visuais:
 - Nao criar uma montagem poluida com muitos elementos.
@@ -151,13 +158,68 @@ Formato:
 Agora gere uma imagem de capa com base na materia abaixo:
 
 TITULO:
-${input.title}
+${article.title}
 
 RESUMO:
-${input.resumo || "Sem resumo informado."}
+${article.resumo}
 
 CORPO DA MATERIA:
-${bodyText || "Sem corpo informado. Use o titulo e o resumo como base principal."}`;
+${article.bodyText}`;
+}
+
+function buildRecreatePrompt(input: ImageActionInput) {
+  const article = buildArticleContext(input);
+
+  return `Analise cuidadosamente a imagem enviada como referencia e tambem leia todos os textos fornecidos junto com ela.
+
+Os textos sao retirados de uma noticia e devem ser usados como contexto principal para entender o significado da imagem, os personagens, objetos, locais, simbolos, acontecimentos e figuras mencionadas.
+
+A imagem enviada esta em baixa qualidade, mas preciso que voce recrie a mesma arte em qualidade profissional, mantendo a composicao original o mais fiel possivel.
+
+Antes de recriar a imagem, siga esta analise:
+
+1. Leia a noticia completa, incluindo titulo, descricao, resumo e corpo do texto.
+2. Identifique quais pessoas, figuras publicas, objetos, locais, instituicoes, simbolos ou situacoes sao mencionados na noticia.
+3. Compare esses elementos com a imagem de referencia.
+4. Se a imagem representar alguma figura, personagem, objeto ou situacao citada na noticia, preserve essa relacao visual.
+5. Caso algum detalhe da imagem esteja ilegivel ou pouco claro, use o conteudo da noticia para reconstruir esse elemento de forma coerente.
+6. Nao invente personagens, objetos ou elementos que nao estejam na imagem original ou que nao facam sentido com a noticia.
+7. Se houver duvida sobre algum elemento visual, priorize a fidelidade a imagem original e use a noticia apenas como apoio contextual.
+
+Requisitos principais da recriacao:
+
+- Preservar fielmente todos os elementos visuais importantes da imagem original;
+- Manter o mesmo enquadramento, composicao, posicao dos objetos, proporcoes e perspectiva;
+- Recriar cores, iluminacao, sombras, contraste e estilo visual da forma mais parecida possivel;
+- Corrigir baixa resolucao, pixelizacao, borroes, ruidos e falhas de compressao;
+- Melhorar nitidez, definicao, acabamento e qualidade geral;
+- Manter a imagem com aparencia profissional, limpa e bem finalizada;
+- Nao alterar o conceito original;
+- Nao adicionar elementos desnecessarios;
+- Nao remover elementos importantes;
+- Nao mudar o sentido jornalistico da imagem;
+- Garantir que a imagem final continue compativel com o conteudo da noticia;
+- Se houver pessoas ou figuras mencionadas na noticia e representadas na imagem, recria-las de forma coerente, respeitando o contexto;
+- Se houver texto na imagem, recriar exatamente como aparece, mantendo fonte, posicao, tamanho, cor e alinhamento o mais proximo possivel;
+- Se algum texto estiver ilegivel, reconstruir apenas se for possivel deduzir com seguranca pelo contexto da noticia e pela composicao visual;
+- Se nao for possivel deduzir, manter o espaco visual coerente sem inventar informacoes falsas.
+
+Objetivo final:
+
+Transformar a imagem de baixa qualidade em uma versao nitida, moderna, profissional e fiel a arte original, usando o conteudo da noticia apenas para reforcar a coerencia dos elementos visuais, principalmente quando houver figuras, pessoas, objetos ou situacoes mencionadas no texto.
+
+A imagem final deve parecer uma versao em alta definicao da arte original, preservando sua intencao, seu contexto jornalistico e sua composicao visual.
+
+Contexto da noticia:
+
+TITULO:
+${article.title}
+
+DESCRICAO / RESUMO:
+${article.resumo}
+
+CORPO DA MATERIA:
+${article.bodyText}`;
 }
 
 async function parseOpenAIImageResponse(response: Response) {
@@ -202,24 +264,28 @@ export async function generateArticleCoverImage(input: ImageActionInput) {
     throw new Error("Informe o titulo da materia antes de gerar a capa.");
   }
 
-  const response = await fetch(OPENAI_IMAGE_GENERATIONS_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${getOpenAIApiKey()}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: process.env.GPT_IMAGE_MODEL || DEFAULT_IMAGE_MODEL,
-      prompt: buildPrompt(input, "create"),
-      size: process.env.GPT_IMAGE_SIZE || DEFAULT_IMAGE_SIZE,
-      quality: "high",
-    }),
-  });
+  const config = await getAppConfigSnapshot();
 
-  const imageBytes = await parseOpenAIImageResponse(response);
-  return {
-    url: await uploadArticleImage(imageBytes, "image/png", input.title),
-  };
+  return withAppQuota("imageGeneration", async () => {
+    const response = await fetch(OPENAI_IMAGE_GENERATIONS_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getOpenAIApiKey()}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: config.imageGenerationModel,
+        prompt: buildCreatePrompt(input),
+        size: config.imageGenerationSize,
+        quality: config.imageGenerationQuality,
+      }),
+    });
+
+    const imageBytes = await parseOpenAIImageResponse(response);
+    return {
+      url: await uploadArticleImage(imageBytes, "image/png", input.title),
+    };
+  });
 }
 
 export async function recreateArticleCoverImage(input: ImageActionInput) {
@@ -247,23 +313,26 @@ export async function recreateArticleCoverImage(input: ImageActionInput) {
 
   const mimeType = sourceResponse.headers.get("content-type") || "image/jpeg";
   const sourceBytes = await sourceResponse.arrayBuffer();
+  const config = await getAppConfigSnapshot();
   const formData = new FormData();
-  formData.append("model", process.env.GPT_IMAGE_MODEL || DEFAULT_IMAGE_MODEL);
-  formData.append("prompt", buildPrompt(input, "recreate"));
-  formData.append("size", process.env.GPT_IMAGE_SIZE || DEFAULT_IMAGE_SIZE);
-  formData.append("quality", "high");
+  formData.append("model", config.imageGenerationModel);
+  formData.append("prompt", buildRecreatePrompt(input));
+  formData.append("size", config.imageGenerationSize);
+  formData.append("quality", config.imageGenerationQuality);
   formData.append("image", new Blob([sourceBytes], { type: mimeType }), `reference.${extensionFromMimeType(mimeType)}`);
 
-  const response = await fetch(OPENAI_IMAGE_EDITS_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${getOpenAIApiKey()}`,
-    },
-    body: formData,
-  });
+  return withAppQuota("imageGeneration", async () => {
+    const response = await fetch(OPENAI_IMAGE_EDITS_URL, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getOpenAIApiKey()}`,
+      },
+      body: formData,
+    });
 
-  const imageBytes = await parseOpenAIImageResponse(response);
-  return {
-    url: await uploadArticleImage(imageBytes, "image/png", input.title),
-  };
+    const imageBytes = await parseOpenAIImageResponse(response);
+    return {
+      url: await uploadArticleImage(imageBytes, "image/png", input.title),
+    };
+  });
 }

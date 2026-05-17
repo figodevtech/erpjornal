@@ -23,67 +23,67 @@ enum StatusArtigo {
 }
 
 model Usuario {
-  id                String               @id @db.Uuid
-  nome              String?
-  email             String?              @unique
-  tipoConta         String               @default("portal") @map("tipo_conta")
-  status            String               @default("ativo")
-  avatarUrl         String?              @map("avatar_url")
-  criadoEm          DateTime             @default(now()) @map("criado_em")
-  atualizadoEm      DateTime             @updatedAt @map("atualizado_em")
-  perfis            UsuarioPerfil[]
-  logsAcao          LogAcao[]
-  artigosAutor      Artigo[]             @relation("ArtigoAutor")
-  artigosEditor     Artigo[]             @relation("ArtigoEditor")
-  artigosRevisor    Artigo[]             @relation("ArtigoRevisor")
-  fontesCriadas     Fonte[]              @relation("FonteCriador")
-  notasFonte        NotaFonte[]          @relation("NotaFonteAutor")
-  versoesArtigo     VersaoArtigo[]
-  versoesMediaKit   MediaKitVersion[]
+  id              String            @id @db.Uuid
+  nome            String?
+  email           String?           @unique
+  tipoConta       String            @default("portal") @map("tipo_conta")
+  status          String            @default("ativo")
+  avatarUrl       String?           @map("avatar_url")
+  criadoEm        DateTime          @default(now()) @map("criado_em")
+  atualizadoEm    DateTime          @updatedAt @map("atualizado_em")
+  perfis          UsuarioPerfil[]
+  logsAcao        LogAcao[]
+  artigosAutor    Artigo[]          @relation("ArtigoAutor")
+  artigosEditor   Artigo[]          @relation("ArtigoEditor")
+  artigosRevisor  Artigo[]          @relation("ArtigoRevisor")
+  fontesCriadas   Fonte[]           @relation("FonteCriador")
+  notasFonte      NotaFonte[]       @relation("NotaFonteAutor")
+  versoesArtigo   VersaoArtigo[]
+  versoesMediaKit MediaKitVersion[]
 
   @@map("usuarios")
 }
 
 model Perfil {
-  id          String            @id @default(uuid()) @db.Uuid
-  nome        String            @unique
-  descricao   String?
-  criadoEm    DateTime          @default(now()) @map("criado_em")
-  usuarios    UsuarioPerfil[]
-  permissoes  PerfilPermissao[]
+  id         String            @id @default(uuid()) @db.Uuid
+  nome       String            @unique
+  descricao  String?
+  criadoEm   DateTime          @default(now()) @map("criado_em")
+  usuarios   UsuarioPerfil[]
+  permissoes PerfilPermissao[]
 
   @@map("perfis")
 }
 
 model Permissao {
-  id          String            @id @default(uuid()) @db.Uuid
-  modulo      String
-  acao        String
-  descricao   String?
-  criadoEm    DateTime          @default(now()) @map("criado_em")
-  perfis      PerfilPermissao[]
+  id        String            @id @default(uuid()) @db.Uuid
+  modulo    String
+  acao      String
+  descricao String?
+  criadoEm  DateTime          @default(now()) @map("criado_em")
+  perfis    PerfilPermissao[]
 
   @@unique([modulo, acao])
   @@map("permissoes")
 }
 
 model UsuarioPerfil {
-  usuarioId   String   @db.Uuid @map("usuario_id")
-  perfilId    String   @db.Uuid @map("perfil_id")
-  criadoEm    DateTime @default(now()) @map("criado_em")
-  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  perfil      Perfil   @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  usuarioId String   @map("usuario_id") @db.Uuid
+  perfilId  String   @map("perfil_id") @db.Uuid
+  criadoEm  DateTime @default(now()) @map("criado_em")
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  perfil    Perfil   @relation(fields: [perfilId], references: [id], onDelete: Cascade)
 
   @@id([usuarioId, perfilId])
   @@map("usuarios_perfis")
 }
 
 model PerfilPermissao {
-  perfilId     String     @db.Uuid @map("perfil_id")
-  permissaoId  String     @db.Uuid @map("permissao_id")
-  criadoEm     DateTime   @default(now()) @map("criado_em")
-  perfil       Perfil     @relation(fields: [perfilId], references: [id], onDelete: Cascade)
-  permissao    Permissao  @relation(fields: [permissaoId], references: [id], onDelete: Cascade)
+  perfilId    String    @map("perfil_id") @db.Uuid
+  permissaoId String    @map("permissao_id") @db.Uuid
+  criadoEm    DateTime  @default(now()) @map("criado_em")
+  perfil      Perfil    @relation(fields: [perfilId], references: [id], onDelete: Cascade)
+  permissao   Permissao @relation(fields: [permissaoId], references: [id], onDelete: Cascade)
 
   @@id([perfilId, permissaoId])
   @@map("perfis_permissoes")
@@ -95,10 +95,10 @@ model Artigo {
   slug              String           @unique
   corpoTexto        String           @map("corpo_texto")
   resumo            String?
-  autorId           String           @db.Uuid @map("autor_id")
-  editorId          String?          @db.Uuid @map("editor_id")
-  revisorId         String?          @db.Uuid @map("revisor_id")
-  categoriaId       String?          @db.Uuid @map("categoria_id")
+  autorId           String           @map("autor_id") @db.Uuid
+  editorId          String?          @map("editor_id") @db.Uuid
+  revisorId         String?          @map("revisor_id") @db.Uuid
+  categoriaId       String?          @map("categoria_id") @db.Uuid
   status            StatusArtigo     @default(pauta)
   dataPublicacao    DateTime?        @map("data_publicacao")
   visualizacoes     Int              @default(0)
@@ -114,8 +114,8 @@ model Artigo {
   autorExterno      String?          @map("autor_externo")
   urlFonte          String?          @map("url_fonte")
   revisorHumano     String?          @map("revisor_humano")
-  itemRssId         String?          @unique @db.Uuid @map("item_rss_id")
-  revistaId         String?          @db.Uuid @map("revista_id")
+  itemRssId         String?          @unique @map("item_rss_id") @db.Uuid
+  revistaId         String?          @map("revista_id") @db.Uuid
   ordemNaRevista    Int?             @map("ordem_revista")
   logsAcao          LogAcao[]
   autor             Usuario          @relation("ArtigoAutor", fields: [autorId], references: [id])
@@ -123,7 +123,7 @@ model Artigo {
   editor            Usuario?         @relation("ArtigoEditor", fields: [editorId], references: [id])
   revisor           Usuario?         @relation("ArtigoRevisor", fields: [revisorId], references: [id])
   itemRss           ItemRssBruto?    @relation(fields: [itemRssId], references: [id])
-  revista           Revista?         @relation(fields: [revistaId], references: [id], onDelete: SetNull)
+  revista           Revista?         @relation(fields: [revistaId], references: [id], onDelete: Cascade)
   versoes           VersaoArtigo[]
   checagensFato     ChecagemFato[]
   notasFonte        NotaFonte[]
@@ -136,41 +136,41 @@ model Artigo {
 }
 
 model Revista {
-  id              String    @id @default(uuid()) @db.Uuid
-  titulo          String
-  descricao       String?
-  edicao          String
-  dataPublicacao  DateTime? @map("data_publicacao")
-  capaUrl         String?   @map("capa_url")
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
-  artigos         Artigo[]
+  id             String    @id @default(uuid()) @db.Uuid
+  titulo         String
+  descricao      String?
+  edicao         String
+  dataPublicacao DateTime? @map("data_publicacao")
+  capaUrl        String?   @map("capa_url")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  artigos        Artigo[]
 
   @@map("revistas")
 }
 
 model Politico {
-  id               String           @id @default(uuid()) @db.Uuid
-  nome             String?
-  cpf              String?          @unique
-  cnpj             String?          @unique
-  categoriaEntidade String?         @map("categoria_entidade")
-  cargo            String?
-  partido          String?
-  biografia        String?
-  urlFoto          String?          @map("url_foto")
-  regiao           String?
-  estado           String?
-  criadoEm         DateTime         @default(now()) @map("criado_em")
-  atualizadoEm     DateTime         @updatedAt @map("atualizado_em")
-  artigosPoliticos ArtigoPolitico[]
+  id                String           @id @default(uuid()) @db.Uuid
+  nome              String?
+  cpf               String?          @unique
+  cnpj              String?          @unique
+  categoriaEntidade String?          @map("categoria_entidade")
+  cargo             String?
+  partido           String?
+  biografia         String?
+  urlFoto           String?          @map("url_foto")
+  regiao            String?
+  estado            String?
+  criadoEm          DateTime         @default(now()) @map("criado_em")
+  atualizadoEm      DateTime         @updatedAt @map("atualizado_em")
+  artigosPoliticos  ArtigoPolitico[]
 
   @@map("politicos")
 }
 
 model ArtigoPolitico {
-  artigoId   String   @db.Uuid @map("artigo_id")
-  politicoId String   @db.Uuid @map("politico_id")
+  artigoId   String   @map("artigo_id") @db.Uuid
+  politicoId String   @map("politico_id") @db.Uuid
   papel      String?
   artigo     Artigo   @relation(fields: [artigoId], references: [id], onDelete: Cascade)
   politico   Politico @relation(fields: [politicoId], references: [id], onDelete: Cascade)
@@ -180,220 +180,237 @@ model ArtigoPolitico {
 }
 
 model ChecagemFato {
-  id                 String   @id @default(uuid()) @db.Uuid
-  artigoId           String   @db.Uuid @map("artigo_id")
-  urlFonte           String?  @map("url_fonte")
-  urlDocumento       String?  @map("url_documento")
-  statusVerificacao  String   @default("verificado") @map("status_verificacao")
-  criadoEm           DateTime @default(now()) @map("criado_em")
-  artigo             Artigo   @relation(fields: [artigoId], references: [id], onDelete: Cascade)
+  id                String   @id @default(uuid()) @db.Uuid
+  artigoId          String   @map("artigo_id") @db.Uuid
+  urlFonte          String?  @map("url_fonte")
+  urlDocumento      String?  @map("url_documento")
+  statusVerificacao String   @default("verificado") @map("status_verificacao")
+  criadoEm          DateTime @default(now()) @map("criado_em")
+  artigo            Artigo   @relation(fields: [artigoId], references: [id], onDelete: Cascade)
 
   @@map("checagens_fato")
 }
 
 model VersaoArtigo {
-  id               String       @id @default(uuid()) @db.Uuid
-  artigoId         String       @db.Uuid @map("artigo_id")
-  titulo           String
-  resumo           String?
-  corpoTexto       String       @map("corpo_texto")
-  status           StatusArtigo
-  usuarioId        String?      @db.Uuid @map("usuario_id")
-  resumoMudancas   String?      @map("resumo_mudancas")
-  criadoEm         DateTime     @default(now()) @map("criado_em")
-  artigo           Artigo       @relation(fields: [artigoId], references: [id], onDelete: Cascade)
-  usuario          Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  id             String       @id @default(uuid()) @db.Uuid
+  artigoId       String       @map("artigo_id") @db.Uuid
+  titulo         String
+  resumo         String?
+  corpoTexto     String       @map("corpo_texto")
+  status         StatusArtigo
+  usuarioId      String?      @map("usuario_id") @db.Uuid
+  resumoMudancas String?      @map("resumo_mudancas")
+  criadoEm       DateTime     @default(now()) @map("criado_em")
+  artigo         Artigo       @relation(fields: [artigoId], references: [id], onDelete: Cascade)
+  usuario        Usuario?     @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@map("versoes_artigo")
 }
 
 model Categoria {
-  id               String       @id @default(uuid()) @db.Uuid
-  nome             String
-  slug             String       @unique
-  esfera           String?
-  cor              String?
-  metaDescricao    String?      @map("meta_descricao")
-  categoriaPaiId   String?      @db.Uuid @map("categoria_pai_id")
-  artigos          Artigo[]
-  categoriaPai     Categoria?   @relation("Subcategorias", fields: [categoriaPaiId], references: [id])
-  subcategorias    Categoria[]  @relation("Subcategorias")
+  id             String      @id @default(uuid()) @db.Uuid
+  nome           String
+  slug           String      @unique
+  esfera         String?
+  cor            String?
+  metaDescricao  String?     @map("meta_descricao")
+  categoriaPaiId String?     @map("categoria_pai_id") @db.Uuid
+  artigos        Artigo[]
+  categoriaPai   Categoria?  @relation("Subcategorias", fields: [categoriaPaiId], references: [id])
+  subcategorias  Categoria[] @relation("Subcategorias")
 
   @@map("categorias")
 }
 
 model LogAcao {
-  id         String    @id @default(uuid()) @db.Uuid
-  usuarioId  String    @db.Uuid @map("usuario_id")
-  acao       String
-  artigoId   String?   @db.Uuid @map("artigo_id")
-  dataHora   DateTime  @default(now()) @map("data_hora")
-  artigo      Artigo?  @relation(fields: [artigoId], references: [id], onDelete: SetNull)
-  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid()) @db.Uuid
+  usuarioId String   @map("usuario_id") @db.Uuid
+  acao      String
+  artigoId  String?  @map("artigo_id") @db.Uuid
+  dataHora  DateTime @default(now()) @map("data_hora")
+  artigo    Artigo?  @relation(fields: [artigoId], references: [id], onDelete: SetNull)
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
   @@map("logs_acao")
 }
 
 model Midia {
-  id                 String    @id @default(uuid()) @db.Uuid
-  url                String
-  nome               String
-  tipo               String
-  mimeType           String?   @map("mime_type")
-  tamanho            Int?
-  direitosAutorais   String?   @map("direitos_autorais")
-  tipoLicenca        String?   @map("tipo_licenca")
-  fonte              String?
-  dataExpiracao      DateTime? @map("data_expiracao")
-  tagsIa             Json?     @map("tags_ia")
-  criadoEm           DateTime  @default(now()) @map("criado_em")
-  atualizadoEm       DateTime  @updatedAt @map("atualizado_em")
+  id               String    @id @default(uuid()) @db.Uuid
+  url              String
+  nome             String
+  tipo             String
+  mimeType         String?   @map("mime_type")
+  tamanho          Int?
+  direitosAutorais String?   @map("direitos_autorais")
+  tipoLicenca      String?   @map("tipo_licenca")
+  fonte            String?
+  dataExpiracao    DateTime? @map("data_expiracao")
+  tagsIa           Json?     @map("tags_ia")
+  criadoEm         DateTime  @default(now()) @map("criado_em")
+  atualizadoEm     DateTime  @updatedAt @map("atualizado_em")
 
   @@map("midias")
 }
 
 model Anuncio {
-  id            String    @id @default(uuid()) @db.Uuid
-  titulo        String
-  imagemUrl     String    @map("imagem_url")
-  linkUrl       String    @map("link_url")
-  altText       String?   @map("alt_text")
-  tamanho       String    @default("banner_horizontal")
-  paginas       String[]  @default(["home"])
-  posicoes      String[]  @default(["topo"])
-  ativo         Boolean   @default(true)
-  prioridade    Int       @default(0)
-  dataInicio    DateTime? @map("data_inicio")
-  dataFim       DateTime? @map("data_fim")
-  criadoEm      DateTime  @default(now()) @map("criado_em")
-  atualizadoEm  DateTime  @updatedAt @map("atualizado_em")
+  id           String    @id @default(uuid()) @db.Uuid
+  titulo       String
+  imagemUrl    String    @map("imagem_url")
+  linkUrl      String    @map("link_url")
+  altText      String?   @map("alt_text")
+  tamanho      String    @default("banner_horizontal")
+  paginas      String[]  @default(["home"])
+  posicoes     String[]  @default(["topo"])
+  ativo        Boolean   @default(true)
+  prioridade   Int       @default(0)
+  dataInicio   DateTime? @map("data_inicio")
+  dataFim      DateTime? @map("data_fim")
+  criadoEm     DateTime  @default(now()) @map("criado_em")
+  atualizadoEm DateTime  @updatedAt @map("atualizado_em")
 
   @@index([ativo, dataFim])
   @@map("anuncios")
 }
 
 model Fonte {
-  id            String      @id @default(uuid()) @db.Uuid
-  nome          String
-  cargo         String?
-  organizacao   String?
-  email         String?
-  telefone      String?
-  nivelSigilo   String      @default("publico") @map("nivel_sigilo")
-  notas         String?
-  criadorId     String      @db.Uuid @map("criador_id")
-  criadoEm      DateTime    @default(now()) @map("criado_em")
-  atualizadoEm  DateTime    @updatedAt @map("atualizado_em")
-  criador       Usuario     @relation("FonteCriador", fields: [criadorId], references: [id])
-  anotacoes     NotaFonte[]
+  id           String      @id @default(uuid()) @db.Uuid
+  nome         String
+  cargo        String?
+  organizacao  String?
+  email        String?
+  telefone     String?
+  nivelSigilo  String      @default("publico") @map("nivel_sigilo")
+  notas        String?
+  criadorId    String      @map("criador_id") @db.Uuid
+  criadoEm     DateTime    @default(now()) @map("criado_em")
+  atualizadoEm DateTime    @updatedAt @map("atualizado_em")
+  criador      Usuario     @relation("FonteCriador", fields: [criadorId], references: [id])
+  anotacoes    NotaFonte[]
 
   @@map("fontes")
 }
 
 model NotaFonte {
-  id          String    @id @default(uuid()) @db.Uuid
-  fonteId     String    @db.Uuid @map("fonte_id")
-  autorId     String    @db.Uuid @map("autor_id")
-  conteudo    String
-  artigoId    String?   @db.Uuid @map("artigo_id")
-  criadoEm    DateTime  @default(now()) @map("criado_em")
-  artigo      Artigo?   @relation(fields: [artigoId], references: [id], onDelete: SetNull)
-  autor       Usuario   @relation("NotaFonteAutor", fields: [autorId], references: [id], onDelete: Cascade)
-  fonte       Fonte     @relation(fields: [fonteId], references: [id], onDelete: Cascade)
+  id       String   @id @default(uuid()) @db.Uuid
+  fonteId  String   @map("fonte_id") @db.Uuid
+  autorId  String   @map("autor_id") @db.Uuid
+  conteudo String
+  artigoId String?  @map("artigo_id") @db.Uuid
+  criadoEm DateTime @default(now()) @map("criado_em")
+  artigo   Artigo?  @relation(fields: [artigoId], references: [id], onDelete: SetNull)
+  autor    Usuario  @relation("NotaFonteAutor", fields: [autorId], references: [id], onDelete: Cascade)
+  fonte    Fonte    @relation(fields: [fonteId], references: [id], onDelete: Cascade)
 
   @@map("notas_fonte")
 }
 
 model EpisodioPodcast {
-  id           String    @id @default(uuid()) @db.Uuid
+  id           String   @id @default(uuid()) @db.Uuid
   titulo       String
-  slug         String    @unique
+  slug         String   @unique
   descricao    String?
-  urlAudio     String    @map("url_audio")
-  urlCapa      String?   @map("url_capa")
+  urlAudio     String   @map("url_audio")
+  urlCapa      String?  @map("url_capa")
   duracao      Int?
-  dataPub      DateTime  @default(now()) @map("data_pub")
+  dataPub      DateTime @default(now()) @map("data_pub")
   tags         String[]
-  status       String    @default("draft")
-  criadoEm     DateTime  @default(now()) @map("criado_em")
-  atualizadoEm DateTime  @updatedAt @map("atualizado_em")
+  status       String   @default("draft")
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
 
   @@map("episodios_podcast")
 }
 
 model VideoCurto {
-  id           String    @id @default(uuid()) @db.Uuid
+  id           String   @id @default(uuid()) @db.Uuid
   titulo       String
-  slug         String    @unique
+  slug         String   @unique
   descricao    String?
-  urlVideo     String    @map("url_video")
-  urlCapa      String?   @map("url_capa")
+  urlVideo     String   @map("url_video")
+  urlCapa      String?  @map("url_capa")
   duracao      Int?
-  dataPub      DateTime  @default(now()) @map("data_pub")
+  dataPub      DateTime @default(now()) @map("data_pub")
   tags         String[]
-  status       String    @default("draft")
-  criadoEm     DateTime  @default(now()) @map("criado_em")
-  atualizadoEm DateTime  @updatedAt @map("atualizado_em")
+  status       String   @default("draft")
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  atualizadoEm DateTime @updatedAt @map("atualizado_em")
 
   @@map("videos_curtos")
 }
 
 model InscricaoNewsletter {
-  id         String    @id @default(uuid()) @db.Uuid
-  email      String    @unique
-  nome       String?
-  temas      String[]
-  origem     String?
-  criadoEm   DateTime  @default(now()) @map("criado_em")
+  id       String   @id @default(uuid()) @db.Uuid
+  email    String   @unique
+  nome     String?
+  temas    String[]
+  origem   String?
+  criadoEm DateTime @default(now()) @map("criado_em")
 
   @@map("inscricoes_newsletter")
 }
 
+model AppConfig {
+  id                     String   @id @default("global")
+  articleRewriteUsage    Int      @default(0) @map("uso_geracao_artigos")
+  imageGenerationUsage   Int      @default(0) @map("uso_geracao_imagens")
+  articleRewriteLimit    Int      @default(100) @map("limite_geracao_artigos")
+  imageGenerationLimit   Int      @default(100) @map("limite_geracao_imagens")
+  articleRewriteModel    String   @default("gpt-5.4-mini") @map("modelo_reescrita_artigos")
+  imageGenerationModel   String   @default("gpt-image-2") @map("modelo_geracao_imagens")
+  imageGenerationSize    String   @default("1536x1024") @map("tamanho_geracao_imagens")
+  imageGenerationQuality String   @default("high") @map("qualidade_geracao_imagens")
+  usageMonth             String   @map("mes_vigente_contagem")
+  criadoEm               DateTime @default(now()) @map("criado_em")
+  atualizadoEm           DateTime @updatedAt @map("atualizado_em")
+
+  @@map("app_configuracoes")
+}
+
 model FonteRss {
-  id                String         @id @default(uuid()) @db.Uuid
-  urlFeed           String         @unique @map("url_feed")
-  name              String         @map("nome")
-  logo              String?
-  tone              String?        @map("tom")
-  cacheTtl          Int            @default(30) @map("cache_ttl")
-  regiao            String?
-  estado            String?
-  lastHarvest       DateTime?      @map("ultimo_harvest")
-  criadoEm          DateTime       @default(now()) @map("criado_em")
-  ativa             Boolean        @default(true) @map("ativa")
-  items             ItemRssBruto[]
+  id          String         @id @default(uuid()) @db.Uuid
+  urlFeed     String         @unique @map("url_feed")
+  name        String         @map("nome")
+  logo        String?
+  tone        String?        @map("tom")
+  cacheTtl    Int            @default(30) @map("cache_ttl")
+  regiao      String?
+  estado      String?
+  lastHarvest DateTime?      @map("ultimo_harvest")
+  criadoEm    DateTime       @default(now()) @map("criado_em")
+  ativa       Boolean        @default(true) @map("ativa")
+  items       ItemRssBruto[]
 
   @@map("fontes_rss")
 }
 
 model ItemRssBruto {
-  id                String          @id @default(uuid()) @db.Uuid
-  sourceId          String          @db.Uuid @map("fonte_rss_id")
-  guid              String?         @unique
-  tituloOriginal    String          @map("titulo_original")
-  linkOriginal      String          @map("link_original")
-  autorOriginal     String?         @map("autor_original")
-  description       String?         @map("descricao")
-  thumbnail         String?         @map("miniatura")
-  dataPublicacao    DateTime        @default(now()) @map("data_publicacao")
-  status            String          @default("pending")
-  criadoEm          DateTime        @default(now()) @map("criado_em")
-  artigo            Artigo?
-  source            FonteRss        @relation(fields: [sourceId], references: [id], onDelete: Cascade)
-  logsReescrita     LogReescrita[]
+  id             String         @id @default(uuid()) @db.Uuid
+  sourceId       String         @map("fonte_rss_id") @db.Uuid
+  guid           String?        @unique
+  tituloOriginal String         @map("titulo_original")
+  linkOriginal   String         @map("link_original")
+  autorOriginal  String?        @map("autor_original")
+  description    String?        @map("descricao")
+  thumbnail      String?        @map("miniatura")
+  dataPublicacao DateTime       @default(now()) @map("data_publicacao")
+  status         String         @default("pending")
+  criadoEm       DateTime       @default(now()) @map("criado_em")
+  artigo         Artigo?
+  source         FonteRss       @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  logsReescrita  LogReescrita[]
 
   @@map("itens_rss_brutos")
 }
 
 model LogReescrita {
-  id               String        @id @default(uuid()) @db.Uuid
-  itemRssId        String        @db.Uuid @map("item_rss_id")
-  promptIa         String?       @map("prompt_ia")
-  respostaIa       Json?         @map("resposta_ia")
+  id                String       @id @default(uuid()) @db.Uuid
+  itemRssId         String       @map("item_rss_id") @db.Uuid
+  promptIa          String?      @map("prompt_ia")
+  respostaIa        Json?        @map("resposta_ia")
   alteracoesHumanas Json?        @map("alteracoes_humanas")
-  horarioAprovacao DateTime?     @map("horario_aprovacao")
-  criadoEm         DateTime      @default(now()) @map("criado_em")
-  itemRss          ItemRssBruto  @relation(fields: [itemRssId], references: [id], onDelete: Cascade)
+  horarioAprovacao  DateTime?    @map("horario_aprovacao")
+  criadoEm          DateTime     @default(now()) @map("criado_em")
+  itemRss           ItemRssBruto @relation(fields: [itemRssId], references: [id], onDelete: Cascade)
 
   @@map("logs_reescrita")
 }
@@ -407,63 +424,63 @@ enum MediaKitStatus {
 }
 
 model MediaKit {
-  id            String            @id @default(uuid()) @db.Uuid
-  nome          String
-  slug          String            @unique
-  status        MediaKitStatus    @default(DRAFT)
-  tema          Json?             @map("tema")
-  idioma        String            @default("pt-BR")
-  publicadoEm   DateTime?         @map("publicado_em")
-  criadoEm      DateTime          @default(now()) @map("criado_em")
-  atualizadoEm  DateTime          @updatedAt @map("atualizado_em")
-  
-  secoes        MediaKitSection[]
-  versoes       MediaKitVersion[]
-  assets        MediaKitAsset[]
+  id           String         @id @default(uuid()) @db.Uuid
+  nome         String
+  slug         String         @unique
+  status       MediaKitStatus @default(DRAFT)
+  tema         Json?          @map("tema")
+  idioma       String         @default("pt-BR")
+  publicadoEm  DateTime?      @map("publicado_em")
+  criadoEm     DateTime       @default(now()) @map("criado_em")
+  atualizadoEm DateTime       @updatedAt @map("atualizado_em")
+
+  secoes  MediaKitSection[]
+  versoes MediaKitVersion[]
+  assets  MediaKitAsset[]
 
   @@map("media_kits")
 }
 
 model MediaKitSection {
-  id          String   @id @default(uuid()) @db.Uuid
-  mediaKitId  String   @db.Uuid @map("media_kit_id")
-  tipo        String   
-  titulo      String?
-  ordem       Int
-  ativo       Boolean  @default(true)
-  data        Json     
-  criadoEm    DateTime @default(now()) @map("criado_em")
-  
-  mediaKit    MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid()) @db.Uuid
+  mediaKitId String   @map("media_kit_id") @db.Uuid
+  tipo       String
+  titulo     String?
+  ordem      Int
+  ativo      Boolean  @default(true)
+  data       Json
+  criadoEm   DateTime @default(now()) @map("criado_em")
+
+  mediaKit MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
 
   @@map("media_kit_sections")
 }
 
 model MediaKitVersion {
-  id          String   @id @default(uuid()) @db.Uuid
-  mediaKitId  String   @db.Uuid @map("media_kit_id")
-  snapshot    Json     
-  usuarioId   String?  @db.Uuid @map("usuario_id")
-  criadoEm    DateTime @default(now()) @map("criado_em")
-  
-  mediaKit    MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
-  usuario     Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  id         String   @id @default(uuid()) @db.Uuid
+  mediaKitId String   @map("media_kit_id") @db.Uuid
+  snapshot   Json
+  usuarioId  String?  @map("usuario_id") @db.Uuid
+  criadoEm   DateTime @default(now()) @map("criado_em")
+
+  mediaKit MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
+  usuario  Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@map("media_kit_versions")
 }
 
 model MediaKitAsset {
-  id          String   @id @default(uuid()) @db.Uuid
-  mediaKitId  String   @db.Uuid @map("media_kit_id")
-  nome        String
-  url         String
-  altText     String?  @map("alt_text")
-  tipo        String   
-  tamanho     Int?
-  dimensoes   String?
-  criadoEm    DateTime @default(now()) @map("criado_em")
-  
-  mediaKit    MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid()) @db.Uuid
+  mediaKitId String   @map("media_kit_id") @db.Uuid
+  nome       String
+  url        String
+  altText    String?  @map("alt_text")
+  tipo       String
+  tamanho    Int?
+  dimensoes  String?
+  criadoEm   DateTime @default(now()) @map("criado_em")
+
+  mediaKit MediaKit @relation(fields: [mediaKitId], references: [id], onDelete: Cascade)
 
   @@map("media_kit_assets")
 }

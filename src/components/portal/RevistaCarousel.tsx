@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -137,13 +137,8 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
       <div className="grid gap-5 lg:grid-cols-[205px_minmax(0,1fr)] xl:grid-cols-[220px_minmax(0,1fr)]">
         <Link
           href={`/revistas/${revista.id}`}
-<<<<<<< HEAD
-          className="group relative mx-auto block w-full max-w-[250px] overflow-hidden bg-gray-900 shadow-xl"
-          aria-label={`Abrir edição ${revista.edicao}`}
-=======
           className="group relative mx-auto block w-full max-w-55 overflow-hidden bg-gray-900 shadow-xl"
-          aria-label={`Abrir edicao ${revista.edicao}`}
->>>>>>> 63e146afabce1344c970ed093e496075e24bb8fc
+          aria-label={`Abrir edição ${revista.edicao}`}
         >
           <div className="relative aspect-3/4 w-full">
             {revista.capaUrl ? (
@@ -198,13 +193,8 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
                 <h3 className="line-clamp-3 text-sm font-black leading-tight tracking-tight transition group-hover:text-red-200">
                   {artigo.titulo}
                 </h3>
-<<<<<<< HEAD
-                <p className="mt-auto pt-4 text-[10px] font-black uppercase tracking-widest text-gray-200">
-                  {artigo.autor ?? "Redação"}
-=======
                 <p className="mt-auto pt-2 text-[9px] font-black uppercase tracking-widest text-gray-200">
-                  {artigo.autor ?? "Redacao"}
->>>>>>> 63e146afabce1344c970ed093e496075e24bb8fc
+                  {artigo.autor ?? "Redação"}
                 </p>
               </div>
             </Link>
@@ -232,3 +222,4 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
     </section>
   );
 }
+

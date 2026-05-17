@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import SignOutButton from "@/components/auth/SignOutButton";
 import Link from "next/link";
@@ -160,11 +160,7 @@ export default function ErpSidebar({
     >
       <div className="flex h-full flex-col">
         <div className={`mb-4 flex items-center ${collapsed ? "justify-center" : "justify-between gap-3"}`}>
-<<<<<<< HEAD
-          {!collapsed && <h2 className="text-2xl font-black tracking-tight text-nowrap">Gestão ERP</h2>}
-=======
           {!collapsed && <h2 className="text-2xl font-black tracking-tight text-nowrap">Revista Gestão</h2>}
->>>>>>> 63e146afabce1344c970ed093e496075e24bb8fc
           <button
             type="button"
             onClick={closeMobile}
@@ -424,3 +420,4 @@ export default function ErpSidebar({
     </>
   );
 }
+

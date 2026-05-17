@@ -168,7 +168,7 @@ export default async function PortalHome() {
                 )}
 
                 <div className="mt-auto text-[13px] font-bold uppercase tracking-widest text-gray-800 dark:text-gray-400">
-                  Por {featured[0].autor?.nome || "Redacao"} • {featured[0].dataExibicao.toLocaleDateString("pt-BR")}
+                  Por {featured[0].autor?.nome || "Redação"} • {featured[0].dataExibicao.toLocaleDateString("pt-BR")}
                 </div>
               </Link>
             </div>

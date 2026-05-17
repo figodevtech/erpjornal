@@ -57,24 +57,24 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
   const resolvedParams = await params;
   const slug = resolvedParams.slug.toLowerCase();
 
-  let title = "Noticias regionais";
-  let description = "Acompanhe as noticias politicas da sua regiao.";
+  let title = "Notícias regionais";
+  let description = "Acompanhe as notícias políticas da sua região.";
   const whereClause: Prisma.ArtigoWhereInput = {
     status: ArticleStatus.publicado,
     revistaId: null,
   };
 
   if (slug === "nacional") {
-    title = "Noticias nacionais";
-    description = "Cobertura politica de alcance nacional, com foco em poder, governo e impactos institucionais.";
+    title = "Notícias nacionais";
+    description = "Cobertura política de alcance nacional, com foco em poder, governo e impactos institucionais.";
     whereClause.regiao = "Nacional";
   } else if (slug === "internacional") {
-    title = "Noticias internacionais";
-    description = "Acompanhe as noticias politicas de todo o mundo.";
+    title = "Notícias internacionais";
+    description = "Acompanhe as notícias políticas de todo o mundo.";
     whereClause.regiao = "Internacional";
   } else if (stateNames[slug]) {
     title = `Politica em ${stateNames[slug]}`;
-    description = `Acompanhe os fatos mais relevantes da cena politica em ${stateNames[slug]}.`;
+    description = `Acompanhe os fatos mais relevantes da cena política em ${stateNames[slug]}.`;
     whereClause.estado = slug.toUpperCase();
   } else {
     const spheres = ["estadual", "municipal"];
@@ -152,7 +152,7 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
             <div className="portal-card-meta mt-auto flex w-full items-center gap-3 pt-2 text-[11px] font-black uppercase tracking-widest">
               <time>{(artigo.dataPublicacao ?? artigo.criadoEm).toLocaleDateString("pt-BR")}</time>
               <span className="hidden h-1 w-1 bg-gray-300 sm:block" />
-              <span className="hidden truncate sm:inline-block">Por {artigo.autor.nome || "Redacao"}</span>
+              <span className="hidden truncate sm:inline-block">Por {artigo.autor.nome || "Redação"}</span>
             </div>
           </Link>
         ))}
@@ -162,7 +162,7 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
         <PortalEmptyState
           icon={Globe}
           title="Nenhum artigo encontrado para esta regiao."
-          description="Estamos trabalhando para trazer as noticias politicas mais relevantes desta localidade em breve."
+          description="Estamos trabalhando para trazer as notícias políticas mais relevantes desta localidade em breve."
         />
       )}
     </div>

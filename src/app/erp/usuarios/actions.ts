@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirPermissao } from "@/lib/auth";
@@ -35,8 +34,14 @@ async function sincronizarPerfis(usuarioId: string, perfilIds: string[]) {
   });
 }
 
-function redirecionarComErro(mensagem: string) {
-  redirect(`/erp/usuarios?erro=${encodeURIComponent(mensagem)}`);
+function redirecionarComErro(mensagem: string): never {
+  throw new Error(mensagem);
+}
+
+function getSiteUrl() {
+  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return "http://localhost:3000";
 }
 
 export async function criarUsuarioErp(formData: FormData) {
@@ -97,7 +102,7 @@ export async function criarUsuarioErp(formData: FormData) {
   }
 
   revalidatePath("/erp/usuarios");
-  redirect("/erp/usuarios?sucesso=usuario-criado");
+  return { ok: true };
 }
 
 export async function atualizarUsuarioErp(formData: FormData) {
@@ -149,5 +154,66 @@ export async function atualizarUsuarioErp(formData: FormData) {
   }
 
   revalidatePath("/erp/usuarios");
-  redirect("/erp/usuarios?sucesso=usuario-atualizado");
+  return { ok: true };
+}
+
+export async function definirSenhaUsuarioErp(formData: FormData) {
+  await exigirPermissao("usuarios:gerir");
+
+  const usuarioId = formData.get("usuarioId")?.toString() ?? "";
+  const senha = formData.get("senha")?.toString() ?? "";
+
+  if (!usuarioId) {
+    throw new Error("Usuário inválido para redefinição de senha.");
+  }
+
+  if (senha.length < 8) {
+    throw new Error("A nova senha precisa ter pelo menos 8 caracteres.");
+  }
+
+  const usuarioAtual = await prisma.usuario.findUnique({
+    where: { id: usuarioId },
+    select: { id: true },
+  });
+
+  if (!usuarioAtual) {
+    throw new Error("Usuário não encontrado.");
+  }
+
+  const supabaseAdmin = criarClienteSupabaseAdmin();
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(usuarioId, {
+    password: senha,
+  });
+
+  if (error) {
+    throw error;
+  }
+}
+
+export async function enviarRedefinicaoSenhaUsuarioErp(formData: FormData) {
+  await exigirPermissao("usuarios:gerir");
+
+  const usuarioId = formData.get("usuarioId")?.toString() ?? "";
+
+  if (!usuarioId) {
+    throw new Error("Usuário inválido para redefinição de senha.");
+  }
+
+  const usuario = await prisma.usuario.findUnique({
+    where: { id: usuarioId },
+    select: { email: true },
+  });
+
+  if (!usuario?.email) {
+    throw new Error("Este usuário não possui e-mail cadastrado.");
+  }
+
+  const supabaseAdmin = criarClienteSupabaseAdmin();
+  const { error } = await supabaseAdmin.auth.resetPasswordForEmail(usuario.email, {
+    redirectTo: `${getSiteUrl()}/redefinir-senha`,
+  });
+
+  if (error) {
+    throw error;
+  }
 }

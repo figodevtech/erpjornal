@@ -96,14 +96,14 @@ export default function CoverImageManager({
             Imagem de Capa
           </h3>
           <p className="mt-1 text-xs font-medium text-gray-500">
-            Usada no portal, cards e compartilhamento da materia.
+            Usada no portal, cards e compartilhamento da matéria.
           </p>
         </div>
       </div>
 
       <div className="relative aspect-video overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
         {value ? (
-          <Image src={value} alt="Imagem de capa da materia" fill className="object-cover" sizes="(max-width: 768px) 100vw, 420px" />
+          <Image src={value} alt="Imagem de capa da matéria" fill className="object-cover" sizes="(max-width: 768px) 100vw, 420px" />
         ) : (
           <div className="flex h-full flex-col items-center justify-center text-gray-400">
             <ImageIcon className="mb-2 h-8 w-8" />

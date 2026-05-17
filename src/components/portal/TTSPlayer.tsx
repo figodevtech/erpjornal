@@ -34,7 +34,7 @@ export default function TTSPlayer({ htmlContent, title }: TTSPlayerProps) {
     synth.addEventListener("voiceschanged", loadVoices);
     return () => synth.removeEventListener("voiceschanged", loadVoices);
   }, [synth]);
-  // Prepara o texto quando o conteudo muda
+  // Prepara o texto quando o conteúdo muda
   const chunks = useMemo(() => {
     const plainText = `${title}. ${extractPlainTextFromHtml(htmlContent)}`;
     return splitTextIntoChunks(plainText, 600);

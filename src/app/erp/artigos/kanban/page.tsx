@@ -34,7 +34,7 @@ export default async function ArticlesKanbanPage() {
           <div>
             <h1 className="text-2xl font-serif font-bold text-[#002045]">Editorial Workflow</h1>
             <p className="text-xs font-medium uppercase tracking-tight text-gray-400">
-              Gestao Editorial de Materias
+              Gestão Editorial de Matérias
             </p>
           </div>
         </div>
@@ -55,7 +55,7 @@ export default async function ArticlesKanbanPage() {
         <KanbanBoard
           initialArticles={artigos.map((a) => ({
             ...a,
-            autor: a.autor ? { ...a.autor, nome: a.autor.nome || "Redacao" } : null,
+            autor: a.autor ? { ...a.autor, nome: a.autor.nome || "Redação" } : null,
             criadoEm: a.criadoEm,
             status: (a.status as ArticleStatus) || ArticleStatus.pauta,
           }))}

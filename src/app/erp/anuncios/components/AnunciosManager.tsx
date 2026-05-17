@@ -74,10 +74,10 @@ function PreviewAdImage({ draft, compact = false }: { draft: AnuncioItem; compac
       <div className="mb-1 text-[7px] font-black uppercase tracking-[0.2em] text-gray-400">Publicidade</div>
       <div className={`relative overflow-hidden rounded-md border border-gray-200 bg-gray-100 ${ratio}`}>
         {draft.imagemUrl ? (
-          <img src={draft.imagemUrl} alt={draft.altText || draft.titulo || "Preview do anuncio"} className="h-full w-full object-cover" />
+          <img src={draft.imagemUrl} alt={draft.altText || draft.titulo || "Preview do anúncio"} className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full items-center justify-center px-3 text-center text-[10px] font-bold text-gray-400">
-            Imagem do anuncio
+            Imagem do anúncio
           </div>
         )}
       </div>
@@ -86,7 +86,7 @@ function PreviewAdImage({ draft, compact = false }: { draft: AnuncioItem; compac
 }
 
 function AdPagePreview({ draft }: { draft: AnuncioItem }) {
-  const pagina = AD_PAGE_TYPES.find((item) => draft.paginas.includes(item.value))?.label ?? "Pagina";
+  const pagina = AD_PAGE_TYPES.find((item) => draft.paginas.includes(item.value))?.label ?? "Página";
   const showTop = draft.posicoes.includes("topo");
   const showMiddle = draft.posicoes.includes("meio") || draft.posicoes.includes("apos_imagem");
   const showFeed = draft.posicoes.includes("feed");
@@ -110,7 +110,7 @@ function AdPagePreview({ draft }: { draft: AnuncioItem }) {
         <div className="flex items-center justify-between border-b border-gray-900 pb-2">
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.22em] text-red-700">{pagina}</p>
-            <h3 className="text-sm font-black text-gray-950">Revista Gestao</h3>
+            <h3 className="text-sm font-black text-gray-950">Revista Gestão</h3>
           </div>
           <div className={`rounded-full px-2 py-1 text-[8px] font-black uppercase ${draft.ativo ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
             {draft.ativo ? "Ativo" : "Inativo"}
@@ -192,7 +192,7 @@ function AdEditor({
             <Eye className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-gray-950">Pre-visualizacao</h2>
+            <h2 className="text-lg font-black text-gray-950">Pré-visualização</h2>
             <p className="text-xs text-gray-500">{draftPlacement.label}: {AD_SIZES.find((size) => size.value === draft.tamanho)?.label}</p>
           </div>
         </div>
@@ -207,8 +207,8 @@ function AdEditor({
             <Megaphone className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-lg font-black text-gray-950">{selected.id ? "Editar anuncio" : "Novo anuncio"}</h2>
-            <p className="text-xs text-gray-500">Escolha a pagina e um modelo compativel de espaco.</p>
+            <h2 className="text-lg font-black text-gray-950">{selected.id ? "Editar anúncio" : "Novo anúncio"}</h2>
+            <p className="text-xs text-gray-500">Escolha a página e um modelo compatível de espaço.</p>
           </div>
         </div>
 
@@ -221,7 +221,7 @@ function AdEditor({
           {selected.id && <input type="hidden" name="id" value={selected.id} />}
 
           <div>
-            <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Titulo</label>
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Título</label>
             <input name="titulo" required defaultValue={selected.titulo} className="w-full rounded-xl border text-gray-600 border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
           </div>
 
@@ -246,7 +246,7 @@ function AdEditor({
           </div>
 
           <fieldset>
-            <legend className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-500">Tipos de pagina</legend>
+            <legend className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-500">Tipos de página</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               {AD_PAGE_TYPES.map((pageType) => (
                 <label key={pageType.value} className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
@@ -258,11 +258,11 @@ function AdEditor({
           </fieldset>
 
           <fieldset>
-            <legend className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-500">Modelo de espaco</legend>
+            <legend className="mb-2 text-xs font-bold uppercase tracking-widest text-gray-500">Modelo de espaço</legend>
             <CustomSelect
               name="placement"
               defaultValue={selectedPlacement.value}
-              placeholder="Selecione o modelo de espaco"
+              placeholder="Selecione o modelo de espaço"
               options={AD_PLACEMENTS.map((placement) => ({
                 value: placement.value,
                 label: `${placement.label} - ${AD_SIZES.find((size) => size.value === placement.tamanho)?.label}`,
@@ -284,7 +284,7 @@ function AdEditor({
 
           <div className="grid gap-3 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Inicio</label>
+              <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">Início</label>
               <input name="dataInicio" type="date" defaultValue={formatDateInput(selected.dataInicio)} className="text-gray-600 w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-red-600" />
             </div>
             <div>
@@ -295,7 +295,7 @@ function AdEditor({
 
           <label className="flex items-center gap-2 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-semibold text-gray-700">
             <input type="checkbox" name="ativo" defaultChecked={selected.ativo} />
-            Anuncio ativo
+            Anúncio ativo
           </label>
 
         </form>
@@ -327,8 +327,8 @@ function AdDialog({
       <div className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-3xl bg-gray-50 shadow-2xl">
         <div className="shrink-0 flex items-start justify-between gap-4 border-b border-gray-200 bg-white px-5 py-4">
           <div>
-            <h2 className="text-xl font-black text-gray-950">{selected.id ? "Editar anuncio" : "Novo anuncio"}</h2>
-            <p className="mt-1 text-sm text-gray-500">Configure a peca e confira a pre-visualizacao antes de salvar.</p>
+            <h2 className="text-xl font-black text-gray-950">{selected.id ? "Editar anúncio" : "Novo anúncio"}</h2>
+            <p className="mt-1 text-sm text-gray-500">Configure a peça e confira a pré-visualização antes de salvar.</p>
           </div>
           <button
             type="button"
@@ -367,7 +367,7 @@ function AdDialog({
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-800 disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
-              {isPending ? "Salvando..." : "Salvar anuncio"}
+              {isPending ? "Salvando..." : "Salvar anúncio"}
             </button>
           </div>
         </div>
@@ -414,11 +414,11 @@ export default function AnunciosManager({
     startTransition(async () => {
       try {
         await salvarAnuncio(formData);
-        toast.success(selected.id ? "Anuncio atualizado." : "Anuncio cadastrado.");
+        toast.success(selected.id ? "Anúncio atualizado." : "Anúncio cadastrado.");
         setSelectedId("");
         setDialogAberto(false);
       } catch (error: unknown) {
-        toast.error(error instanceof Error ? error.message : "Nao foi possivel salvar o anuncio.");
+        toast.error(error instanceof Error ? error.message : "Não foi possível salvar o anúncio.");
       }
     });
   }
@@ -427,10 +427,10 @@ export default function AnunciosManager({
     startTransition(async () => {
       try {
         await excluirAnuncio(id);
-        toast.success("Anuncio excluido.");
+        toast.success("Anúncio excluído.");
         setSelectedId("");
       } catch (error: unknown) {
-        toast.error(error instanceof Error ? error.message : "Nao foi possivel excluir o anuncio.");
+        toast.error(error instanceof Error ? error.message : "Não foi possível excluir o anúncio.");
       }
     });
   }
@@ -439,9 +439,9 @@ export default function AnunciosManager({
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-gray-950">Anuncios</h1>
+          <h1 className="text-3xl font-black tracking-tight text-gray-950">Anúncios</h1>
           <p className="mt-1 text-sm text-gray-600">
-            Cadastre imagens comerciais, links, vencimento e os pontos do portal onde cada peca aparece.
+            Cadastre imagens comerciais, links, vencimento e os pontos do portal onde cada peça aparece.
           </p>
         </div>
         {podeCriar && (
@@ -454,7 +454,7 @@ export default function AnunciosManager({
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-red-800"
           >
             <Plus className="h-4 w-4" />
-            Novo anuncio
+            Novo anúncio
           </button>
         )}
       </div>
@@ -463,7 +463,7 @@ export default function AnunciosManager({
         <section className="space-y-4">
           {anuncios.length === 0 ? (
             <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-white px-6 py-20 text-center text-gray-500">
-              Nenhum anuncio cadastrado ainda.
+              Nenhum anúncio cadastrado ainda.
             </div>
           ) : (
             anuncios.map((anuncio) => (
@@ -501,7 +501,7 @@ export default function AnunciosManager({
 
                     <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-xs text-gray-500">
-                        Exibe ate: {anuncio.dataFim ? new Date(anuncio.dataFim).toLocaleDateString("pt-BR") : "sem vencimento"}
+                        Exibe até: {anuncio.dataFim ? new Date(anuncio.dataFim).toLocaleDateString("pt-BR") : "sem vencimento"}
                       </p>
                       {podeEditar && (
                         <div className="flex gap-2">

@@ -39,13 +39,13 @@ export async function saveSourceNote(formData: FormData) {
   const conteudo = formData.get("conteudo") as string;
   const artigoId = (formData.get("artigo_id") as string) || null;
 
-  if (!fonteId || !conteudo) throw new Error("Campos obrigatorios ausentes");
+  if (!fonteId || !conteudo) throw new Error("Campos obrigatórios ausentes");
 
   const fonte = await prisma.fonte.findUnique({ where: { id: fonteId } });
-  if (!fonte) throw new Error("Fonte nao encontrada");
+  if (!fonte) throw new Error("Fonte não encontrada");
 
   if (fonte.nivelSigilo === "confidencial" && !temPermissao(session, "fontes:confidencial")) {
-    throw new Error("Acesso nao autorizado a fontes confidenciais.");
+    throw new Error("Acesso não autorizado a fontes confidenciais.");
   }
 
   await prisma.notaFonte.create({

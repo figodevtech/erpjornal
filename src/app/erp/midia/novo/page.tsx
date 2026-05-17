@@ -19,8 +19,8 @@ export default async function NovoMidiaPage() {
           </svg>
         </Link>
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Novo Ativo de Midia</h1>
-          <p className="mt-1 text-sm text-gray-500">Cadastre uma imagem, video ou documento com seus metadados.</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Novo Ativo de Mídia</h1>
+          <p className="mt-1 text-sm text-gray-500">Cadastre uma imagem, vídeo ou documento com seus metadados.</p>
         </div>
       </div>
       <MediaForm />

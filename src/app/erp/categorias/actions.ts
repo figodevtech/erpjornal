@@ -33,7 +33,7 @@ export async function salvarCategoria(formData: FormData) {
 
   const slug = slugify(slugInput || nome);
   if (!slug) {
-    throw new Error("Nao foi possivel gerar um slug valido.");
+    throw new Error("Não foi possível gerar um slug válido.");
   }
 
   const data = { nome, slug, esfera, cor, metaDescricao };
@@ -66,11 +66,11 @@ export async function excluirCategoria(id: string) {
   });
 
   if (!categoria) {
-    throw new Error("Categoria nao encontrada.");
+    throw new Error("Categoria não encontrada.");
   }
 
   if (categoria._count.artigos > 0 || categoria._count.subcategorias > 0) {
-    throw new Error("Nao e possivel excluir uma categoria que possui artigos ou subcategorias.");
+    throw new Error("Não é possível excluir uma categoria que possui artigos ou subcategorias.");
   }
 
   await prisma.categoria.delete({ where: { id } });

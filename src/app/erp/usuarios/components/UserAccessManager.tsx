@@ -2,11 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import { Loader2, Plus, Shield, UserCog, Users, X } from "lucide-react";
+import { ChevronDown, KeyRound, Loader2, Mail, Pencil, Plus, Save, Shield, UserCog, Users, X } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { atualizarUsuarioErp, criarUsuarioErp } from "../actions";
+import CustomSelect from "@/components/ui/CustomSelect";
+import {
+  atualizarUsuarioErp,
+  criarUsuarioErp,
+  definirSenhaUsuarioErp,
+  enviarRedefinicaoSenhaUsuarioErp,
+} from "../actions";
 
 type PerfilItem = {
   id: string;
@@ -70,20 +77,21 @@ function ModalShell({
   if (!open || typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4 backdrop-blur-md">
-      <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-[36px] border border-gray-100 bg-white shadow-2xl">
-        <div className="relative bg-slate-900 p-7 text-white">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-gray-950/60 p-4 backdrop-blur-sm">
+      <div className="flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl">
+        <div className="relative border-b border-gray-100 p-6">
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-5 top-5 rounded-full p-2 text-white/50 transition hover:bg-white/10 hover:text-white"
+            className="absolute right-4 top-4 rounded-full p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Fechar"
           >
             <X className="h-5 w-5" />
           </button>
-          <h2 className="text-xl font-black tracking-tight">{title}</h2>
-          <p className="mt-1 text-sm text-slate-300">{subtitle}</p>
+          <h2 className="pr-10 text-xl font-black tracking-tight text-gray-900">{title}</h2>
+          <p className="mt-1 pr-10 text-sm text-gray-500">{subtitle}</p>
         </div>
-        <div className="overflow-y-auto bg-white p-7">{children}</div>
+        <div className="overflow-y-auto bg-white p-6">{children}</div>
       </div>
     </div>,
     document.body
@@ -128,25 +136,131 @@ function PerfilCheckboxes({
   );
 }
 
+function UserActionsDropdown({
+  usuario,
+  sendingReset,
+  onEdit,
+  onSendReset,
+  onSetPassword,
+}: {
+  usuario: UsuarioItem;
+  sendingReset: boolean;
+  onEdit: () => void;
+  onSendReset: () => void;
+  onSetPassword: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const close = () => setOpen(false);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+
+    window.addEventListener("click", close);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("click", close);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen((current) => !current);
+        }}
+        className="inline-flex items-center gap-2 rounded-2xl bg-gray-950 px-5 py-2.5 text-sm font-black text-white transition hover:bg-black"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <UserCog className="h-4 w-4" />
+        Ações
+        <ChevronDown className={`h-4 w-4 transition ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          onClick={(event) => event.stopPropagation()}
+          className="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white p-1.5 shadow-2xl"
+        >
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              onEdit();
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-gray-700 transition hover:bg-gray-50"
+          >
+            <Pencil className="h-4 w-4 text-gray-400" />
+            Editar acesso
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={sendingReset || !usuario.email}
+            onClick={() => {
+              setOpen(false);
+              onSendReset();
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
+          >
+            {sendingReset ? <Loader2 className="h-4 w-4 animate-spin text-gray-400" /> : <Mail className="h-4 w-4 text-gray-400" />}
+            Enviar redefinição por e-mail
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false);
+              onSetPassword();
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-gray-700 transition hover:bg-gray-50"
+          >
+            <KeyRound className="h-4 w-4 text-gray-400" />
+            Definir senha
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function UserAccessManager({ usuarios, perfis }: UserAccessManagerProps) {
+  const router = useRouter();
   const [dialogCriacaoAberto, setDialogCriacaoAberto] = useState(false);
   const [usuarioSelecionadoId, setUsuarioSelecionadoId] = useState<string | null>(null);
+  const [usuarioSenhaId, setUsuarioSenhaId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isSendingReset, setIsSendingReset] = useState(false);
+  const [isSettingPassword, setIsSettingPassword] = useState(false);
 
   const usuarioSelecionado = useMemo(
     () => usuarios.find((usuario) => usuario.id === usuarioSelecionadoId) ?? null,
     [usuarioSelecionadoId, usuarios]
+  );
+  const usuarioSenha = useMemo(
+    () => usuarios.find((usuario) => usuario.id === usuarioSenhaId) ?? null,
+    [usuarioSenhaId, usuarios]
   );
 
   async function handleCreate(formData: FormData) {
     setIsCreating(true);
     try {
       await criarUsuarioErp(formData);
-      toast.success("Usuario criado.");
+      toast.success("Usuário criado.");
       setDialogCriacaoAberto(false);
+      router.refresh();
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Nao foi possivel criar o usuario.");
+      toast.error(error instanceof Error ? error.message : "Não foi possível criar o usuário.");
     } finally {
       setIsCreating(false);
     }
@@ -156,12 +270,48 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
     setIsUpdating(true);
     try {
       await atualizarUsuarioErp(formData);
-      toast.success("Usuario atualizado.");
+      toast.success("Usuário atualizado.");
       setUsuarioSelecionadoId(null);
+      router.refresh();
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Nao foi possivel atualizar o usuario.");
+      toast.error(error instanceof Error ? error.message : "Não foi possível atualizar o usuário.");
     } finally {
       setIsUpdating(false);
+    }
+  }
+
+  async function handleSendPasswordReset(usuarioId: string) {
+    setIsSendingReset(true);
+    try {
+      const formData = new FormData();
+      formData.set("usuarioId", usuarioId);
+      await enviarRedefinicaoSenhaUsuarioErp(formData);
+      toast.success("E-mail de redefinição enviado.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível enviar o e-mail.");
+    } finally {
+      setIsSendingReset(false);
+    }
+  }
+
+  async function handleSetPassword(formData: FormData) {
+    setIsSettingPassword(true);
+    try {
+      const senha = formData.get("senha")?.toString() ?? "";
+      const confirmacao = formData.get("confirmacao")?.toString() ?? "";
+
+      if (senha !== confirmacao) {
+        toast.error("As senhas informadas não conferem.");
+        return;
+      }
+
+      await definirSenhaUsuarioErp(formData);
+      toast.success("Senha atualizada.");
+      setUsuarioSenhaId(null);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível atualizar a senha.");
+    } finally {
+      setIsSettingPassword(false);
     }
   }
 
@@ -188,7 +338,7 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
           >
             <Plus className="h-4 w-4" />
-            Novo usuario
+            Novo usuário
           </button>
         </div>
       </div>
@@ -209,7 +359,7 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
 
       {usuarios.length === 0 ? (
         <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-white px-6 py-16 text-center text-gray-500">
-          Nenhum usuario cadastrado ainda.
+          Nenhum usuário cadastrado ainda.
         </div>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
@@ -258,14 +408,13 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
               </div>
 
               <div className="mt-5 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setUsuarioSelecionadoId(usuario.id)}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gray-950 px-5 py-2.5 text-sm font-black text-white transition hover:bg-black"
-                >
-                  <UserCog className="h-4 w-4" />
-                  Editar acesso
-                </button>
+                <UserActionsDropdown
+                  usuario={usuario}
+                  sendingReset={isSendingReset}
+                  onEdit={() => setUsuarioSelecionadoId(usuario.id)}
+                  onSendReset={() => void handleSendPasswordReset(usuario.id)}
+                  onSetPassword={() => setUsuarioSenhaId(usuario.id)}
+                />
               </div>
             </article>
           ))}
@@ -278,8 +427,8 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
           if (isCreating) return;
           setDialogCriacaoAberto(false);
         }}
-        title="Novo usuario"
-        subtitle="Cria o login no Supabase Auth e ja vincula o acesso interno."
+        title="Novo usuário"
+        subtitle="Cria o login no Supabase Auth e já vincula o acesso interno."
       >
         <form
           onSubmit={(event) => {
@@ -332,39 +481,25 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
 
           <div className="grid gap-4 md:grid-cols-2">
             <div>
-              <label htmlFor="tipoConta" className="mb-1.5 block text-sm font-bold text-gray-800">
+              <label className="mb-1.5 block text-sm font-bold text-gray-800">
                 Tipo de conta
               </label>
-              <select
-                id="tipoConta"
+              <CustomSelect
                 name="tipoConta"
                 defaultValue="erp"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
-              >
-                {opcoesTipoConta.map((opcao) => (
-                  <option key={opcao.value} value={opcao.value}>
-                    {opcao.label}
-                  </option>
-                ))}
-              </select>
+                options={opcoesTipoConta}
+              />
             </div>
 
             <div>
-              <label htmlFor="status" className="mb-1.5 block text-sm font-bold text-gray-800">
+              <label className="mb-1.5 block text-sm font-bold text-gray-800">
                 Status
               </label>
-              <select
-                id="status"
+              <CustomSelect
                 name="status"
                 defaultValue="ativo"
-                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
-              >
-                {opcoesStatus.map((opcao) => (
-                  <option key={opcao.value} value={opcao.value}>
-                    {opcao.label}
-                  </option>
-                ))}
-              </select>
+                options={opcoesStatus}
+              />
             </div>
           </div>
 
@@ -377,7 +512,7 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
               className="inline-flex items-center gap-2 rounded-2xl bg-red-700 px-5 py-3 text-sm font-black text-white transition hover:bg-red-800 disabled:opacity-50"
             >
               {isCreating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserCog className="h-4 w-4" />}
-              {isCreating ? "Salvando..." : "Criar usuario"}
+              {isCreating ? "Salvando..." : "Criar usuário"}
             </button>
           </div>
         </form>
@@ -389,7 +524,7 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
           if (isUpdating) return;
           setUsuarioSelecionadoId(null);
         }}
-        title={usuarioSelecionado?.nome || "Editar usuario"}
+        title={usuarioSelecionado?.nome || "Editar usuário"}
         subtitle={usuarioSelecionado?.email || "Ajuste tipo de conta, status e perfis."}
       >
         {usuarioSelecionado && (
@@ -416,32 +551,20 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-1.5 block text-sm font-bold text-gray-800">Tipo</label>
-                <select
+                <CustomSelect
                   name="tipoConta"
                   defaultValue={usuarioSelecionado.tipoConta}
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                >
-                  {opcoesTipoConta.map((opcao) => (
-                    <option key={opcao.value} value={opcao.value}>
-                      {opcao.label}
-                    </option>
-                  ))}
-                </select>
+                  options={opcoesTipoConta}
+                />
               </div>
 
               <div>
                 <label className="mb-1.5 block text-sm font-bold text-gray-800">Status</label>
-                <select
+                <CustomSelect
                   name="status"
                   defaultValue={usuarioSelecionado.status}
-                  className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
-                >
-                  {opcoesStatus.map((opcao) => (
-                    <option key={opcao.value} value={opcao.value}>
-                      {opcao.label}
-                    </option>
-                  ))}
-                </select>
+                  options={opcoesStatus}
+                />
               </div>
             </div>
 
@@ -451,12 +574,78 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
               <button
                 type="submit"
                 disabled={isUpdating}
-                className="rounded-2xl bg-gray-950 px-5 py-3 text-sm font-black text-white transition hover:bg-black disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-2xl bg-gray-950 px-5 py-3 text-sm font-black text-white transition hover:bg-black disabled:opacity-50"
               >
-                <span className="inline-flex items-center gap-2">
-                  {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {isUpdating ? "Salvando..." : "Salvar acesso"}
-                </span>
+                {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {isUpdating ? "Salvando..." : "Salvar usuário"}
+              </button>
+            </div>
+          </form>
+        )}
+      </ModalShell>
+
+      <ModalShell
+        open={!!usuarioSenha}
+        onClose={() => {
+          if (isSettingPassword) return;
+          setUsuarioSenhaId(null);
+        }}
+        title="Definir senha"
+        subtitle={usuarioSenha?.email || "Atualize a senha manualmente para este usuário."}
+      >
+        {usuarioSenha && (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              void handleSetPassword(formData);
+            }}
+            className="space-y-4"
+          >
+            <input type="hidden" name="usuarioId" value={usuarioSenha.id} />
+
+            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-white p-2 text-red-700 shadow-sm">
+                  <KeyRound className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-gray-950">{usuarioSenha.nome || "Usuário sem nome"}</h3>
+                  <p className="text-xs text-gray-500">A nova senha precisa ter pelo menos 8 caracteres.</p>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-bold text-gray-800">Nova senha</label>
+              <input
+                name="senha"
+                type="password"
+                minLength={8}
+                required
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-sm font-bold text-gray-800">Confirmar senha</label>
+              <input
+                name="confirmacao"
+                type="password"
+                minLength={8}
+                required
+                className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-950 outline-none transition focus:border-red-500 focus:ring-2 focus:ring-red-100"
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                disabled={isSettingPassword}
+                className="inline-flex items-center gap-2 rounded-2xl bg-red-700 px-5 py-3 text-sm font-black text-white transition hover:bg-red-800 disabled:opacity-50"
+              >
+                {isSettingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {isSettingPassword ? "Salvando..." : "Salvar senha"}
               </button>
             </div>
           </form>

@@ -33,7 +33,7 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
       toast.success("Fonte salva com sucesso!");
       setIsOpen(false);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Nao foi possivel salvar a fonte.");
+      toast.error(error instanceof Error ? error.message : "Não foi possível salvar a fonte.");
     } finally {
       setLoading(false);
     }

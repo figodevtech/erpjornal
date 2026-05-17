@@ -118,13 +118,13 @@ export default async function FonteDetailPage({ params }: PageProps) {
             <input type="hidden" name="fonte_id" value={id} />
             <div>
               <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-400">
-                Nova anotacao
+                Nova anotação
               </label>
               <textarea
                 name="conteudo"
                 required
                 rows={3}
-                placeholder="Registre uma observacao sobre esta fonte..."
+                placeholder="Registre uma observação sobre esta fonte..."
                 className="w-full resize-none rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500"
               />
             </div>
@@ -133,7 +133,7 @@ export default async function FonteDetailPage({ params }: PageProps) {
               className="flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-indigo-500"
             >
               <Plus className="h-4 w-4" />
-              Adicionar anotacao
+              Adicionar anotação
             </button>
           </form>
         )}
@@ -158,7 +158,7 @@ export default async function FonteDetailPage({ params }: PageProps) {
         ))}
 
         {fonte.anotacoes.length === 0 && (
-          <p className="py-8 text-center text-sm italic text-gray-400">Nenhuma anotacao ainda.</p>
+          <p className="py-8 text-center text-sm italic text-gray-400">Nenhuma anotação ainda.</p>
         )}
       </div>
     </div>

@@ -94,7 +94,7 @@ function LoginForm() {
             <label className="text-xs font-black uppercase tracking-[0.2em] text-gray-300 block">
               Senha
             </label>
-            <Link href="#" className="text-gray-300 hover:text-red-400 text-xs font-bold uppercase transition-colors">
+            <Link href="/redefinir-senha" className="text-gray-300 hover:text-red-400 text-xs font-bold uppercase transition-colors">
               Esqueceu a senha?
             </Link>
           </div>

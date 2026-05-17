@@ -21,7 +21,7 @@ type SelectionItem = {
 };
 
 function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Erro ao processar a acao.";
+  return error instanceof Error ? error.message : "Erro ao processar a ação.";
 }
 
 export function SelectionCard({
@@ -42,7 +42,7 @@ export function SelectionCard({
     setLoading(true);
     try {
       await selectRSSItem(item.id);
-      toast.success("Noticia selecionada!");
+      toast.success("Notícia selecionada!");
       router.push(`/erp/curadoria/review/${item.id}`);
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));
@@ -55,7 +55,7 @@ export function SelectionCard({
     setLoading(true);
     try {
       await rejectRSSItem(item.id);
-      toast.info("Noticia descartada");
+      toast.info("Notícia descartada");
       router.refresh();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));
@@ -186,8 +186,8 @@ export function SelectionCard({
           setConfirmarAcao(null);
         }}
         pending={loading}
-        title="Republicar conteudo original?"
-        description="Isso publica a materia com os creditos da fonte e o link da noticia original."
+        title="Republicar conteúdo original?"
+        description="Isso publica a matéria com os créditos da fonte e o link da notícia original."
         confirmLabel="Republicar"
       >
         <div>

@@ -43,8 +43,8 @@ export default async function UsuariosErpPage({ searchParams }: PageProps) {
       {params.sucesso && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
           {params.sucesso === "usuario-criado"
-            ? "Usuario criado com sucesso."
-            : "Usuario atualizado com sucesso."}
+            ? "Usuário criado com sucesso."
+            : "Usuário atualizado com sucesso."}
         </div>
       )}
 

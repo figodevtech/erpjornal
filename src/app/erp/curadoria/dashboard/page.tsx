@@ -48,7 +48,7 @@ export default async function CuradoriaDashboardPage({
           Dashboard de Curadoria
         </h1>
         <p className="mt-1 text-sm font-medium text-gray-500">
-          Selecione noticias dos portais parceiros para reescrita assistida ou republicacao com creditos.
+          Selecione notícias dos portais parceiros para reescrita assistida ou republicação com créditos.
         </p>
       </div>
 
@@ -130,7 +130,7 @@ export default async function CuradoriaDashboardPage({
             <X className="mx-auto mb-4 h-16 w-16 text-gray-200" />
             <h3 className="text-xl font-black uppercase text-gray-900">Sem noticias pendentes</h3>
             <p className="mx-auto mt-2 max-w-md font-medium text-gray-500">
-              Cadastrar o feed nao importa noticias sozinho. Va em Gerenciar Feeds e clique em Coletar para preencher esta fila.
+              Cadastrar o feed não importa notícias sozinho. Vá em Gerenciar Feeds e clique em Coletar para preencher esta fila.
             </p>
             <Link
               href="/erp/curadoria/fontes"
@@ -156,7 +156,7 @@ export default async function CuradoriaDashboardPage({
                   <th className="px-6 py-4">Fonte</th>
                   <th className="px-6 py-4">Revisor</th>
                   <th className="px-6 py-4">Data</th>
-                  <th className="px-6 py-4 text-right">Acoes</th>
+                  <th className="px-6 py-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">

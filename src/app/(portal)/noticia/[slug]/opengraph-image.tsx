@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
-export const alt = "Revista Gestao - Noticia";
+export const alt = "Revista Gestão - Notícia";
 export const size = {
   width: 1200,
   height: 630,
@@ -32,7 +32,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
             background: "white",
           }}
         >
-          <h1>Artigo nao encontrado</h1>
+          <h1>Artigo não encontrado</h1>
         </div>
       ),
       { ...size }

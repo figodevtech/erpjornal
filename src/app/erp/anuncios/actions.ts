@@ -48,7 +48,7 @@ export async function salvarAnuncio(formData: FormData) {
     throw new Error("Selecione um modelo de espaco valido para o anuncio.");
   }
   if (dataInicio && dataFim && dataFim < dataInicio) {
-    throw new Error("A data final nao pode ser anterior a data inicial.");
+    throw new Error("A data final não pode ser anterior à data inicial.");
   }
 
   const tamanho = placement.tamanho;
@@ -67,7 +67,7 @@ export async function salvarAnuncio(formData: FormData) {
     }
   } catch (error: unknown) {
     if (isPrismaError(error) && error.code === "P2025") {
-      throw new Error("Anuncio nao encontrado.");
+      throw new Error("Anúncio não encontrado.");
     }
     throw error;
   }

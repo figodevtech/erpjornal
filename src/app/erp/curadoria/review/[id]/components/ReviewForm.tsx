@@ -174,7 +174,7 @@ export function ReviewForm({
             Reescrita IA (GPT)
           </h3>
           <p className="mt-1 text-xs font-bold uppercase tracking-widest text-white/50">
-            Gere uma versao original e exclusiva do conteudo
+            Gere uma versão original e exclusiva do conteúdo
           </p>
         </div>
         <button
@@ -225,7 +225,7 @@ export function ReviewForm({
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             className="w-full rounded-3xl border-2 border-gray-100 bg-gray-50 p-6 text-2xl font-black text-gray-900 outline-none transition-all placeholder:text-gray-300 focus:border-indigo-500 focus:bg-white"
-            placeholder="Titulo final da materia..."
+            placeholder="Título final da matéria..."
           />
         </div>
 
@@ -250,7 +250,7 @@ export function ReviewForm({
         </div>
 
         <div className="rounded-3xl border border-indigo-100 bg-indigo-50 px-5 py-4 text-sm font-medium text-indigo-800">
-          Se preferir, voce tambem pode republicar o conteudo original com os devidos creditos da fonte e o link da materia de origem.
+          Se preferir, você também pode republicar o conteúdo original com os devidos créditos da fonte e o link da matéria de origem.
         </div>
 
         <div className="flex flex-col items-center justify-between gap-6 border-t border-gray-100 pt-8 md:flex-row">
@@ -313,7 +313,7 @@ export function ReviewForm({
         </p>
         <p className="border-t border-white/5 pt-4">---</p>
         <p>
-          Baseado em materia original do portal <strong>{item.source.name}</strong>
+          Baseado em matéria original do portal <strong>{item.source.name}</strong>
         </p>
         <p>
           Publicado originalmente em{" "}
@@ -324,9 +324,9 @@ export function ReviewForm({
           })}
         </p>
         <p>
-          Conteudo reescrito ou republicado com revisao de <strong>{user.name || "Redacao"}</strong>
+          Conteúdo reescrito ou republicado com revisão de <strong>{user.name || "Redação"}</strong>
         </p>
-        <p>Revista Gestao - Sua fonte confiavel</p>
+        <p>Revista Gestão - Sua fonte confiável</p>
         <p>---</p>
       </div>
 
@@ -345,8 +345,8 @@ export function ReviewForm({
         onClose={() => setConfirmarAcao(null)}
         onConfirm={handleRepublishOriginal}
         pending={actionLoading}
-        title="Republicar conteudo original?"
-        description="A materia sera publicada com creditos da fonte e link de origem, usando o conteudo disponivel no feed."
+        title="Republicar conteúdo original?"
+        description="A matéria será publicada com créditos da fonte e link de origem, usando o conteúdo disponível no feed."
         confirmLabel="Republicar"
       />
 

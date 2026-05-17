@@ -113,7 +113,7 @@ export function ArticlePreview({
               />
             </div>
             <figcaption className="border-t border-gray-100 bg-gray-50 px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-              Imagem de capa da materia
+              Imagem de capa da matéria
             </figcaption>
           </figure>
         )}

@@ -6,8 +6,8 @@ import { Film, TrendingUp } from "lucide-react";
 import { notFound } from "next/navigation";
 
 export const metadata = {
-  title: "RG.Curtos | Videos Rapidos de Politica",
-  description: "Assista aos bastidores e analises rapidas da politica nacional em formato de videos curtos.",
+  title: "RG.Curtos | Vídeos Rápidos de Política",
+  description: "Assista aos bastidores e análises rápidas da política nacional em formato de vídeos curtos.",
 };
 
 export default async function VideosPage() {
@@ -30,11 +30,11 @@ export default async function VideosPage() {
               RG<span className="text-red-700">.</span>Curtos
             </>
           }
-          description="A politica brasileira em doses rapidas. Bastidores, analises e fatos em menos de 60 segundos."
+          description="A política brasileira em doses rápidas. Bastidores, análises e fatos em menos de 60 segundos."
           badge={
             <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-right shadow-sm">
               <span className="block text-2xl font-black text-gray-950">{videos.length}</span>
-              <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Videos</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-gray-500">Vídeos</span>
             </div>
           }
         />
@@ -65,8 +65,8 @@ export default async function VideosPage() {
           {videos.length === 0 && (
             <div className="rounded-[56px] border-4 border-dashed border-gray-100 bg-white py-40 text-center shadow-inner">
               <Film className="mx-auto mb-8 h-20 w-20 text-gray-100" />
-              <h3 className="text-3xl font-black uppercase tracking-tighter text-gray-300">Silencio no set...</h3>
-              <p className="mt-4 text-lg font-medium italic text-gray-400">Estamos preparando os proximos videos curtos. Fique ligado.</p>
+              <h3 className="text-3xl font-black uppercase tracking-tighter text-gray-300">Silêncio no set...</h3>
+              <p className="mt-4 text-lg font-medium italic text-gray-400">Estamos preparando os próximos vídeos curtos. Fique ligado.</p>
             </div>
           )}
         </div>

@@ -159,7 +159,7 @@ export default function ErpSidebar({
     >
       <div className="flex h-full flex-col">
         <div className={`mb-4 flex items-center ${collapsed ? "justify-center" : "justify-between gap-3"}`}>
-          {!collapsed && <h2 className="text-2xl font-black tracking-tight text-nowrap">Gestao ERP</h2>}
+          {!collapsed && <h2 className="text-2xl font-black tracking-tight text-nowrap">Gestão ERP</h2>}
           <button
             type="button"
             onClick={closeMobile}
@@ -259,7 +259,7 @@ export default function ErpSidebar({
           {mediaEnabled && podeVerMidia && (
             <SidebarLink
               href="/erp/midia"
-              label="Biblioteca de Midia"
+              label="Biblioteca de Mídia"
               icon={<ImageIcon className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/midia")}
@@ -269,7 +269,7 @@ export default function ErpSidebar({
           {podeVerAnuncios && (
             <SidebarLink
               href="/erp/anuncios"
-              label="Anuncios"
+              label="Anúncios"
               icon={<Megaphone className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/anuncios")}
@@ -397,7 +397,7 @@ export default function ErpSidebar({
                   <div className="truncate text-sm font-semibold text-white">
                     {usuario.nome ?? "Usuário autenticado"}
                   </div>
-                  <div className="truncate text-xs text-gray-400">{usuario.email ?? "Sem email informado"}</div>
+                  <div className="truncate text-xs text-gray-400">{usuario.email ?? "Sem e-mail informado"}</div>
                   <div className="mt-1 inline-flex max-w-full items-center rounded-full border border-red-500/20 bg-red-500/10 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-red-300">
                     <span className="truncate">{perfilPrincipal}</span>
                   </div>

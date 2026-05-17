@@ -17,7 +17,7 @@ export function HarvestButton({ sourceId }: { sourceId: string }) {
         toast.success(`${res.count} novos itens coletados. (Limite: ${limit})`);
       } else {
         toast.info(
-          "Nenhum item novo foi importado. Isso acontece quando o feed ja foi lido antes ou nao expoe itens com link/guid valido."
+          "Nenhum item novo foi importado. Isso acontece quando o feed já foi lido antes ou não expõe itens com link/guid válido."
         );
       }
     } catch (err: any) {

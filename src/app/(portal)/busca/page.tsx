@@ -42,7 +42,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           </div>
           <h1 className="mb-6 text-4xl font-black uppercase leading-none tracking-tighter text-gray-900 dark:text-gray-100 md:text-6xl">
             Explore o acervo da <br />
-            <span className="text-red-700">Revista Gestao</span>
+            <span className="text-red-700">Revista Gestão</span>
           </h1>
           <p className="mx-auto max-w-2xl text-xl font-medium text-gray-600 dark:text-gray-400">
             Busque por noticias, temas, articulistas, politicos e tendencias que moldam o Brasil e o mundo.
@@ -157,7 +157,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                   Nenhuma pauta encontrada
                 </h3>
                 <p className="mx-auto mt-2 max-w-md text-gray-600 dark:text-gray-400">
-                  Nao encontramos correspondencias para sua busca com os filtros selecionados.
+                  Não encontramos correspondências para sua busca com os filtros selecionados.
                 </p>
                 <div className="mt-10 flex flex-wrap justify-center gap-4">
                   <Link
@@ -214,7 +214,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                         </div>
                         <div className="flex items-center gap-1.5">
                           <User className="h-3 w-3 text-red-700" />
-                          Por {art.metadata?.autor || "Redacao"}
+                          Por {art.metadata?.autor || "Redação"}
                         </div>
                       </div>
 
@@ -235,7 +235,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                           href={`/noticia/${art.slug}`}
                           className="flex items-center gap-2 text-[11px] font-black uppercase tracking-widest text-red-700 group/btn"
                         >
-                          Ler materia completa
+                          Ler matéria completa
                           <ChevronRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
                         </Link>
                       </div>

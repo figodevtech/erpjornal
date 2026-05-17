@@ -26,11 +26,11 @@ const cnpjCategories = [
   "Empresa publica",
   "Orgao publico",
   "ONG",
-  "Associacao",
-  "Fundacao",
+  "Associação",
+  "Fundação",
   "Partido politico",
   "Instituicao de ensino",
-  "Veiculo de comunicacao",
+  "Veículo de comunicação",
   "Instituicao financeira",
 ];
 
@@ -132,7 +132,7 @@ export default function PoliticianManager({
         setEntityToDelete(null);
         window.location.reload();
       } catch {
-        setDeleteError("Nao foi possivel excluir. Verifique se a entidade esta vinculada a artigos.");
+        setDeleteError("Não foi possível excluir. Verifique se a entidade está vinculada a artigos.");
       }
     });
   };
@@ -171,7 +171,7 @@ export default function PoliticianManager({
                       {entity.categoriaEntidade || (isCompany ? "Pessoa juridica" : "Pessoa fisica")}
                     </p>
                     <p className="mt-1 inline-block rounded border border-gray-100 bg-gray-50 px-1.5 py-0.5 text-[10px] text-gray-400">
-                      {isCompany ? formatCnpj(entity.cnpj) || "CNPJ nao informado" : formatCpf(entity.cpf) || "CPF nao informado"}
+                      {isCompany ? formatCnpj(entity.cnpj) || "CNPJ não informado" : formatCpf(entity.cpf) || "CPF não informado"}
                     </p>
                     {(entity.regiao || entity.estado) && (
                       <p className="mt-1 text-[10px] text-gray-400">
@@ -300,7 +300,7 @@ export default function PoliticianManager({
                 </div>
 
                 <div>
-                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-400">Partido / Organizacao</label>
+                  <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-400">Partido / Organização</label>
                   <input
                     name="partido"
                     defaultValue={editing.partido || ""}
@@ -364,7 +364,7 @@ export default function PoliticianManager({
       <ConfirmationDialog
         open={Boolean(entityToDelete)}
         title="Excluir entidade"
-        description={`Esta acao remove ${entityToDelete?.nome || "esta entidade"} do cadastro. Vinculos editoriais existentes podem impedir a exclusao.`}
+        description={`Esta ação remove ${entityToDelete?.nome || "esta entidade"} do cadastro. Vínculos editoriais existentes podem impedir a exclusão.`}
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         tone="danger"

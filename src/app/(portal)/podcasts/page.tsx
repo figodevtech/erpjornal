@@ -6,8 +6,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 export const metadata = {
-  title: "Podcasts | Revista Gestao",
-  description: "Ouça as principais analises e noticias politicas da semana em nosso podcast oficial.",
+  title: "Podcasts | Revista Gestão",
+  description: "Ouça as principais análises e notícias políticas da semana em nosso podcast oficial.",
 };
 
 export default async function PodcastsPage() {
@@ -29,7 +29,7 @@ export default async function PodcastsPage() {
             RG<span className="text-red-700">.</span>Podcasts
           </>
         }
-        description="As analises de bastidores que voce ja le, agora para ouvir em qualquer lugar."
+        description="As análises de bastidores que você já lê, agora para ouvir em qualquer lugar."
         badge={
           <div className="rounded-2xl border border-gray-200 bg-white px-4 py-3 text-right shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <span className="block text-2xl font-black text-gray-950 dark:text-gray-50">{episodes.length}</span>
@@ -82,7 +82,7 @@ export default async function PodcastsPage() {
         {episodes.length === 0 && (
           <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50 py-20 text-center text-gray-500">
             <h3 className="text-xl font-bold text-gray-900">Nenhum episodio disponivel</h3>
-            <p className="mt-2 text-sm">Estamos preparando as proximas analises. Volte em breve.</p>
+            <p className="mt-2 text-sm">Estamos preparando as próximas análises. Volte em breve.</p>
           </div>
         )}
       </div>

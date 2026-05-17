@@ -22,11 +22,11 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
   const { slug } = params;
   const category = await prisma.categoria.findUnique({ where: { slug } });
 
-  if (!category) return { title: "Categoria nao encontrada" };
+  if (!category) return { title: "Categoria não encontrada" };
 
   return {
-    title: `${category.nome} | Noticias - Revista Gestao`,
-    description: `Acompanhe as ultimas publicacoes arquivadas na secao ${category.nome} da Revista Gestao.`,
+    title: `${category.nome} | Notícias - Revista Gestão`,
+    description: `Acompanhe as últimas publicações arquivadas na seção ${category.nome} da Revista Gestão.`,
   };
 }
 
@@ -153,7 +153,7 @@ export default async function CategoriaPage(props: PageProps) {
                         })}
                       </time>
                       <span className="hidden h-1 w-1 bg-gray-300 sm:block" />
-                      <span className="hidden truncate sm:inline-block">{art.autor?.nome || "Redacao"}</span>
+                      <span className="hidden truncate sm:inline-block">{art.autor?.nome || "Redação"}</span>
                     </div>
                   </Link>
                 ))}

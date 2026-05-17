@@ -73,7 +73,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
     <section className="mb-10 overflow-hidden rounded-xl bg-gray-950 px-5 py-4 text-white shadow-sm sm:px-7 lg:px-8">
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-red-400">Revista Gestao</p>
+          <p className="text-[11px] font-black uppercase tracking-[0.28em] text-red-400">Revista Gestão</p>
           <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
             <h2 className="text-2xl font-black leading-none tracking-tight md:text-2xl">
               Edição {revista.edicao}
@@ -87,7 +87,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
             href="/edicoes-anteriores"
             className="inline-flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-gray-100 transition hover:border-red-500 hover:text-white"
           >
-            Edicoes anteriores
+            Edições anteriores
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <button
@@ -104,7 +104,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
             onClick={() => scrollArticles("right")}
             disabled={!canGoForward}
             className="rounded-full border border-white/10 p-2 text-gray-300 transition hover:border-red-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-35"
-            aria-label="Proximos artigos"
+            aria-label="Próximos artigos"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -115,7 +115,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
         <Link
           href={`/revistas/${revista.id}`}
           className="group relative mx-auto block w-full max-w-[250px] overflow-hidden bg-gray-900 shadow-xl"
-          aria-label={`Abrir edicao ${revista.edicao}`}
+          aria-label={`Abrir edição ${revista.edicao}`}
         >
           <div className="relative aspect-[3/4] w-full">
             {revista.capaUrl ? (
@@ -129,7 +129,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
               />
             ) : (
               <div className="flex h-full items-center justify-center px-6 text-center text-2xl font-black text-gray-600">
-                Revista Gestao
+                Revista Gestão
               </div>
             )}
           </div>
@@ -171,7 +171,7 @@ export default function RevistaCarousel({ revista }: RevistaCarouselProps) {
                   {artigo.titulo}
                 </h3>
                 <p className="mt-auto pt-4 text-[10px] font-black uppercase tracking-widest text-gray-200">
-                  {artigo.autor ?? "Redacao"}
+                  {artigo.autor ?? "Redação"}
                 </p>
               </div>
             </Link>

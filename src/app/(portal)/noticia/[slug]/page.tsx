@@ -166,7 +166,7 @@ export default async function NoticiaPage({ params }: PageProps) {
                 <time className="article-meta text-[13px] font-black uppercase tracking-widest flex items-center gap-2 mt-1">
                   {artigo.dataPublicacao?.toLocaleDateString("pt-BR", { 
                     day: "2-digit", month: "long", year: "numeric"
-                  })} à s {artigo.dataPublicacao?.toLocaleTimeString("pt-BR", { 
+                  })} às {artigo.dataPublicacao?.toLocaleTimeString("pt-BR", { 
                     hour: "2-digit", minute: "2-digit"
                   })}
                 </time>

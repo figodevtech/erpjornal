@@ -174,7 +174,7 @@ export default function CategoryManager({
           <div>
             <h2 className="text-xl font-black text-gray-950">Editorias ativas</h2>
             <p className="text-sm text-gray-500">
-              {categorias.length} categoria(s) disponiveis para publicacao e curadoria.
+              {categorias.length} categoria(s) disponíveis para publicação e curadoria.
             </p>
           </div>
         </div>

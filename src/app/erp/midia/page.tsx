@@ -19,7 +19,7 @@ function LicenseBadge({ tipoLicenca }: { tipoLicenca: string | null }) {
         : "bg-gray-50 text-gray-500 border-gray-200";
   return (
     <span className={`rounded border px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${color}`}>
-      {tipoLicenca || "Nao definido"}
+      {tipoLicenca || "Não definido"}
     </span>
   );
 }
@@ -39,7 +39,7 @@ export default async function MidiaPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Biblioteca de Midia</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Biblioteca de Mídia</h1>
           <p className="mt-1 text-sm text-gray-500">
             {medias.length} ativo{medias.length !== 1 ? "s" : ""} cadastrado
             {medias.length !== 1 ? "s" : ""}
@@ -59,9 +59,9 @@ export default async function MidiaPage() {
       {medias.length === 0 ? (
         <div className="rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50 py-32 text-center">
           <Upload className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-          <h3 className="text-xl font-bold text-gray-400">Nenhuma midia cadastrada</h3>
+          <h3 className="text-xl font-bold text-gray-400">Nenhuma mídia cadastrada</h3>
           <p className="mx-auto mt-2 max-w-sm text-sm text-gray-400">
-            Adicione imagens, videos e documentos com metadados de licenca e direitos autorais.
+            Adicione imagens, vídeos e documentos com metadados de licença e direitos autorais.
           </p>
           {podeCriar && (
             <Link
@@ -99,7 +99,7 @@ export default async function MidiaPage() {
                   {expirado && (
                     <div className="absolute inset-0 flex items-center justify-center bg-red-900/60">
                       <span className="flex items-center gap-1 text-xs font-black uppercase tracking-widest text-white">
-                        <AlertTriangle className="h-4 w-4" /> Licenca Expirada
+                        <AlertTriangle className="h-4 w-4" /> Licença Expirada
                       </span>
                     </div>
                   )}

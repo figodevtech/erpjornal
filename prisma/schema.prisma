@@ -359,6 +359,7 @@ model AppConfig {
   imageGenerationModel   String   @default("gpt-image-2") @map("modelo_geracao_imagens")
   imageGenerationSize    String   @default("1536x1024") @map("tamanho_geracao_imagens")
   imageGenerationQuality String   @default("high") @map("qualidade_geracao_imagens")
+  marketTickerEnabled    Boolean  @default(true) @map("barra_mercado_ativa")
   usageMonth             String   @map("mes_vigente_contagem")
   criadoEm               DateTime @default(now()) @map("criado_em")
   atualizadoEm           DateTime @updatedAt @map("atualizado_em")

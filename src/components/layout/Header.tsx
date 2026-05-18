@@ -17,7 +17,7 @@ export default async function Header() {
   const videosEnabled = isModuleEnabled("videos");
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b-[4px] border-red-700 bg-[#0f172a] shadow-md transition-colors duration-300">
+    <header className="sticky top-0 z-50 w-full border-b-[2px] border-red-700 bg-[#0f172a] shadow-md transition-colors duration-300">
       {/* 1. TOP BAR */}
       <div className="hidden md:flex bg-slate-950 text-slate-300 text-[11px] py-1.5 px-4 sm:px-6 lg:px-8 justify-between items-center font-bold tracking-widest uppercase border-b border-slate-800/50">
         <span suppressHydrationWarning></span>

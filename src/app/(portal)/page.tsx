@@ -1,7 +1,9 @@
 import NewsletterForm from "@/components/portal/NewsletterForm";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
+import EconomyTicker from "@/components/portal/EconomyTicker";
 import RevistaCarousel from "@/components/portal/RevistaCarousel";
 import type { RevistaCarouselItem } from "@/components/portal/RevistaCarousel";
+import { getAppConfigSnapshot } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
 import Image from "next/image";
@@ -115,14 +117,17 @@ export default async function PortalHome() {
         })),
       }
     : null;
-  const [hasHomeLateralAds, hasHomeFeedAds] = await Promise.all([
+  const [hasHomeLateralAds, hasHomeFeedAds, appConfig] = await Promise.all([
     hasActiveAds("home", "lateral"),
     hasActiveAds("home", "feed"),
+    getAppConfigSnapshot(),
   ]);
   const hasHomeSidebarAds = hasHomeLateralAds || hasHomeFeedAds;
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+    <>
+      {appConfig.marketTickerEnabled && <EconomyTicker />}
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {revista && <RevistaCarousel revista={revista} />}
 
       <AdSlot pagina="home" posicao="topo" className="mb-10" />
@@ -301,6 +306,7 @@ export default async function PortalHome() {
           </div>
         </section>
       )}
-    </div>
+      </div>
+    </>
   );
 }

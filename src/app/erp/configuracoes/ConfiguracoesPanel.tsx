@@ -1,8 +1,11 @@
 "use client";
 
-import { BrainCircuit, CalendarDays, ImageIcon, Settings, SlidersHorizontal, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { BrainCircuit, CalendarDays, ImageIcon, Settings, SlidersHorizontal, Sparkles, TrendingUp } from "lucide-react";
+import { toast } from "sonner";
 
 import { useConfig } from "../config/ErpConfigProvider";
+import { updateMarketTickerEnabled } from "../config/actions";
 
 function formatPercent(usage: number, limit: number) {
   if (limit <= 0) return 100;
@@ -83,6 +86,20 @@ function ModelInfoCard({
 
 export default function ConfiguracoesPanel() {
   const { config, refreshConfig } = useConfig();
+  const [savingTicker, setSavingTicker] = useState(false);
+
+  async function handleMarketTickerToggle(enabled: boolean) {
+    setSavingTicker(true);
+    try {
+      await updateMarketTickerEnabled(enabled);
+      await refreshConfig();
+      toast.success(enabled ? "Barra de mercado ativada." : "Barra de mercado desativada.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao salvar configuracao.");
+    } finally {
+      setSavingTicker(false);
+    }
+  }
 
   return (
     <div className="space-y-8 py-6">
@@ -163,6 +180,41 @@ export default function ConfiguracoesPanel() {
               icon={<ImageIcon className="h-5 w-5" />}
             />
           </div>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="rounded-2xl bg-red-50 p-3 text-red-700">
+              <TrendingUp className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-gray-900">Barra de mercado</h2>
+              <p className="mt-1 max-w-2xl text-sm font-medium text-gray-500">
+                Controla a exibicao da faixa vermelha com cotacoes de moedas, criptos e acoes na pagina principal do portal.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={config.marketTickerEnabled}
+            disabled={savingTicker}
+            onClick={() => handleMarketTickerToggle(!config.marketTickerEnabled)}
+            className={`relative inline-flex h-9 w-16 shrink-0 items-center rounded-full border-2 p-1 transition disabled:opacity-60 ${
+              config.marketTickerEnabled
+                ? "border-emerald-500 bg-emerald-500"
+                : "border-gray-200 bg-gray-200"
+            }`}
+          >
+            <span
+              className={`h-6 w-6 rounded-full bg-white shadow transition-transform ${
+                config.marketTickerEnabled ? "translate-x-7" : "translate-x-0"
+              }`}
+            />
+          </button>
         </div>
       </section>
 

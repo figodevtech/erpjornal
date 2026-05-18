@@ -21,6 +21,7 @@ export type AppConfigSnapshot = {
   imageGenerationModel: string;
   imageGenerationSize: string;
   imageGenerationQuality: string;
+  marketTickerEnabled: boolean;
 };
 
 type PrismaExecutor = typeof prisma | Prisma.TransactionClient;
@@ -49,6 +50,7 @@ function toSnapshot(config: {
   imageGenerationModel: string;
   imageGenerationSize: string;
   imageGenerationQuality: string;
+  marketTickerEnabled: boolean;
 }): AppConfigSnapshot {
   return {
     id: config.id,
@@ -61,6 +63,7 @@ function toSnapshot(config: {
     imageGenerationModel: config.imageGenerationModel,
     imageGenerationSize: config.imageGenerationSize,
     imageGenerationQuality: config.imageGenerationQuality,
+    marketTickerEnabled: config.marketTickerEnabled,
   };
 }
 

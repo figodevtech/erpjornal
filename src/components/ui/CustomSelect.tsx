@@ -31,6 +31,7 @@ export default function CustomSelect({
   className = "",
 }: CustomSelectProps) {
   const [open, setOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
   const [internalValue, setInternalValue] = useState(defaultValue);
   const rootRef = useRef<HTMLDivElement>(null);
   const selectedValue = value ?? internalValue;
@@ -38,6 +39,18 @@ export default function CustomSelect({
     () => options.find((option) => option.value === selectedValue),
     [options, selectedValue]
   );
+
+  function updateDropdownPosition() {
+    const rect = rootRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const estimatedMenuHeight = 288;
+    const spacing = 12;
+    const availableBelow = window.innerHeight - rect.bottom;
+    const availableAbove = rect.top;
+
+    setDropUp(availableBelow < estimatedMenuHeight + spacing && availableAbove > availableBelow);
+  }
 
   useEffect(() => {
     function handlePointerDown(event: MouseEvent) {
@@ -58,6 +71,17 @@ export default function CustomSelect({
     };
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+
+    window.addEventListener("resize", updateDropdownPosition);
+    window.addEventListener("scroll", updateDropdownPosition, true);
+    return () => {
+      window.removeEventListener("resize", updateDropdownPosition);
+      window.removeEventListener("scroll", updateDropdownPosition, true);
+    };
+  }, [open]);
+
   function selectValue(nextValue: string) {
     if (value === undefined) {
       setInternalValue(nextValue);
@@ -72,7 +96,10 @@ export default function CustomSelect({
       <button
         type="button"
         disabled={disabled}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          if (!open) updateDropdownPosition();
+          setOpen((current) => !current);
+        }}
         className="flex w-full items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white p-3 text-left text-sm text-gray-700 shadow-sm outline-none transition hover:border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400"
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -86,7 +113,9 @@ export default function CustomSelect({
       {open && !disabled && (
         <div
           role="listbox"
-          className="absolute z-[80] mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-1.5 shadow-2xl"
+          className={`absolute z-[80] max-h-72 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-1.5 shadow-2xl ${
+            dropUp ? "bottom-full mb-2" : "top-full mt-2"
+          }`}
         >
           {options.map((option) => {
             const selected = option.value === selectedValue;

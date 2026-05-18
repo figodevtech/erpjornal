@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, KeyRound, Loader2, Mail, Pencil, Plus, Save, Shield, UserCog, Users, X } from "lucide-react";
 import Link from "next/link";
@@ -150,6 +150,20 @@ function UserActionsDropdown({
   onSetPassword: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [dropUp, setDropUp] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  function updateDropdownPosition() {
+    const rect = rootRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const estimatedMenuHeight = 156;
+    const spacing = 12;
+    const availableBelow = window.innerHeight - rect.bottom;
+    const availableAbove = rect.top;
+
+    setDropUp(availableBelow < estimatedMenuHeight + spacing && availableAbove > availableBelow);
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -161,18 +175,23 @@ function UserActionsDropdown({
 
     window.addEventListener("click", close);
     window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", updateDropdownPosition);
+    window.addEventListener("scroll", updateDropdownPosition, true);
     return () => {
       window.removeEventListener("click", close);
       window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", updateDropdownPosition);
+      window.removeEventListener("scroll", updateDropdownPosition, true);
     };
   }, [open]);
 
   return (
-    <div className="relative">
+    <div ref={rootRef} className="relative">
       <button
         type="button"
         onClick={(event) => {
           event.stopPropagation();
+          if (!open) updateDropdownPosition();
           setOpen((current) => !current);
         }}
         className="inline-flex items-center gap-2 rounded-2xl bg-gray-950 px-5 py-2.5 text-sm font-black text-white transition hover:bg-black"
@@ -188,7 +207,9 @@ function UserActionsDropdown({
         <div
           role="menu"
           onClick={(event) => event.stopPropagation()}
-          className="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white p-1.5 shadow-2xl"
+          className={`absolute right-0 z-20 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white p-1.5 shadow-2xl ${
+            dropUp ? "bottom-full mb-2" : "top-full mt-2"
+          }`}
         >
           <button
             type="button"

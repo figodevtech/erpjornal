@@ -112,7 +112,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
           aria-label="Menu do usuário"
         >
           <UserCircle className="w-4 h-4" />
-          <span className="max-w-[100px] truncate">Olá, {user.name?.split(" ")[0]}</span>
+          <span className="max-w-25 truncate">Olá, {user.name?.split(" ")[0]}</span>
         </button>
       ) : (
         <button
@@ -128,7 +128,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
 
       {isOpen && (
         <div
-          className="absolute right-0 mt-3 w-72 bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-[100] border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200 overflow-hidden transition-colors"
+          className="absolute right-0 mt-3 w-72 bg-white dark:bg-gray-900 rounded-xl shadow-2xl z-100 border border-gray-100 dark:border-gray-800 animate-in fade-in zoom-in duration-200 overflow-hidden transition-colors"
           role="dialog"
           aria-label={user ? "Menu do usuário" : "Formulário de acesso"}
         >
@@ -185,7 +185,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
                     className="p-3 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-600 flex items-center gap-2 text-red-700 dark:text-red-400 text-xs font-bold rounded-r-md animate-in slide-in-from-top-1"
                     role="alert"
                   >
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}

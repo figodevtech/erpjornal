@@ -240,7 +240,7 @@ export default async function PortalHome() {
         <section>
           <div className="mb-10 flex items-center justify-between border-l-[6px] border-red-700 bg-gray-100 px-5 py-3 dark:bg-gray-900">
             <h2 className="my-0 text-[20px] font-black uppercase tracking-wide text-gray-900 dark:text-gray-100">
-              As mais recentes e plantao
+              As mais recentes
             </h2>
           </div>
 

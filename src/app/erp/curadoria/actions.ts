@@ -20,6 +20,14 @@ type CuradoriaAIResponse = {
   word_count: number;
 };
 
+type CuradoriaRewriteDraft = {
+  titulo: string;
+  resumo: string;
+  corpoTexto: string;
+  categoriaId?: string | null;
+  urlImagemOg?: string | null;
+};
+
 type OpenAIResponseBody = {
   output_text?: string;
   output?: Array<{
@@ -774,6 +782,52 @@ export async function rewriteWithAI(itemId: string) {
       "Erro na comunicacao com a IA: " + (error instanceof Error ? error.message : "erro desconhecido"),
     );
   }
+}
+
+export async function saveRSSRewriteDraft(itemId: string, draft: CuradoriaRewriteDraft) {
+  await exigirPermissao("curadoria:aprovar");
+
+  const item = await prisma.itemRssBruto.findUnique({ where: { id: itemId } });
+  if (!item) throw new Error("Item nao encontrado");
+
+  const latestLog = await prisma.logReescrita.findFirst({
+    where: { itemRssId: itemId },
+    orderBy: { criadoEm: "desc" },
+  });
+
+  const alteracoesHumanas = {
+    titulo: draft.titulo,
+    resumo: draft.resumo,
+    corpoTexto: draft.corpoTexto,
+    categoriaId: draft.categoriaId || null,
+    urlImagemOg: draft.urlImagemOg || null,
+    salvoEm: new Date().toISOString(),
+  };
+
+  if (latestLog) {
+    await prisma.logReescrita.update({
+      where: { id: latestLog.id },
+      data: { alteracoesHumanas },
+    });
+  } else {
+    await prisma.logReescrita.create({
+      data: {
+        itemRssId: itemId,
+        alteracoesHumanas,
+      },
+    });
+  }
+
+  if (item.status === "pending") {
+    await prisma.itemRssBruto.update({
+      where: { id: itemId },
+      data: { status: "selected" },
+    });
+  }
+
+  revalidatePath(`/erp/curadoria/review/${itemId}`);
+  revalidatePath("/erp/curadoria/dashboard");
+  return { success: true };
 }
 
 export async function approveAndPublish(

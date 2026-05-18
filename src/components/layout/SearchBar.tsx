@@ -207,7 +207,7 @@ export default function SearchBar() {
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder="Buscar notícias, temas ou autores..."
-                    className="flex-1 bg-transparent border-none py-3 px-3 text-[14px] font-bold text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-0 outline-none"
+                    className="flex-1 bg-transparent border-none py-3 px-3 font-bold text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-0 outline-none"
                     autoFocus
                     autoComplete="off"
                     autoCorrect="off"

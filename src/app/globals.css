@@ -266,6 +266,31 @@ html:not(.dark) .article-prose figcaption * {
 .news-prose blockquote::after { content: '"'; @apply block text-5xl text-red-600 mt-2; }
 .news-prose img { @apply rounded-sm shadow-sm transition-all duration-300; }
 
+@keyframes market-ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.market-ticker-track {
+  animation: market-ticker-scroll 34s linear infinite;
+  will-change: transform;
+}
+
+.market-ticker-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .market-ticker-track {
+    animation: none;
+    overflow-x: auto;
+  }
+}
+
 .ProseMirror img {
   @apply rounded-xl transition-all duration-300;
 }

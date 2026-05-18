@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Clock, ExternalLink, Sparkles, User, X } from "lucide-react";
+import { Clock, ExternalLink, FileText, Sparkles, User, X } from "lucide-react";
 import { toast } from "sonner";
 
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
@@ -18,6 +19,20 @@ type SelectionItem = {
   tituloOriginal: string;
   description?: string | null;
   linkOriginal: string;
+  status: string;
+  artigo?: { id: string } | null;
+};
+
+const statusStyles: Record<string, string> = {
+  pending: "border-gray-100 bg-gray-900/80 text-white",
+  selected: "border-indigo-100 bg-indigo-50 text-indigo-700",
+  ai_generated: "border-emerald-100 bg-emerald-50 text-emerald-700",
+};
+
+const statusLabels: Record<string, string> = {
+  pending: "Pendente",
+  selected: "Selecionada",
+  ai_generated: "IA gerada",
 };
 
 function getErrorMessage(error: unknown) {
@@ -105,6 +120,15 @@ export function SelectionCard({
               {item.source.name}
             </span>
           </div>
+          <div className="absolute right-4 top-4">
+            <span
+              className={`rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-lg backdrop-blur-md ${
+                statusStyles[item.status] ?? "border-gray-100 bg-gray-50 text-gray-500"
+              }`}
+            >
+              {statusLabels[item.status] ?? item.status.replace("_", " ")}
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-1 flex-col p-6">
@@ -129,7 +153,33 @@ export function SelectionCard({
 
           <div className="mt-auto space-y-3">
             <div className="grid gap-2">
-              {podeAprovar ? (
+              {item.status === "published" ? (
+                item.artigo ? (
+                  <Link
+                    href={`/erp/artigos/${item.artigo.id}`}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-sky-600 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-lg transition-all hover:bg-sky-700 active:scale-[0.98]"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Editar publicação
+                  </Link>
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-3 text-center text-[10px] font-black uppercase tracking-[0.14em] text-gray-400">
+                    Publicada
+                  </div>
+                )
+              ) : !podeAprovar ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-3 text-center text-[10px] font-black uppercase tracking-[0.14em] text-gray-400">
+                  Sem permissao para aprovar
+                </div>
+              ) : item.status === "selected" || item.status === "ai_generated" ? (
+                <Link
+                  href={`/erp/curadoria/review/${item.id}`}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gray-900 py-3 text-[11px] font-black uppercase tracking-[0.14em] text-white shadow-lg transition-all hover:bg-gray-800 active:scale-[0.98]"
+                >
+                  <Sparkles className="h-4 w-4 text-indigo-400" />
+                  {item.status === "ai_generated" ? "Revisar IA" : "Continuar reescrita"}
+                </Link>
+              ) : (
                 <>
                   <button
                     onClick={handleSelect}
@@ -157,10 +207,6 @@ export function SelectionCard({
                     </button>
                   </div>
                 </>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-gray-200 px-4 py-3 text-center text-[10px] font-black uppercase tracking-[0.14em] text-gray-400">
-                  Sem permissao para aprovar
-                </div>
               )}
             </div>
 

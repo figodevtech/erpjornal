@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Layout,
   RotateCcw,
+  Save,
   Sparkles,
   XCircle,
 } from "lucide-react";
@@ -19,6 +20,7 @@ import {
   rejectRSSItem,
   republishOriginalWithCredits,
   rewriteWithAI,
+  saveRSSRewriteDraft,
 } from "../../../actions";
 import { useConfig } from "../../../../config/ErpConfigProvider";
 
@@ -38,6 +40,14 @@ type ReviewAIData = {
   ai_body?: string | null;
 };
 
+type ReviewDraftData = {
+  titulo?: string | null;
+  resumo?: string | null;
+  corpoTexto?: string | null;
+  categoriaId?: string | null;
+  urlImagemOg?: string | null;
+};
+
 type ReviewUser = {
   name?: string | null;
 };
@@ -49,24 +59,27 @@ function getErrorMessage(error: unknown) {
 export function ReviewForm({
   item,
   aiData,
+  draftData,
   user,
   categories,
 }: {
   item: ReviewItem;
   aiData: ReviewAIData | null;
+  draftData: ReviewDraftData | null;
   user: ReviewUser;
   categories: Array<{ id: string; nome: string }>;
 }) {
   const [loadingIA, setLoadingIA] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
   const [confirmarAcao, setConfirmarAcao] = useState<null | "publish" | "republish" | "reject">(null);
   const router = useRouter();
 
-  const [titulo, setTitulo] = useState(aiData?.ai_title || item.tituloOriginal);
-  const [resumo, setResumo] = useState(aiData?.ai_lead || "");
-  const [corpo, setCorpo] = useState(aiData?.ai_body || "");
-  const [imagemCapa, setImagemCapa] = useState(item.thumbnail || "");
-  const [categoriaId, setCategoriaId] = useState("");
+  const [titulo, setTitulo] = useState(draftData?.titulo || aiData?.ai_title || item.tituloOriginal);
+  const [resumo, setResumo] = useState(draftData?.resumo || aiData?.ai_lead || "");
+  const [corpo, setCorpo] = useState(draftData?.corpoTexto || aiData?.ai_body || "");
+  const [imagemCapa, setImagemCapa] = useState(draftData?.urlImagemOg || item.thumbnail || "");
+  const [categoriaId, setCategoriaId] = useState(draftData?.categoriaId || "");
   const { config, refreshConfig } = useConfig();
   const articleQuotaReached = config.articleRewriteUsage >= config.articleRewriteLimit;
 
@@ -112,6 +125,25 @@ export function ReviewForm({
       toast.error(getErrorMessage(err));
     } finally {
       setActionLoading(false);
+    }
+  }
+
+  async function handleSaveDraft() {
+    setSavingDraft(true);
+    try {
+      await saveRSSRewriteDraft(item.id, {
+        titulo,
+        resumo,
+        corpoTexto: corpo,
+        categoriaId: categoriaId || undefined,
+        urlImagemOg: imagemCapa || undefined,
+      });
+      toast.success("Rascunho salvo.");
+      router.refresh();
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setSavingDraft(false);
     }
   }
 
@@ -294,6 +326,16 @@ export function ReviewForm({
             >
               <CheckCircle2 className="h-4 w-4" />
               Republicar
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={savingDraft || actionLoading}
+              className="flex items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-gray-900 px-5 py-3.5 text-[10px] font-black uppercase tracking-widest text-white transition-all hover:bg-black active:scale-95 disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" />
+              {savingDraft ? "Salvando..." : "Salvar"}
             </button>
 
             <button

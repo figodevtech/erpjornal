@@ -30,6 +30,7 @@ export default async function CuradoriaReviewPage({
 
   const latestLog = item.logsReescrita[0];
   const aiData = (latestLog?.respostaIa as Record<string, unknown> | null) ?? null;
+  const draftData = (latestLog?.alteracoesHumanas as Record<string, unknown> | null) ?? null;
   const categories = await prisma.categoria.findMany({
     select: { id: true, nome: true },
     orderBy: { nome: "asc" },
@@ -95,7 +96,13 @@ export default async function CuradoriaReviewPage({
         </div>
 
         <div className="space-y-8 xl:col-span-8">
-          <ReviewForm item={item} aiData={aiData} user={session.user} categories={categories} />
+          <ReviewForm
+            item={item}
+            aiData={aiData}
+            draftData={draftData}
+            user={session.user}
+            categories={categories}
+          />
         </div>
       </div>
     </div>

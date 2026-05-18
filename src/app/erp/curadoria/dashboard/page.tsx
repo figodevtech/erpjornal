@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Clock, Filter, Sparkles, X } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Clock, Filter, Sparkles, X } from "lucide-react";
 
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -9,37 +9,46 @@ import { SelectionCard } from "./components/SelectionCard";
 export default async function CuradoriaDashboardPage({
   searchParams,
 }: {
-  searchParams: Promise<{ source?: string }>;
+  searchParams: Promise<{ source?: string; page?: string }>;
 }) {
   const session = await exigirPermissao("curadoria:ler");
   const podeAprovar = temPermissao(session, "curadoria:aprovar");
-  const { source } = await searchParams;
+  const { source, page } = await searchParams;
+  const currentPage = Math.max(Number.parseInt(page ?? "1", 10) || 1, 1);
+  const pageSize = 24;
+  const visibleStatuses = ["pending", "selected", "ai_generated"];
+  const itemWhere = {
+    status: { in: visibleStatuses },
+    ...(source ? { sourceId: source } : {}),
+  };
 
-  const [pending, selected, aiGenerated, items, sources, categories, publicados] = await Promise.all([
+  const [pending, selected, aiGenerated, totalItems, sources, categories] = await Promise.all([
     prisma.itemRssBruto.count({ where: { status: "pending" } }),
     prisma.itemRssBruto.count({ where: { status: "selected" } }),
     prisma.itemRssBruto.count({ where: { status: "ai_generated" } }),
-    prisma.itemRssBruto.findMany({
-      where: {
-        status: "pending",
-        ...(source ? { sourceId: source } : {}),
-      },
-      include: { source: true },
-      orderBy: { dataPublicacao: "desc" },
-      take: 50,
-    }),
+    prisma.itemRssBruto.count({ where: itemWhere }),
     prisma.fonteRss.findMany({ select: { id: true, name: true } }),
     prisma.categoria.findMany({
       select: { id: true, nome: true },
       orderBy: { nome: "asc" },
     }),
-    prisma.artigo.findMany({
-      where: { itemRssId: { not: null } },
-      include: { categoria: true },
-      orderBy: { criadoEm: "desc" },
-      take: 10,
-    }),
   ]);
+  const totalPages = Math.max(Math.ceil(totalItems / pageSize), 1);
+  const safePage = Math.min(currentPage, totalPages);
+  const items = await prisma.itemRssBruto.findMany({
+    where: itemWhere,
+    include: { source: true },
+    orderBy: { dataPublicacao: "desc" },
+    skip: (safePage - 1) * pageSize,
+    take: pageSize,
+  });
+  const pageHref = (targetPage: number) => {
+    const params = new URLSearchParams();
+    if (source) params.set("source", source);
+    if (targetPage > 1) params.set("page", String(targetPage));
+    const query = params.toString();
+    return `/erp/curadoria/dashboard${query ? `?${query}` : ""}`;
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -115,6 +124,45 @@ export default async function CuradoriaDashboardPage({
         ))}
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-black uppercase tracking-tight text-gray-900">
+            Matérias RSS
+          </h2>
+          <p className="mt-1 text-xs font-bold uppercase tracking-widest text-gray-400">
+            {totalItems} itens encontrados
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Link
+            href={pageHref(safePage - 1)}
+            aria-disabled={safePage <= 1}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border transition ${
+              safePage <= 1
+                ? "pointer-events-none border-gray-100 text-gray-200"
+                : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-900"
+            }`}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Link>
+          <span className="min-w-24 text-center text-xs font-black uppercase tracking-widest text-gray-400">
+            {safePage} / {totalPages}
+          </span>
+          <Link
+            href={pageHref(safePage + 1)}
+            aria-disabled={safePage >= totalPages}
+            className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border transition ${
+              safePage >= totalPages
+                ? "pointer-events-none border-gray-100 text-gray-200"
+                : "border-gray-200 bg-white text-gray-500 hover:border-gray-300 hover:text-gray-900"
+            }`}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 2xl:grid-cols-3">
         {items.map((item) => (
           <SelectionCard
@@ -128,7 +176,7 @@ export default async function CuradoriaDashboardPage({
         {items.length === 0 && (
           <div className="rounded-[40px] border-2 border-dashed border-gray-200 bg-white/50 py-32 text-center md:col-span-2 2xl:col-span-3">
             <X className="mx-auto mb-4 h-16 w-16 text-gray-200" />
-            <h3 className="text-xl font-black uppercase text-gray-900">Sem noticias pendentes</h3>
+            <h3 className="text-xl font-black uppercase text-gray-900">Sem materias RSS</h3>
             <p className="mx-auto mt-2 max-w-md font-medium text-gray-500">
               Cadastrar o feed não importa notícias sozinho. Vá em Gerenciar Feeds e clique em Coletar para preencher esta fila.
             </p>
@@ -142,7 +190,7 @@ export default async function CuradoriaDashboardPage({
         )}
       </div>
 
-      <div className="border-t border-gray-200 pt-12">
+      {/* <div className="border-t border-gray-200 pt-12">
         <h2 className="mb-6 text-xl font-black uppercase tracking-tight text-gray-900">
           Recentemente Publicados
         </h2>
@@ -187,7 +235,7 @@ export default async function CuradoriaDashboardPage({
             </table>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

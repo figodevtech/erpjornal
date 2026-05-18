@@ -135,7 +135,7 @@ export default function ErpSidebar({
     <button
       type="button"
       onClick={() => setMobileOpen(true)}
-      className="fixed left-4 top-4 z-[900] inline-flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-950 px-3 py-2 text-sm font-bold text-white shadow-2xl transition hover:bg-gray-900 md:hidden"
+      className="fixed left-4 top-4 z-900 inline-flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-950 px-3 py-2 text-sm font-bold text-white shadow-2xl transition hover:bg-gray-900 md:hidden"
       aria-label="Abrir menu do ERP"
     >
       <Menu className="h-5 w-5 text-red-400" />
@@ -145,14 +145,14 @@ export default function ErpSidebar({
     {mobileOpen && (
       <button
         type="button"
-        className="fixed inset-0 z-[950] bg-gray-950/70 backdrop-blur-sm md:hidden"
+        className="fixed inset-0 z-950 bg-gray-950/70 backdrop-blur-sm md:hidden"
         aria-label="Fechar menu do ERP"
         onClick={closeMobile}
       />
     )}
 
     <aside
-      className={`fixed inset-y-0 left-0 z-[960] w-80 max-w-[86vw] -translate-x-full bg-gray-900 px-4 py-3 text-white shadow-2xl transition-transform duration-200 md:sticky md:top-0 md:z-auto md:h-screen md:max-w-none md:translate-x-0 md:self-start md:overflow-hidden md:shadow-none md:transition-[width] md:duration-200 ${
+      className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[86vw] -translate-x-full bg-gray-900 px-4 py-3 text-white shadow-2xl transition-transform duration-200 md:sticky md:top-0 md:z-auto md:h-screen md:max-w-none md:translate-x-0 md:self-start md:overflow-hidden md:shadow-none md:transition-[width] md:duration-200 ${
         mobileOpen ? "translate-x-0" : ""
       } ${
         collapsed ? "md:w-24" : "md:w-72"

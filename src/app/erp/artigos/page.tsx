@@ -38,7 +38,7 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
   });
 
   return (
-    <div className="mx-auto max-w-6xl p-4 md:px-8 md:py-6 space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Artigos</h1>
         <div className="flex items-center gap-3">

@@ -59,7 +59,7 @@ export default async function ERPLayout({ children }: { children: React.ReactNod
             }}
           />
 
-          <main className="flex-1 p-4 pt-20 md:px-8 md:py-6">
+          <main className="flex-1 p-4 pt-16 md:px-8 md:py-6">
             <div className="mx-auto max-w-7xl">{children}</div>
           </main>
         </div>

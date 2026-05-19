@@ -135,7 +135,9 @@ export default function ErpSidebar({
     <button
       type="button"
       onClick={() => setMobileOpen(true)}
-      className="fixed left-4 top-4 z-900 inline-flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-950 px-3 py-2 text-sm font-bold text-white shadow-2xl transition hover:bg-gray-900 md:hidden"
+      className={`fixed left-4 top-4 z-900 items-center gap-2 rounded-xl border border-gray-800 bg-gray-950 px-3 py-2 text-sm font-bold text-white shadow-2xl transition hover:bg-gray-900 md:hidden ${
+        mobileOpen ? "hidden" : "inline-flex"
+      }`}
       aria-label="Abrir menu do ERP"
     >
       <Menu className="h-5 w-5 text-red-400" />
@@ -145,7 +147,7 @@ export default function ErpSidebar({
     {mobileOpen && (
       <button
         type="button"
-        className="fixed inset-0 z-950 bg-gray-950/70 backdrop-blur-sm md:hidden"
+        className="fixed inset-0 z-40 bg-gray-950/70 backdrop-blur-sm md:hidden"
         aria-label="Fechar menu do ERP"
         onClick={closeMobile}
       />

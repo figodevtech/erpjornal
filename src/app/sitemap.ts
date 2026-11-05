@@ -1,9 +1,10 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { ArticleStatus } from "@/lib/types/article-status";
+import { getSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://revistagestao.com.br";
+  const baseUrl = getSiteUrl();
 
   // 1. URLs base fixas
   const standardPgs: MetadataRoute.Sitemap = [

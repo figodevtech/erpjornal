@@ -13,6 +13,7 @@ import TTSPlayer from "@/components/portal/TTSPlayer";
 import { ViewCounter } from "@/components/portal/ViewCounter";
 import { getArticleViews } from "@/app/actions/analytics";
 import { sanitizeHtmlForRender } from "@/lib/tts-utils";
+import { absoluteUrl } from "@/lib/site-url";
 
 export const revalidate = 300;
 
@@ -56,7 +57,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: artigo.resumo || "",
       type: "article",
       publishedTime: artigo.dataPublicacao?.toISOString(),
-      url: `https://revistagestao.com.br/noticia/${artigo.slug}`,
+      url: absoluteUrl(`/noticia/${artigo.slug}`),
     }
   };
 }

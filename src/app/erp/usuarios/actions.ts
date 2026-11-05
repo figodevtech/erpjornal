@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { exigirPermissao } from "@/lib/auth";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import { getSiteUrl } from "@/lib/site-url";
 
 function parsePerfis(formData: FormData) {
   return Array.from(
@@ -36,12 +37,6 @@ async function sincronizarPerfis(usuarioId: string, perfilIds: string[]) {
 
 function redirecionarComErro(mensagem: string): never {
   throw new Error(mensagem);
-}
-
-function getSiteUrl() {
-  if (process.env.NEXTAUTH_URL) return process.env.NEXTAUTH_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
 }
 
 export async function criarUsuarioErp(formData: FormData) {

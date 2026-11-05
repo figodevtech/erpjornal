@@ -6,6 +6,7 @@ import { Providers } from "./providers";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import NextTopLoader from "nextjs-toploader";
+import { getSiteUrl } from "@/lib/site-url";
 
 const newsreader = Newsreader({
   variable: "--font-newsreader",
@@ -21,6 +22,7 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: "Revista Gestão - Liderança e Informação",
   description: "Portal moderno de notícias focado em gestão governamental, estratégia e política interativa.",
   openGraph: {

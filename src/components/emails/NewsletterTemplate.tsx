@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { absoluteUrl } from '@/lib/site-url';
 
 interface NewsletterTemplateProps {
   title: string;
@@ -42,7 +43,7 @@ export const NewsletterTemplate: React.FC<Readonly<NewsletterTemplateProps>> = (
     </p>
     
     <a 
-      href={`https://revistagestao.com/noticia/${slug}`} 
+      href={absoluteUrl(`/noticia/${slug}`)}
       style={{
         display: 'inline-block',
         backgroundColor: '#d32f2f',

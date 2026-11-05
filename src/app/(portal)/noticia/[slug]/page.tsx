@@ -9,7 +9,7 @@ import NewsletterForm from "@/components/portal/NewsletterForm";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 import TTSPlayer from "@/components/portal/TTSPlayer";
 import { ViewCounter } from "@/components/portal/ViewCounter";
-import { getArticleViews } from "@/app/actions/analytics";
+import { obterVisualizacoes } from "@/lib/analytics/visualizacoes";
 import { buscarArtigoPublicado } from "@/lib/data/artigos";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
 import { absoluteUrl } from "@/lib/site-url";
@@ -72,7 +72,7 @@ export default async function NoticiaPage({ params }: PageProps) {
   }
 
   // Busca visualizações em tempo real (Redis)
-  const realTimeViews = await getArticleViews(artigo.id);
+  const realTimeViews = await obterVisualizacoes(artigo.id);
   // Defesa em profundidade: o HTML já é sanitizado ao gravar, e de novo ao exibir.
   const corpoTextoSanitizado = sanitizarHtmlArtigo(artigo.corpoTexto);
   const { beforeAd: corpoAntesDoAnuncio, afterAd: corpoDepoisDoAnuncio } = splitArticleHtmlForAd(corpoTextoSanitizado);
@@ -306,7 +306,7 @@ export default async function NoticiaPage({ params }: PageProps) {
         </div>
 
         {/* View Counter Client Injector (M3-PLUS-T1-ST2) */}
-        <ViewCounter artigoId={artigo.id} />
+        <ViewCounter slug={artigo.slug} />
 
       </article>
 

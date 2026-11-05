@@ -5,7 +5,7 @@ import { searchRateLimit, getIP } from "@/lib/ratelimit";
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const query = searchParams.get("q") || "";
+    const query = (searchParams.get("q") || "").trim().slice(0, 100);
     
     // --- RATE LIMIT CHECK (Shared with main search) ---
     const ip = getIP(req);

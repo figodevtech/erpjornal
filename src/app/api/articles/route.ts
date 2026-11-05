@@ -4,6 +4,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { redis, redisKeys } from "@/lib/redis";
 import { globalRateLimit, getIP } from "@/lib/ratelimit";
+import { inteiroLimitado, isSlugValido } from "@/lib/http/parametros";
 
 export async function GET(request: Request) {
   try {
@@ -15,10 +16,14 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     
-    // Tratamento de paginação padrão
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    // Paginação com limites: antes ?limit=100000 despejava a base e ?page=abc virava NaN.
+    const page = inteiroLimitado(searchParams.get("page"), { padrao: 1, min: 1, max: 500 });
+    const limit = inteiroLimitado(searchParams.get("limit"), { padrao: 10, min: 1, max: 50 });
     const categorySlug = searchParams.get("category");
+    // A categoria entra na chave do cache Redis: valores arbitrários criariam chaves sem fim.
+    if (categorySlug !== null && !isSlugValido(categorySlug)) {
+      return NextResponse.json({ error: "Categoria inválida" }, { status: 400 });
+    }
 
     const skip = (page - 1) * limit;
 

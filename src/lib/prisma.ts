@@ -37,6 +37,11 @@ export function criarPrismaClient(connectionString = process.env.DATABASE_URL) {
     connectionString,
     ssl: configurarTls(connectionString),
     connectionTimeoutMillis: 5_000,
+    // O pooler do Supabase fecha conexões ociosas; descartá-las antes (e manter
+    // keep-alive) evita reaproveitar uma conexão já fechada ("P1017 Server has
+    // closed the connection").
+    idleTimeoutMillis: 10_000,
+    keepAlive: true,
   });
 
   return new PrismaClient({ adapter });

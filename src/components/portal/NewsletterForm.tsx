@@ -29,7 +29,7 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
       if (!res.ok) throw new Error();
 
       setSubscribed(true);
-      toast.success("Inscrição realizada com sucesso!");
+      toast.success("Falta só confirmar: enviamos um link para o seu e-mail.");
     } catch {
       toast.error("Erro ao realizar inscrição. Tente novamente.");
     } finally {
@@ -48,8 +48,8 @@ export default function NewsletterForm({ variant = "box", origem }: NewsletterFo
       >
         <CheckCircle2 className="w-8 h-8 text-green-600" />
         <div>
-          <h4 className="font-black text-lg">Você está dentro!</h4>
-          <p className="text-sm font-medium opacity-80">Em breve você receberá nossas melhores análises.</p>
+          <h4 className="font-black text-lg">Confira seu e-mail</h4>
+          <p className="text-sm font-medium opacity-80">Enviamos um link de confirmação. A inscrição só vale depois que você clicar nele.</p>
         </div>
       </motion.div>
     );

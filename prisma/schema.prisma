@@ -40,6 +40,7 @@ model Usuario {
   notasFonte      NotaFonte[]       @relation("NotaFonteAutor")
   versoesArtigo   VersaoArtigo[]
   versoesMediaKit MediaKitVersion[]
+  plantoes        Plantao[]
 
   @@map("usuarios")
 }
@@ -129,6 +130,8 @@ model Artigo {
   notasFonte        NotaFonte[]
   artigosPoliticos  ArtigoPolitico[]
   redirecionamentos RedirecionamentoSlug[]
+  tags              ArtigoTag[]
+  plantoes          Plantao[]
   // Soft-delete (PRD: nenhum registro é apagado fisicamente)
   excluidoEm        DateTime?              @map("excluido_em")
 
@@ -165,6 +168,8 @@ model Politico {
   partido           String?
   biografia         String?
   urlFoto           String?          @map("url_foto")
+  // Endereço do perfil público (/politico/<slug>); gerado do nome e mantido estável
+  slug              String?          @unique
   regiao            String?
   estado            String?
   criadoEm          DateTime         @default(now()) @map("criado_em")
@@ -267,6 +272,46 @@ model RedirecionamentoSlug {
 
   @@index([artigoId])
   @@map("redirecionamentos_slug")
+}
+
+/// Plantão (breaking news): avisos curtos na faixa do topo do portal. No máximo 10 ativos.
+model Plantao {
+  id       String    @id @default(uuid()) @db.Uuid
+  texto    String
+  /// Matéria relacionada (o aviso vira link para ela enquanto estiver no ar)
+  artigoId String?   @map("artigo_id") @db.Uuid
+  /// Link externo opcional (https), usado quando não há matéria
+  link     String?
+  ativo    Boolean   @default(true)
+  expiraEm DateTime? @map("expira_em")
+  autorId  String    @map("autor_id") @db.Uuid
+  criadoEm DateTime  @default(now()) @map("criado_em")
+  artigo   Artigo?   @relation(fields: [artigoId], references: [id], onDelete: SetNull)
+  autor    Usuario   @relation(fields: [autorId], references: [id])
+
+  @@index([ativo, criadoEm])
+  @@map("plantoes")
+}
+
+model Tag {
+  id       String      @id @default(uuid()) @db.Uuid
+  nome     String
+  slug     String      @unique
+  criadoEm DateTime    @default(now()) @map("criado_em")
+  artigos  ArtigoTag[]
+
+  @@map("tags")
+}
+
+model ArtigoTag {
+  artigoId String @map("artigo_id") @db.Uuid
+  tagId    String @map("tag_id") @db.Uuid
+  artigo   Artigo @relation(fields: [artigoId], references: [id], onDelete: Cascade)
+  tag      Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([artigoId, tagId])
+  @@index([tagId])
+  @@map("artigos_tags")
 }
 
 model Midia {

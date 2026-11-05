@@ -29,6 +29,7 @@ import {
 } from "./seed-data/conteudo";
 import { idEstavel } from "./seed-data/ids";
 import { ARTIGOS_EDICAO_2, REVISTA_EDICAO_2 } from "./seed-data/revista-edicao-2";
+import { slugify } from "../src/lib/slug";
 
 const HORA = 60 * 60 * 1000;
 const resumo: string[] = [];
@@ -215,7 +216,7 @@ async function seedEntidadesEFontes(adminId: string) {
   const entidadeIds: Record<string, string> = {};
   for (const { chave, ...entidade } of ENTIDADES) {
     const id = idEstavel(`entidade:${chave}`);
-    await prisma.politico.upsert({ where: { id }, update: {}, create: { id, ...entidade } });
+    await prisma.politico.upsert({ where: { id }, update: {}, create: { id, slug: slugify(entidade.nome, 80), ...entidade } });
     entidadeIds[chave] = id;
   }
 

@@ -37,8 +37,13 @@ function LoginForm() {
       const response = await fetch("/api/auth/me", { cache: "no-store" });
       const data = response.ok ? await response.json() : null;
       const permissoes = (data?.sessao?.user?.permissoes ?? []) as string[];
+      const mfaPendente = data?.sessao?.user?.mfa?.pendente === true;
 
-      if (callbackUrl) {
+      if (mfaPendente) {
+        // Admin/editor (ou quem já cadastrou o autenticador): falta o código do celular.
+        const destino = callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : "";
+        router.push(`/seguranca/mfa${destino}`);
+      } else if (callbackUrl) {
         router.push(callbackUrl);
       } else if (permissoes.some((permissao) => !permissao.startsWith("portal:"))) {
         router.push("/erp");

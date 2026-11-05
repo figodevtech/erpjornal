@@ -3,7 +3,8 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { podeAcessarErp, temAlgumaPermissao, temPermissao } from "@/lib/rbac";
+import { avaliarMfa, lerNivelDoToken, type EstadoMfa } from "@/lib/mfa";
+import { isPermissaoErp, podeAcessarErp, temAlgumaPermissao, temPermissao } from "@/lib/rbac";
 import { criarClienteSupabaseServer } from "@/lib/supabase/server";
 
 // Regras puras de permissão vivem em src/lib/rbac.ts; reexportadas por compatibilidade.
@@ -28,18 +29,35 @@ export type SessaoAplicacao = {
     permissoes: string[];
     tipoConta: string;
     status: string;
+    /** Segundo fator (TOTP). Com `pendente`, as permissões do ERP ficam de fora até confirmar o código. */
+    mfa: EstadoMfa;
   };
 };
 
+/** Caminho da tela de cadastro/confirmação do segundo fator (fora do layout do ERP). */
+export const CAMINHO_MFA = "/seguranca/mfa";
+
 export const obterSessao = cache(async (): Promise<SessaoAplicacao | null> => {
   const supabase = await criarClienteSupabaseServer();
+  // O token da sessão é validado pelo Auth (getUser); o nível de MFA (claim aal)
+  // é lido desse mesmo token, nunca de um cookie não verificado.
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  if (!token) {
+    return null;
+  }
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser(token);
 
   if (!user) {
     return null;
   }
+
+  const nivel = lerNivelDoToken(token);
+  const fatoresVerificados = (user.factors ?? []).filter((fator) => fator.status === "verified").length;
 
   const usuario = await prisma.usuario.findUnique({
     where: { id: user.id },
@@ -71,6 +89,7 @@ export const obterSessao = cache(async (): Promise<SessaoAplicacao | null> => {
         permissoes: [],
         tipoConta: "portal",
         status: "ativo",
+        mfa: avaliarMfa({ perfis: [], temPermissaoErp: false, fatoresVerificados, nivel }),
       },
     };
   }
@@ -86,6 +105,13 @@ export const obterSessao = cache(async (): Promise<SessaoAplicacao | null> => {
     )
   );
 
+  const mfa = avaliarMfa({
+    perfis,
+    temPermissaoErp: permissoes.some(isPermissaoErp),
+    fatoresVerificados,
+    nivel,
+  });
+
   return {
     user: {
       id: usuario.id,
@@ -93,9 +119,11 @@ export const obterSessao = cache(async (): Promise<SessaoAplicacao | null> => {
       email: usuario.email ?? user.email ?? null,
       role: normalizarRole(perfis),
       perfis,
-      permissoes,
+      // Sem o segundo fator confirmado, nenhuma checagem de permissão do ERP passa.
+      permissoes: mfa.pendente ? permissoes.filter((permissao) => !isPermissaoErp(permissao)) : permissoes,
       tipoConta: usuario.tipoConta,
       status: usuario.status,
+      mfa,
     },
   };
 });
@@ -112,6 +140,10 @@ export async function exigirSessao() {
 
 export async function exigirAcessoErp() {
   const sessao = await exigirSessao();
+
+  if (sessao.user.mfa.pendente) {
+    redirect(CAMINHO_MFA);
+  }
 
   if (!podeAcessarErp(sessao)) {
     redirect("/403");

@@ -12,6 +12,7 @@ import {
   FileText,
   Home,
   Image as ImageIcon,
+  KeyRound,
   LogOut,
   Menu,
   Megaphone,
@@ -392,6 +393,14 @@ export default function ErpSidebar({
         </nav>
 
         <div className="mt-3 space-y-2">
+          <SidebarLink
+            href="/seguranca/mfa"
+            label="Dois fatores (MFA)"
+            icon={<KeyRound className="h-4 w-4 text-gray-400" />}
+            collapsed={collapsed}
+            active={false}
+            onNavigate={closeMobile}
+          />
           <SignOutButton
             className={`inline-flex w-full items-center rounded-xl px-3 py-2.5 font-medium text-red-400 transition-colors hover:bg-red-500/10 ${
               collapsed ? "justify-center" : "gap-3"

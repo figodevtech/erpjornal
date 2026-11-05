@@ -35,6 +35,55 @@ export const buscarArtigoPublicado = cache(async (slug: string) => {
         select: { id: true, urlFonte: true, urlDocumento: true, statusVerificacao: true },
         orderBy: { criadoEm: "asc" },
       },
+      tags: {
+        select: { tag: { select: { nome: true, slug: true } } },
+        orderBy: { tag: { nome: "asc" } },
+      },
+      // Só entidades com perfil público (com slug e não excluídas).
+      artigosPoliticos: {
+        where: { politico: { excluidoEm: null, slug: { not: null } } },
+        select: { papel: true, politico: { select: { nome: true, slug: true, cargo: true, partido: true } } },
+      },
+    },
+  });
+});
+
+/** Campos de matéria usados nas listagens do portal (cards). */
+export const CAMPOS_CARD_MATERIA = {
+  id: true,
+  titulo: true,
+  slug: true,
+  resumo: true,
+  urlImagemOg: true,
+  dataPublicacao: true,
+  criadoEm: true,
+  autor: { select: { nome: true } },
+  categoria: { select: { nome: true } },
+} as const;
+
+/** Tag com ao menos uma matéria no ar (tag só de rascunhos não aparece no portal). */
+export const buscarTagPublica = cache(async (slug: string) => {
+  return prisma.tag.findFirst({
+    where: { slug, artigos: { some: { artigo: { ...filtroArtigoNoAr(), excluidoEm: null } } } },
+    select: { id: true, nome: true, slug: true },
+  });
+});
+
+/** Perfil público de uma entidade/político (sem CPF/CNPJ). */
+export const buscarPoliticoPublico = cache(async (slug: string) => {
+  return prisma.politico.findFirst({
+    where: { slug },
+    select: {
+      id: true,
+      nome: true,
+      slug: true,
+      cargo: true,
+      partido: true,
+      biografia: true,
+      urlFoto: true,
+      regiao: true,
+      estado: true,
+      categoriaEntidade: true,
     },
   });
 });

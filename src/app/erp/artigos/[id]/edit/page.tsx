@@ -19,27 +19,26 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
     },
   });
 
-  const entidadesDoArtigo = await prisma.$queryRaw<Array<{ id: string; papel: string | null }>>`
-    select politico_id as id, papel
-    from public.artigos_politicos
-    where artigo_id = ${id}::uuid
-  `;
-
-  const revistaAtual = artigoBase?.revistaId
-    ? (
-        await prisma.$queryRaw<Array<{ id: string; titulo: string }>>`
-          select id, titulo
-          from public.revistas
-          where id = ${artigoBase.revistaId}::uuid
-          limit 1
-        `
-      )[0]
-    : null;
+  const [entidadesDoArtigo, tagsDoArtigo, revistaAtual] = await Promise.all([
+    prisma.artigoPolitico.findMany({
+      where: { artigoId: id, politico: { excluidoEm: null } },
+      select: { politicoId: true, papel: true },
+    }),
+    prisma.artigoTag.findMany({
+      where: { artigoId: id },
+      select: { tag: { select: { nome: true } } },
+      orderBy: { tag: { nome: "asc" } },
+    }),
+    artigoBase?.revistaId
+      ? prisma.revista.findUnique({ where: { id: artigoBase.revistaId }, select: { id: true, titulo: true } })
+      : Promise.resolve(null),
+  ]);
 
   const artigo = artigoBase
     ? ({
         ...artigoBase,
-        politicos: entidadesDoArtigo,
+        politicos: entidadesDoArtigo.map(({ politicoId, papel }) => ({ id: politicoId, papel })),
+        tags: tagsDoArtigo.map(({ tag }) => tag.nome),
       } as unknown as InitialData)
     : null;
 
@@ -52,13 +51,11 @@ export default async function EditarArtigoPage({ params }: { params: Promise<{ i
     redirect("/erp/artigos");
   }
 
-  const politicians = await prisma.$queryRaw<
-    Array<{ id: string; nome: string | null; partido: string | null; categoriaEntidade: string | null }>
-  >`
-    select id, nome, partido, categoria_entidade as "categoriaEntidade"
-    from public.politicos
-    order by nome asc nulls last, criado_em desc
-  `;
+  // Via Prisma (não SQL direto): entidades excluídas ficam de fora automaticamente.
+  const politicians = await prisma.politico.findMany({
+    select: { id: true, nome: true, partido: true, categoriaEntidade: true },
+    orderBy: [{ nome: { sort: "asc", nulls: "last" } }, { criadoEm: "desc" }],
+  });
 
   const categories = await prisma.categoria.findMany({
     select: { id: true, nome: true },

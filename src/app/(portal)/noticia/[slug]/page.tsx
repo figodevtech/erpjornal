@@ -27,7 +27,7 @@ export async function generateStaticParams() {
 /** Domínio legível de um link de fonte (sem quebrar a página se a URL for inválida). */
 function dominioDe(url: string) {
   try {
-    return new URL(url).hostname.replace(/^www./, "");
+    return new URL(url).hostname.replace(/^www\./, "");
   } catch {
     return url;
   }
@@ -291,6 +291,49 @@ export default async function NoticiaPage({ params }: PageProps) {
               )}
             </ul>
           </aside>
+        )}
+
+        {(artigo.tags.length > 0 || artigo.artigosPoliticos.length > 0) && (
+          <div className="mx-auto mt-12 w-full max-w-[760px] space-y-6 font-sans">
+            {artigo.artigosPoliticos.length > 0 && (
+              <section aria-labelledby="citados-na-materia">
+                <h2 id="citados-na-materia" className="mb-3 text-xs font-black uppercase tracking-widest text-gray-500">
+                  Citados nesta matéria
+                </h2>
+                <ul className="flex flex-wrap gap-2">
+                  {artigo.artigosPoliticos.map(({ politico, papel }) => (
+                    <li key={politico.slug}>
+                      <Link
+                        href={`/politico/${politico.slug}`}
+                        className="inline-flex flex-col rounded-lg border border-gray-200 px-3 py-2 transition-colors hover:border-red-700 dark:border-gray-800"
+                      >
+                        <span className="text-sm font-bold">{politico.nome}</span>
+                        {(papel || politico.cargo) && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400">{papel || politico.cargo}</span>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {artigo.tags.length > 0 && (
+              <nav aria-label="Tags da matéria">
+                <ul className="flex flex-wrap gap-2">
+                  {artigo.tags.map(({ tag }) => (
+                    <li key={tag.slug}>
+                      <Link
+                        href={`/tag/${tag.slug}`}
+                        className="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-gray-700 transition-colors hover:bg-red-700 hover:text-white dark:bg-gray-900 dark:text-gray-300"
+                      >
+                        #{tag.nome}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            )}
+          </div>
         )}
 
         <div className="mt-12 w-full max-w-[760px] mx-auto font-sans">

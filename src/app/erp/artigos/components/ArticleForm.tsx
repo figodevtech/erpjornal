@@ -21,6 +21,7 @@ export interface InitialData {
   dataPublicacao: Date | null;
   checagensFato?: { id: string, fonte_url: string, documento_url: string, status_verificacao: string }[];
   politicos?: { id: string; papel?: string | null }[];
+  tags?: string[];
   regiao: string | null;
   estado: string | null;
   autorId?: string;
@@ -482,6 +483,25 @@ export default function ArticleForm({
                 </h3>
                 
                 <EntityRelationCombobox entities={politicians} initialSelected={initialData?.politicos ?? []} />
+              </div>
+
+              <div className="pt-6 border-t border-gray-200/80">
+                <label htmlFor="tags-materia" className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-2 font-sans">
+                  <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                  </svg>
+                  Tags
+                </label>
+                <input
+                  id="tags-materia"
+                  type="text"
+                  name="tags"
+                  defaultValue={(initialData?.tags ?? []).join(", ")}
+                  maxLength={500}
+                  placeholder="Ex.: Reforma tributária, STF, Orçamento"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                />
+                <p className="text-xs text-gray-500 mt-2">Separe por vírgula. Até 10 tags; cada uma ganha uma página no portal.</p>
               </div>
 
               <div className="pt-6 border-t border-gray-200/80">

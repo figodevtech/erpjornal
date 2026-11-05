@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { BriefcaseBusiness, Building2, Pencil, Plus, Save, Trash2, UserCircle, X } from "lucide-react";
+import { BriefcaseBusiness, Building2, ExternalLink, Pencil, Plus, Save, Trash2, UserCircle, X } from "lucide-react";
 
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import CustomSelect from "@/components/ui/CustomSelect";
@@ -45,6 +45,8 @@ export interface Politician {
   biografia: string | null;
   regiao: string | null;
   estado: string | null;
+  /** Endereço do perfil público (/politico/<slug>). */
+  slug?: string | null;
 }
 
 function emptyEntity(): Politician {
@@ -181,6 +183,16 @@ export default function PoliticianManager({
                       <p className="mt-1 text-[10px] text-gray-400">
                         {entity.regiao} {entity.estado ? `(${entity.estado})` : ""}
                       </p>
+                    )}
+                    {entity.slug && (
+                      <a
+                        href={`/politico/${entity.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-indigo-600 hover:underline"
+                      >
+                        <ExternalLink className="h-3 w-3" /> Perfil público
+                      </a>
                     )}
                   </div>
                 </div>

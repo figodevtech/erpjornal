@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { exigirAlgumaPermissao, exigirPermissao, obterSessao, temAlgumaPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
+import { lerTags } from "@/lib/slug";
 import { registrarAuditoria } from "@/lib/auditoria";
 import { MENSAGEM_CHECAGEM_OBRIGATORIA, categoriaExigeChecagem } from "@/lib/editorial/checagem";
 import {
@@ -19,6 +20,7 @@ import {
   resolverStatusAoSalvar,
   type StatusArtigo,
 } from "@/lib/editorial/status";
+import { revalidarMateriasNoPortal } from "@/lib/cache/portal";
 
 /** Campos do artigo que vão para a auditoria (sem o corpo, que é grande). */
 function resumoParaAuditoria(artigo: {
@@ -73,6 +75,23 @@ const ChecagemFato = z.object({
   urlDocumento: UrlHttpOpcional,
   statusVerificacao: z.string().trim().max(30).catch("verificado"),
 });
+
+/** Substitui as tags da matéria, criando as que ainda não existem. */
+async function definirTags(
+  tx: Pick<typeof prisma, "tag" | "artigoTag">,
+  artigoId: string,
+  tags: { nome: string; slug: string }[]
+) {
+  await tx.artigoTag.deleteMany({ where: { artigoId } });
+  const ids: string[] = [];
+  for (const { nome, slug } of tags) {
+    const tag = await tx.tag.upsert({ where: { slug }, update: {}, create: { nome, slug }, select: { id: true } });
+    ids.push(tag.id);
+  }
+  if (ids.length > 0) {
+    await tx.artigoTag.createMany({ data: ids.map((tagId) => ({ artigoId, tagId })), skipDuplicates: true });
+  }
+}
 
 function texto(formData: FormData, campo: string) {
   return formData.get(campo)?.toString() ?? "";
@@ -160,6 +179,7 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
     }
   }
 
+  const tags = lerTags(texto(formData, "tags"));
   const politicoIds = campos.data.politicoIds;
   const entidadesRelacionadas = politicoIds.map((politicoId) => ({
     politicoId,
@@ -181,7 +201,10 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
       throw new Error("Voce nao tem permissao para editar este artigo.");
     }
 
-    const existing = await prisma.artigo.findUnique({ where: { id } });
+    const existing = await prisma.artigo.findUnique({
+      where: { id },
+      include: { tags: { select: { tag: { select: { nome: true } } } } },
+    });
     if (!existing) throw new Error("Artigo nao encontrado");
     previousRevistaId = existing.revistaId;
 
@@ -265,14 +288,19 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
         },
       });
 
+      await definirTags(tx, id, tags);
+
       await registrarAuditoria(
         {
           usuarioId: session.user.id,
           acao: finalStatus === "publicado" && !estavaPublicado ? "PUBLICACAO" : "EDICAO",
           entidade: "artigo",
           artigoId: id,
-          antes: resumoParaAuditoria(existing),
-          depois: resumoParaAuditoria({ ...data, slug, status: finalStatus, dataPublicacao: finalPublishDate }),
+          antes: { ...resumoParaAuditoria(existing), tags: existing.tags.map(({ tag }) => tag.nome).sort() },
+          depois: {
+            ...resumoParaAuditoria({ ...data, slug, status: finalStatus, dataPublicacao: finalPublishDate }),
+            tags: tags.map(({ nome }) => nome).sort(),
+          },
         },
         tx
       );
@@ -316,13 +344,15 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
         },
       });
 
+      await definirTags(tx, novoArtigo.id, tags);
+
       await registrarAuditoria(
         {
           usuarioId: session.user.id,
           acao: finalStatus === "publicado" ? "CRIACAO_E_PUBLICACAO" : "CRIACAO",
           entidade: "artigo",
           artigoId: novoArtigo.id,
-          depois: resumoParaAuditoria(novoArtigo),
+          depois: { ...resumoParaAuditoria(novoArtigo), tags: tags.map(({ nome }) => nome).sort() },
         },
         tx
       );
@@ -337,9 +367,7 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
   if (previousRevistaId && previousRevistaId !== finalRevistaId) {
     revalidatePath(`/erp/revistas/${previousRevistaId}`);
   }
-  revalidatePath("/");
-  revalidatePath("/noticia/[slug]", "page");
-  revalidatePath("/categoria/[slug]", "page");
+  revalidarMateriasNoPortal();
   redirect(finalRevistaId ? `/erp/revistas/${finalRevistaId}` : "/erp/artigos");
 }
 
@@ -500,9 +528,7 @@ export async function updateArticleStatus(id: string, newStatus: StatusArtigo): 
 
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
-  revalidatePath("/");
-  revalidatePath("/noticia/[slug]", "page");
-  revalidatePath("/categoria/[slug]", "page");
+  revalidarMateriasNoPortal();
   return { ok: true };
 }
 
@@ -553,9 +579,7 @@ export async function deleteArticle(
   if (artigo.revistaId) {
     revalidatePath(`/erp/revistas/${artigo.revistaId}`);
   }
-  revalidatePath("/");
-  revalidatePath("/noticia/[slug]", "page");
-  revalidatePath("/categoria/[slug]", "page");
+  revalidarMateriasNoPortal();
 
   return { ok: true, revistaId: artigo.revistaId };
 }

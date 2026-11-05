@@ -29,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     fixas.push({ url: `${baseUrl}/videos`, lastModified: agora, changeFrequency: "daily", priority: 0.6 });
   }
 
-  const [artigos, categorias, revistas, podcasts] = await Promise.all([
+  const [artigos, categorias, revistas, podcasts, politicos, tags] = await Promise.all([
     prisma.artigo.findMany({
       where: filtroArtigoNoAr(agora),
       select: { slug: true, atualizadoEm: true },
@@ -44,6 +44,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           select: { slug: true, atualizadoEm: true },
         })
       : Promise.resolve([]),
+    prisma.politico.findMany({
+      where: { slug: { not: null } },
+      select: { slug: true, atualizadoEm: true },
+    }),
+    // Só tags com matéria no ar (tag usada apenas em rascunho não é pública).
+    prisma.tag.findMany({
+      where: { artigos: { some: { artigo: { ...filtroArtigoNoAr(agora), excluidoEm: null } } } },
+      select: { slug: true },
+      take: 5000,
+    }),
   ]);
 
   return [
@@ -65,6 +75,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: revista.updatedAt,
       changeFrequency: "monthly" as const,
       priority: 0.6,
+    })),
+    ...politicos.map((politico) => ({
+      url: `${baseUrl}/politico/${politico.slug}`,
+      lastModified: politico.atualizadoEm,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    })),
+    ...tags.map((tag) => ({
+      url: `${baseUrl}/tag/${tag.slug}`,
+      changeFrequency: "daily" as const,
+      priority: 0.5,
     })),
     ...podcasts.map((podcast) => ({
       url: `${baseUrl}/podcasts/${podcast.slug}`,

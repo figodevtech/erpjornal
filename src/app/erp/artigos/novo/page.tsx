@@ -30,13 +30,11 @@ export default async function NovoArtigoPage({
     orderBy: { nome: "asc" },
   });
 
-  const politicians = await prisma.$queryRaw<
-    Array<{ id: string; nome: string | null; partido: string | null; categoriaEntidade: string | null }>
-  >`
-    select id, nome, partido, categoria_entidade as "categoriaEntidade"
-    from public.politicos
-    order by nome asc nulls last, criado_em desc
-  `;
+  // Via Prisma (não SQL direto): entidades excluídas ficam de fora automaticamente.
+  const politicians = await prisma.politico.findMany({
+    select: { id: true, nome: true, partido: true, categoriaEntidade: true },
+    orderBy: [{ nome: { sort: "asc", nulls: "last" } }, { criadoEm: "desc" }],
+  });
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

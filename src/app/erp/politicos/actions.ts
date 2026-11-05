@@ -6,6 +6,8 @@ import { revalidatePath } from "next/cache";
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/auditoria";
+import { slugDisponivel } from "@/lib/slug";
+import { revalidarPaginasPortal } from "@/lib/cache/portal";
 
 type ResultadoAcao = { ok: true } | { ok: false; error: string };
 
@@ -35,9 +37,19 @@ export async function upsertPolitician(formData: FormData): Promise<ResultadoAca
   };
 
   try {
+    // Endereço do perfil público: gerado do nome uma vez e mantido (links e SEO não quebram).
+    const atual = id ? await prisma.politico.findUnique({ where: { id }, select: { slug: true } }) : null;
+    const slug =
+      atual?.slug ??
+      (await slugDisponivel(
+        data.nome ?? "",
+        async (candidato) =>
+          (await prisma.politico.count({ where: { slug: candidato, excluidoEm: undefined } })) > 0,
+        { tamanhoMaximo: 80, padrao: "entidade" }
+      ));
     const salvo = id
-      ? await prisma.politico.update({ where: { id }, data })
-      : await prisma.politico.create({ data });
+      ? await prisma.politico.update({ where: { id }, data: { ...data, slug } })
+      : await prisma.politico.create({ data: { ...data, slug } });
     await registrarAuditoria({ usuarioId: sessao.user.id, acao: id ? "EDICAO" : "CRIACAO", entidade: "entidade", entidadeId: salvo.id, depois: data });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -50,6 +62,8 @@ export async function upsertPolitician(formData: FormData): Promise<ResultadoAca
   }
 
   revalidatePath("/erp/entidades");
+  // Perfil público e o bloco "Citados nesta matéria" das notícias.
+  revalidarPaginasPortal("politico", "noticia");
   return { ok: true };
 }
 
@@ -77,6 +91,7 @@ export async function getPoliticians() {
       biografia: true,
       regiao: true,
       estado: true,
+      slug: true,
     },
     orderBy: [{ nome: { sort: "asc", nulls: "last" } }, { criadoEm: "desc" }],
   });

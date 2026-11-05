@@ -13,6 +13,7 @@ type CategoriaItem = {
   esfera: string | null;
   cor: string | null;
   metaDescricao: string | null;
+  exigeChecagem: boolean;
   artigosCount: number;
   subcategoriasCount: number;
 };
@@ -88,6 +89,7 @@ export default function CategoryManager({
   const [esfera, setEsfera] = useState("");
   const [cor, setCor] = useState("#c4170c");
   const [metaDescricao, setMetaDescricao] = useState("");
+  const [exigeChecagem, setExigeChecagem] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -105,6 +107,7 @@ export default function CategoryManager({
     setEsfera(categoria?.esfera ?? "");
     setCor(categoria?.cor ?? "#c4170c");
     setMetaDescricao(categoria?.metaDescricao ?? "");
+    setExigeChecagem(categoria?.exigeChecagem ?? false);
   }
 
   function abrirDialogo(categoria: CategoriaItem | null) {
@@ -311,6 +314,20 @@ export default function CategoryManager({
               className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-950 outline-none transition focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+
+          <label className="flex items-start gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              name="exigeChecagem"
+              checked={exigeChecagem}
+              onChange={(event) => setExigeChecagem(event.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600"
+            />
+            <span>
+              <strong className="block text-gray-900">Exige checagem de fatos</strong>
+              Matérias desta categoria só podem ser publicadas com ao menos uma fonte ou documento de checagem.
+            </span>
+          </label>
 
           <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
             {categoriaSelecionada && podeEditar ? (

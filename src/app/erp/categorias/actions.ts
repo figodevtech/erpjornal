@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 function slugify(value: string) {
   return value
@@ -19,7 +20,7 @@ function isPrismaError(error: unknown): error is { code: string } {
 
 export async function salvarCategoria(formData: FormData) {
   const id = (formData.get("id") as string | null) || null;
-  await exigirPermissao(id ? "categorias:editar" : "categorias:criar");
+  const sessao = await exigirPermissao(id ? "categorias:editar" : "categorias:criar");
 
   const nome = (formData.get("nome") as string)?.trim();
   const slugInput = (formData.get("slug") as string)?.trim();
@@ -36,14 +37,17 @@ export async function salvarCategoria(formData: FormData) {
     throw new Error("Não foi possível gerar um slug válido.");
   }
 
-  const data = { nome, slug, esfera, cor, metaDescricao };
+  // Regra do PRD: categorias de política interna exigem checagem de fatos para publicar.
+  const exigeChecagem = formData.get("exigeChecagem") === "on" || formData.get("exigeChecagem") === "true";
+
+  const data = { nome, slug, esfera, cor, metaDescricao, exigeChecagem };
 
   try {
-    if (id) {
-      await prisma.categoria.update({ where: { id }, data });
-    } else {
-      await prisma.categoria.create({ data });
-    }
+    const antes = id ? await prisma.categoria.findUnique({ where: { id } }) : null;
+    const salva = id
+      ? await prisma.categoria.update({ where: { id }, data })
+      : await prisma.categoria.create({ data });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: id ? "EDICAO" : "CRIACAO", entidade: "categoria", entidadeId: salva.id, antes, depois: data });
   } catch (error: unknown) {
     if (isPrismaError(error) && error.code === "P2002") {
       throw new Error("Ja existe uma categoria com esse nome ou slug.");
@@ -58,11 +62,13 @@ export async function salvarCategoria(formData: FormData) {
 }
 
 export async function excluirCategoria(id: string) {
-  await exigirPermissao("categorias:editar");
+  const sessao = await exigirPermissao("categorias:editar");
 
   const categoria = await prisma.categoria.findUnique({
     where: { id },
-    include: { _count: { select: { artigos: true, subcategorias: true } } },
+    include: {
+      _count: { select: { artigos: { where: { excluidoEm: null } }, subcategorias: { where: { excluidoEm: null } } } },
+    },
   });
 
   if (!categoria) {
@@ -73,7 +79,11 @@ export async function excluirCategoria(id: string) {
     throw new Error("Não é possível excluir uma categoria que possui artigos ou subcategorias.");
   }
 
-  await prisma.categoria.delete({ where: { id } });
+  // Exclusão lógica (PRD: nada é apagado fisicamente).
+  await prisma.$transaction(async (tx) => {
+    const anterior = await tx.categoria.update({ where: { id }, data: { excluidoEm: new Date() } });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: "EXCLUSAO", entidade: "categoria", entidadeId: id, antes: anterior }, tx);
+  });
 
   revalidatePath("/erp/categorias");
   revalidatePath("/erp/artigos/novo");

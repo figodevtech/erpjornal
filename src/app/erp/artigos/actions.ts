@@ -4,9 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { redirect } from "next/navigation";
 
-import { exigirAlgumaPermissao, exigirPermissao, temPermissao } from "@/lib/auth";
+import { exigirAlgumaPermissao, exigirPermissao, obterSessao, temAlgumaPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
+import { registrarAuditoria } from "@/lib/auditoria";
+import { MENSAGEM_CHECAGEM_OBRIGATORIA, categoriaExigeChecagem } from "@/lib/editorial/checagem";
 import {
   motivoBloqueioExclusao,
   motivoBloqueioMudancaStatus,
@@ -17,6 +19,25 @@ import {
   resolverStatusAoSalvar,
   type StatusArtigo,
 } from "@/lib/editorial/status";
+
+/** Campos do artigo que vão para a auditoria (sem o corpo, que é grande). */
+function resumoParaAuditoria(artigo: {
+  titulo: string;
+  slug: string;
+  status: string;
+  categoriaId?: string | null;
+  dataPublicacao?: Date | null;
+  ehPremium?: boolean;
+}) {
+  return {
+    titulo: artigo.titulo,
+    slug: artigo.slug,
+    status: artigo.status,
+    categoriaId: artigo.categoriaId ?? null,
+    dataPublicacao: artigo.dataPublicacao ?? null,
+    ehPremium: artigo.ehPremium,
+  };
+}
 
 function lerDataPublicacao(valor: string | null): Date | null {
   if (!valor) return null;
@@ -147,7 +168,8 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
   let previousRevistaId: string | null = null;
 
   const slugEmUso = await prisma.artigo.findFirst({
-    where: { slug, ...(id ? { NOT: { id } } : {}) },
+    // excluidoEm: undefined inclui artigos excluídos: o slug deles continua reservado (único no banco).
+    where: { slug, excluidoEm: undefined, ...(id ? { NOT: { id } } : {}) },
     select: { id: true },
   });
   if (slugEmUso) {
@@ -179,10 +201,47 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
 
     const revistaId = existing.revistaId;
     const ordemNaRevista = revistaId ? existing.ordemNaRevista : null;
+    const estavaPublicado = existing.status === "publicado";
 
-    // Artigo e log de auditoria juntos: nunca fica uma edição sem registro (ou vice-versa).
-    await prisma.$transaction([
-      prisma.artigo.update({
+    // Slug de matéria publicada é a URL pública: só quem publica muda, e o antigo vira 301.
+    const slugMudou = existing.slug !== slug;
+    if (slugMudou && estavaPublicado && !podePublicar) {
+      return { ok: false, error: "O endereço (slug) de uma matéria publicada só pode ser alterado por quem publica." };
+    }
+
+    if (finalStatus === "publicado" && factChecks.length === 0 && (await categoriaExigeChecagem(data.categoriaId))) {
+      return { ok: false, error: MENSAGEM_CHECAGEM_OBRIGATORIA };
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Versionamento (PRD): toda edição de matéria publicada guarda a versão anterior.
+      if (estavaPublicado) {
+        await tx.versaoArtigo.create({
+          data: {
+            artigoId: id,
+            titulo: existing.titulo,
+            resumo: existing.resumo,
+            corpoTexto: existing.corpoTexto,
+            status: existing.status,
+            usuarioId: session.user.id,
+            resumoMudancas: "Versão anterior a uma edição da matéria publicada",
+          },
+        });
+      }
+
+      if (slugMudou) {
+        // O novo slug pode ter sido um endereço antigo; o antigo passa a redirecionar.
+        await tx.redirecionamentoSlug.deleteMany({ where: { slugAntigo: slug } });
+        if (estavaPublicado) {
+          await tx.redirecionamentoSlug.upsert({
+            where: { slugAntigo: existing.slug },
+            update: { artigoId: id },
+            create: { slugAntigo: existing.slug, artigoId: id },
+          });
+        }
+      }
+
+      await tx.artigo.update({
         where: { id },
         data: {
           ...data,
@@ -204,18 +263,20 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
             })),
           },
         },
-      }),
-      prisma.logAcao.create({
-        data: {
+      });
+
+      await registrarAuditoria(
+        {
           usuarioId: session.user.id,
-          acao:
-            finalStatus === "publicado" && existing.status !== "publicado"
-              ? "PUBLICACAO"
-              : "EDICAO",
+          acao: finalStatus === "publicado" && !estavaPublicado ? "PUBLICACAO" : "EDICAO",
+          entidade: "artigo",
           artigoId: id,
+          antes: resumoParaAuditoria(existing),
+          depois: resumoParaAuditoria({ ...data, slug, status: finalStatus, dataPublicacao: finalPublishDate }),
         },
-      }),
-    ]);
+        tx
+      );
+    });
   } else {
     const finalStatus = resolverStatusAoSalvar({
       solicitado: statusSolicitado,
@@ -225,7 +286,14 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
     const revistaId = requestedRevistaId;
     const ordemNaRevista = revistaId ? (await prisma.artigo.count({ where: { revistaId } })) + 1 : null;
 
+    if (finalStatus === "publicado" && factChecks.length === 0 && (await categoriaExigeChecagem(data.categoriaId))) {
+      return { ok: false, error: MENSAGEM_CHECAGEM_OBRIGATORIA };
+    }
+
     await prisma.$transaction(async (tx) => {
+      // Um endereço antigo (redirecionamento) que passa a ser usado deixa de redirecionar.
+      await tx.redirecionamentoSlug.deleteMany({ where: { slugAntigo: slug } });
+
       const novoArtigo = await tx.artigo.create({
         data: {
           ...data,
@@ -248,13 +316,16 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
         },
       });
 
-      await tx.logAcao.create({
-        data: {
+      await registrarAuditoria(
+        {
           usuarioId: session.user.id,
           acao: finalStatus === "publicado" ? "CRIACAO_E_PUBLICACAO" : "CRIACAO",
+          entidade: "artigo",
           artigoId: novoArtigo.id,
+          depois: resumoParaAuditoria(novoArtigo),
         },
-      });
+        tx
+      );
     });
   }
 
@@ -270,6 +341,86 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
   revalidatePath("/noticia/[slug]", "page");
   revalidatePath("/categoria/[slug]", "page");
   redirect(finalRevistaId ? `/erp/revistas/${finalRevistaId}` : "/erp/artigos");
+}
+
+const RascunhoAutomatico = z.object({
+  id: z.uuid(),
+  titulo: z.string().trim().min(1, "Informe o título.").max(300, "O título pode ter no máximo 300 caracteres."),
+  resumo: z.string().trim().max(1000, "O resumo pode ter no máximo 1000 caracteres."),
+  corpoTexto: z.string().max(1_000_000, "O texto ficou grande demais para o salvamento automático."),
+});
+
+/** Intervalo mínimo entre dois registros de salvamento automático do mesmo artigo na auditoria. */
+const INTERVALO_AUDITORIA_RASCUNHO_MS = 15 * 60 * 1000;
+
+export type ResultadoRascunho =
+  | { ok: true; salvoEm: string }
+  /** `parar`: o salvamento automático não vai funcionar nesta tela (sessão, permissão ou etapa). */
+  | { ok: false; error: string; parar?: boolean };
+
+/**
+ * Salvamento automático do editor (a cada 30s): grava só título, resumo e corpo
+ * de matérias ainda não publicadas. Etapa, slug, checagens e vínculos continuam
+ * exigindo o botão Salvar. Nunca redireciona (rodaria no meio da digitação).
+ */
+export async function salvarRascunhoAutomatico(entrada: unknown): Promise<ResultadoRascunho> {
+  const sessao = await obterSessao();
+  if (!sessao || sessao.user.status !== "ativo") {
+    return { ok: false, parar: true, error: "Sua sessão expirou. Copie o texto e entre de novo antes de salvar." };
+  }
+  if (!temAlgumaPermissao(sessao, ["artigos:editar", "artigos:publicar"])) {
+    return { ok: false, parar: true, error: "Você não tem permissão para editar artigos." };
+  }
+
+  const dados = RascunhoAutomatico.safeParse(entrada);
+  if (!dados.success) {
+    return { ok: false, error: dados.error.issues[0]?.message ?? "Dados do rascunho inválidos." };
+  }
+  const { id, titulo, resumo } = dados.data;
+  const corpoTexto = sanitizarHtmlArtigo(dados.data.corpoTexto);
+  if (!corpoTexto) {
+    return { ok: false, error: "O corpo da matéria está vazio; o rascunho não foi salvo." };
+  }
+
+  const existente = await prisma.artigo.findUnique({
+    where: { id },
+    select: { autorId: true, status: true, titulo: true, resumo: true },
+  });
+  if (!existente) {
+    return { ok: false, parar: true, error: "Matéria não encontrada." };
+  }
+  if (!podeEditarArtigo(sessao, existente)) {
+    return { ok: false, parar: true, error: "Você não tem permissão para editar esta matéria." };
+  }
+  if (existente.status === "publicado" || existente.status === "arquivado") {
+    return { ok: false, parar: true, error: "Matérias publicadas ou arquivadas não têm salvamento automático. Use Salvar." };
+  }
+
+  await prisma.artigo.update({ where: { id }, data: { titulo, resumo, corpoTexto } });
+
+  // Um registro por janela de 15 minutos: o salvamento a cada 30s não inunda a trilha.
+  const registroRecente = await prisma.logAuditoria.findFirst({
+    where: {
+      entidade: "artigo",
+      entidadeId: id,
+      usuarioId: sessao.user.id,
+      acao: "SALVAMENTO_AUTOMATICO",
+      criadoEm: { gte: new Date(Date.now() - INTERVALO_AUDITORIA_RASCUNHO_MS) },
+    },
+    select: { id: true },
+  });
+  if (!registroRecente) {
+    await registrarAuditoria({
+      usuarioId: sessao.user.id,
+      acao: "SALVAMENTO_AUTOMATICO",
+      entidade: "artigo",
+      artigoId: id,
+      antes: { titulo: existente.titulo, resumo: existente.resumo },
+      depois: { titulo, resumo },
+    });
+  }
+
+  return { ok: true, salvoEm: new Date().toISOString() };
 }
 
 type ResultadoAcao = { ok: true } | { ok: false; error: string };
@@ -292,9 +443,12 @@ export async function updateArticleStatus(id: string, newStatus: StatusArtigo): 
       status: true,
       autorId: true,
       titulo: true,
+      slug: true,
       resumo: true,
       corpoTexto: true,
+      categoriaId: true,
       dataPublicacao: true,
+      _count: { select: { checagensFato: true } },
     },
   });
 
@@ -305,8 +459,18 @@ export async function updateArticleStatus(id: string, newStatus: StatusArtigo): 
   const bloqueio = motivoBloqueioMudancaStatus(session, artigo, newStatus);
   if (bloqueio) return { ok: false, error: bloqueio };
 
-  await prisma.$transaction([
-    prisma.versaoArtigo.create({
+  if (
+    newStatus === "publicado" &&
+    artigo._count.checagensFato === 0 &&
+    (await categoriaExigeChecagem(artigo.categoriaId))
+  ) {
+    return { ok: false, error: MENSAGEM_CHECAGEM_OBRIGATORIA };
+  }
+
+  const dataPublicacao = newStatus === "publicado" ? artigo.dataPublicacao || new Date() : null;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.versaoArtigo.create({
       data: {
         artigoId: id,
         titulo: artigo.titulo,
@@ -316,22 +480,23 @@ export async function updateArticleStatus(id: string, newStatus: StatusArtigo): 
         usuarioId: session.user.id,
         resumoMudancas: `Mudanca de status via Kanban para: ${newStatus}`,
       },
-    }),
-    prisma.artigo.update({
+    });
+    await tx.artigo.update({
       where: { id },
-      data: {
-        status: newStatus,
-        dataPublicacao: newStatus === "publicado" ? artigo.dataPublicacao || new Date() : null,
-      },
-    }),
-    prisma.logAcao.create({
-      data: {
+      data: { status: newStatus, dataPublicacao },
+    });
+    await registrarAuditoria(
+      {
         usuarioId: session.user.id,
-        acao: `MOVER_KANBAN: ${artigo.status} -> ${newStatus}`,
+        acao: "MUDANCA_STATUS",
+        entidade: "artigo",
         artigoId: id,
+        antes: { status: artigo.status, dataPublicacao: artigo.dataPublicacao },
+        depois: { status: newStatus, dataPublicacao },
       },
-    }),
-  ]);
+      tx
+    );
+  });
 
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
@@ -341,6 +506,7 @@ export async function updateArticleStatus(id: string, newStatus: StatusArtigo): 
   return { ok: true };
 }
 
+/** Exclusão lógica (PRD: nada é apagado fisicamente). O slug continua reservado. */
 export async function deleteArticle(
   id: string
 ): Promise<{ ok: true; revistaId: string | null } | { ok: false; error: string }> {
@@ -355,6 +521,8 @@ export async function deleteArticle(
       revistaId: true,
       slug: true,
       titulo: true,
+      categoriaId: true,
+      dataPublicacao: true,
     },
   });
 
@@ -366,16 +534,19 @@ export async function deleteArticle(
   const bloqueio = motivoBloqueioExclusao(session, artigo);
   if (bloqueio) return { ok: false, error: bloqueio };
 
-  await prisma.$transaction([
-    prisma.artigo.delete({ where: { id } }),
-    prisma.logAcao.create({
-      data: {
+  await prisma.$transaction(async (tx) => {
+    await tx.artigo.update({ where: { id }, data: { excluidoEm: new Date() } });
+    await registrarAuditoria(
+      {
         usuarioId: session.user.id,
-        acao: `EXCLUSAO_ARTIGO: ${artigo.slug}`,
-        artigoId: null,
+        acao: "EXCLUSAO",
+        entidade: "artigo",
+        artigoId: id,
+        antes: resumoParaAuditoria(artigo),
       },
-    }),
-  ]);
+      tx
+    );
+  });
 
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
@@ -393,27 +564,29 @@ export async function deleteArticle(
 export async function updateArticleAuthor(artigoId: string, newAuthorId: string): Promise<ResultadoAcao> {
   const session = await exigirPermissao("artigos:editar_todos");
 
-  const novoAutor = await prisma.usuario.findUnique({
-    where: { id: newAuthorId },
-    select: { id: true, status: true },
-  });
+  const [novoAutor, artigo] = await Promise.all([
+    prisma.usuario.findUnique({ where: { id: newAuthorId }, select: { id: true, status: true } }),
+    prisma.artigo.findUnique({ where: { id: artigoId }, select: { autorId: true } }),
+  ]);
   if (!novoAutor || novoAutor.status !== "ativo") {
     return { ok: false, error: "Autor inválido ou inativo." };
   }
+  if (!artigo) return { ok: false, error: "Artigo não encontrado." };
 
-  await prisma.$transaction([
-    prisma.artigo.update({
-      where: { id: artigoId },
-      data: { autorId: newAuthorId },
-    }),
-    prisma.logAcao.create({
-      data: {
+  await prisma.$transaction(async (tx) => {
+    await tx.artigo.update({ where: { id: artigoId }, data: { autorId: newAuthorId } });
+    await registrarAuditoria(
+      {
         usuarioId: session.user.id,
-        acao: `ATRIBUIR_AUTOR: ${newAuthorId}`,
+        acao: "TROCA_AUTOR",
+        entidade: "artigo",
         artigoId,
+        antes: { autorId: artigo.autorId },
+        depois: { autorId: newAuthorId },
       },
-    }),
-  ]);
+      tx
+    );
+  });
 
   revalidatePath("/erp/artigos/kanban");
   return { ok: true };

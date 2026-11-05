@@ -12,8 +12,8 @@ export default async function CategoriasPage() {
     include: {
       _count: {
         select: {
-          artigos: true,
-          subcategorias: true,
+          artigos: { where: { excluidoEm: null } },
+          subcategorias: { where: { excluidoEm: null } },
         },
       },
     },
@@ -30,6 +30,7 @@ export default async function CategoriasPage() {
         esfera: categoria.esfera,
         cor: categoria.cor,
         metaDescricao: categoria.metaDescricao,
+        exigeChecagem: categoria.exigeChecagem,
         artigosCount: categoria._count.artigos,
         subcategoriasCount: categoria._count.subcategorias,
       }))}

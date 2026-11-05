@@ -8,7 +8,8 @@ import { exigirPermissao, temPermissao, type SessaoAplicacao } from "@/lib/auth"
 import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
-import { fetchExterno, lerCorpoLimitado } from "@/lib/http/fetch-externo";
+import { fetchExterno, lerCorpoLimitado, validarUrlExterna } from "@/lib/http/fetch-externo";
+import { registrarAuditoria } from "@/lib/auditoria";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
 
@@ -50,6 +51,8 @@ type DadosArtigoCuradoria = {
   urlImagemOg: string | null;
   urlFonte: string | null;
   autorExterno: string | null;
+  /** Link da matéria original no feed: vira a checagem de fato da fonte. */
+  linkOriginal: string;
 };
 
 /**
@@ -86,6 +89,11 @@ async function criarArtigoDaCuradoria(
         autorExterno: dados.autorExterno,
         revisorHumano: sessao.user.name || "Editor",
         itemRssId,
+        // Rastreabilidade: a matéria original do feed fica registrada como fonte
+        // (também satisfaz categorias que exigem checagem de fatos).
+        checagensFato: dados.linkOriginal
+          ? { create: { urlFonte: dados.linkOriginal, statusVerificacao: "fonte_original" } }
+          : undefined,
       },
     });
 
@@ -101,13 +109,16 @@ async function criarArtigoDaCuradoria(
       },
     });
 
-    await tx.logAcao.create({
-      data: {
+    await registrarAuditoria(
+      {
         usuarioId: sessao.user.id,
         acao: publicar ? "CURADORIA_PUBLICACAO" : "CURADORIA_ENVIO_REVISAO",
+        entidade: "artigo",
         artigoId: criado.id,
+        depois: { titulo: criado.titulo, slug: criado.slug, status: criado.status, itemRssId },
       },
-    });
+      tx
+    );
 
     // O item fica "published" nos dois casos: o artigo já existe (item_rss_id é único).
     await tx.itemRssBruto.update({
@@ -239,7 +250,7 @@ type RssItem = {
 };
 
 export async function saveRSSSource(formData: FormData) {
-  await exigirPermissao("curadoria:gerir");
+  const sessao = await exigirPermissao("curadoria:gerir");
 
   try {
     const id = formData.get("id") as string | null;
@@ -254,6 +265,8 @@ export async function saveRSSSource(formData: FormData) {
     if (!name || !urlFeed) {
       throw new Error("Nome e URL sao obrigatorios");
     }
+    // Formato e destino (sem rede interna) validados já no cadastro; a coleta revalida.
+    validarUrlExterna(urlFeed);
 
     const data = {
       name,
@@ -266,9 +279,25 @@ export async function saveRSSSource(formData: FormData) {
     };
 
     if (id) {
+      const antes = await prisma.fonteRss.findUnique({ where: { id } });
       await prisma.fonteRss.update({ where: { id }, data });
+      await registrarAuditoria({ usuarioId: sessao.user.id, acao: "EDICAO", entidade: "fonte_rss", entidadeId: id, antes, depois: data });
     } else {
-      await prisma.fonteRss.create({ data });
+      // Feed excluído antes com a mesma URL (url_feed é única): restaura em vez de falhar.
+      const excluida = await prisma.fonteRss.findFirst({
+        where: { urlFeed, excluidoEm: { not: null } },
+        select: { id: true },
+      });
+      const salva = excluida
+        ? await prisma.fonteRss.update({ where: { id: excluida.id }, data: { ...data, excluidoEm: null } })
+        : await prisma.fonteRss.create({ data });
+      await registrarAuditoria({
+        usuarioId: sessao.user.id,
+        acao: excluida ? "RESTAURACAO" : "CRIACAO",
+        entidade: "fonte_rss",
+        entidadeId: salva.id,
+        depois: data,
+      });
     }
 
     revalidatePath("/erp/curadoria/fontes");
@@ -283,9 +312,13 @@ export async function saveRSSSource(formData: FormData) {
 }
 
 export async function deleteRSSSource(id: string) {
-  await exigirPermissao("curadoria:gerir");
+  const sessao = await exigirPermissao("curadoria:gerir");
 
-  await prisma.fonteRss.delete({ where: { id } });
+  // Exclusão lógica: os itens já coletados e os artigos gerados continuam íntegros.
+  await prisma.$transaction(async (tx) => {
+    const anterior = await tx.fonteRss.update({ where: { id }, data: { excluidoEm: new Date() } });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: "EXCLUSAO", entidade: "fonte_rss", entidadeId: id, antes: anterior }, tx);
+  });
   revalidatePath("/erp/curadoria/fontes");
   return { success: true };
 }
@@ -959,6 +992,7 @@ export async function approveAndPublish(
     urlImagemOg: finalData.urlImagemOg || item.thumbnail,
     urlFonte: null,
     autorExterno: null,
+    linkOriginal: item.linkOriginal,
   });
 }
 
@@ -1035,5 +1069,6 @@ export async function republishOriginalWithCredits(
     urlImagemOg: coverImageUrl || thumbnail,
     urlFonte: item.linkOriginal,
     autorExterno: item.source.name,
+    linkOriginal: item.linkOriginal,
   });
 }

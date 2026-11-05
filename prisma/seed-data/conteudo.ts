@@ -23,9 +23,9 @@ const img = (id: string, w = 1600) =>
 // ---------------------------------------------------------------------------
 
 export const CATEGORIAS = [
-  { slug: "executivo", nome: "Executivo", esfera: "Executivo", cor: "#991b1b", metaDescricao: "Governo federal, estados e municípios: agenda, decisões e políticas públicas." },
-  { slug: "legislativo", nome: "Legislativo", esfera: "Legislativo", cor: "#1d4ed8", metaDescricao: "Câmara, Senado, assembleias e câmaras municipais." },
-  { slug: "judiciario", nome: "Judiciário", esfera: "Judiciário", cor: "#6d28d9", metaDescricao: "Tribunais, Ministério Público e decisões com impacto institucional." },
+  { slug: "executivo", nome: "Executivo", esfera: "Executivo", cor: "#991b1b", exigeChecagem: true, metaDescricao: "Governo federal, estados e municípios: agenda, decisões e políticas públicas." },
+  { slug: "legislativo", nome: "Legislativo", esfera: "Legislativo", cor: "#1d4ed8", exigeChecagem: true, metaDescricao: "Câmara, Senado, assembleias e câmaras municipais." },
+  { slug: "judiciario", nome: "Judiciário", esfera: "Judiciário", cor: "#6d28d9", exigeChecagem: true, metaDescricao: "Tribunais, Ministério Público e decisões com impacto institucional." },
   { slug: "economia", nome: "Economia", esfera: "Nacional", cor: "#047857", metaDescricao: "Orçamento, investimento, mercado e ambiente de negócios." },
   { slug: "gestao-publica", nome: "Gestão Pública", esfera: "Nacional", cor: "#0f766e", metaDescricao: "Governança, serviços digitais e modernização administrativa." },
   { slug: "internacional", nome: "Internacional", esfera: "Internacional", cor: "#b45309", metaDescricao: "Diplomacia, comércio exterior e geopolítica." },

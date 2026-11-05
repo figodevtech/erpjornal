@@ -31,6 +31,28 @@ export const buscarArtigoPublicado = cache(async (slug: string) => {
           source: true,
         },
       },
+      checagensFato: {
+        select: { id: true, urlFonte: true, urlDocumento: true, statusVerificacao: true },
+        orderBy: { criadoEm: "asc" },
+      },
     },
   });
+});
+
+/**
+ * Slug antigo de uma matéria publicada (o slug mudou depois da publicação):
+ * devolve o slug atual para a página responder 301.
+ */
+export const buscarSlugAtual = cache(async (slugAntigo: string) => {
+  const redirecionamento = await prisma.redirecionamentoSlug.findUnique({
+    where: { slugAntigo },
+    select: { artigoId: true },
+  });
+  if (!redirecionamento) return null;
+
+  const artigo = await prisma.artigo.findFirst({
+    where: { id: redirecionamento.artigoId, ...filtroArtigoNoAr() },
+    select: { slug: true },
+  });
+  return artigo && artigo.slug !== slugAntigo ? artigo.slug : null;
 });

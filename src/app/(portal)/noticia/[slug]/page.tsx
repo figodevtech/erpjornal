@@ -1,16 +1,16 @@
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
 import Image from "next/image";
 
-import { Crown } from "lucide-react";
+import { BadgeCheck, Crown } from "lucide-react";
 import NewsletterForm from "@/components/portal/NewsletterForm";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 import CorpoPremium from "@/components/portal/CorpoPremium";
 import TTSPlayer from "@/components/portal/TTSPlayer";
 import { ViewCounter } from "@/components/portal/ViewCounter";
 import { obterVisualizacoes } from "@/lib/analytics/visualizacoes";
-import { buscarArtigoPublicado } from "@/lib/data/artigos";
+import { buscarArtigoPublicado, buscarSlugAtual } from "@/lib/data/artigos";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
 import { dividirParaAnuncio, trechoInicial } from "@/lib/html/trechos";
 import { absoluteUrl } from "@/lib/site-url";
@@ -22,6 +22,15 @@ export const revalidate = 300;
 // próxima revalidação (sem isto a rota renderiza a cada requisição).
 export async function generateStaticParams() {
   return [];
+}
+
+/** Domínio legível de um link de fonte (sem quebrar a página se a URL for inválida). */
+function dominioDe(url: string) {
+  try {
+    return new URL(url).hostname.replace(/^www./, "");
+  } catch {
+    return url;
+  }
 }
 
 interface PageProps {
@@ -55,6 +64,9 @@ export default async function NoticiaPage({ params }: PageProps) {
   const artigo = await buscarArtigoPublicado(slug);
 
   if (!artigo) {
+    // Slug alterado depois da publicação: 301 para o endereço atual (preserva SEO e links).
+    const slugAtual = await buscarSlugAtual(slug);
+    if (slugAtual) permanentRedirect(`/noticia/${slugAtual}`);
     notFound();
   }
 
@@ -256,6 +268,30 @@ export default async function NoticiaPage({ params }: PageProps) {
             />
           )}
         </div>
+
+        {artigo.checagensFato.length > 0 && (
+          <aside
+            className="mx-auto mt-12 w-full max-w-[760px] rounded-2xl border border-emerald-200 bg-emerald-50 p-6 font-sans dark:border-emerald-900 dark:bg-emerald-950/40"
+            aria-label="Checagem de fatos"
+          >
+            <p className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-emerald-800 dark:text-emerald-300">
+              <BadgeCheck className="h-4 w-4" /> Fatos checados
+            </p>
+            <ul className="mt-3 space-y-1.5 text-sm text-emerald-900 dark:text-emerald-100">
+              {artigo.checagensFato.flatMap((checagem) =>
+                [checagem.urlFonte, checagem.urlDocumento]
+                  .filter((url): url is string => Boolean(url))
+                  .map((url) => (
+                    <li key={`${checagem.id}-${url}`} className="truncate">
+                      <a href={url} target="_blank" rel="noopener noreferrer nofollow" className="underline underline-offset-2">
+                        {dominioDe(url)}
+                      </a>
+                    </li>
+                  ))
+              )}
+            </ul>
+          </aside>
+        )}
 
         <div className="mt-12 w-full max-w-[760px] mx-auto font-sans">
           <AdSlot pagina={adPageType} posicao="feed" />

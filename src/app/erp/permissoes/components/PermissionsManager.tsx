@@ -172,7 +172,11 @@ export default function PermissionsManager({ perfis, permissoes }: PermissionsMa
   async function handleSubmit(formData: FormData) {
     setIsSaving(true);
     try {
-      await salvarPermissoesPerfil(formData);
+      const resultado = await salvarPermissoesPerfil(formData);
+      if (!resultado.ok) {
+        toast.error(resultado.error);
+        return;
+      }
       toast.success(criandoPerfil ? "Perfil criado." : "Permissões salvas.");
       setPerfilSelecionadoId(null);
       setCriandoPerfil(false);

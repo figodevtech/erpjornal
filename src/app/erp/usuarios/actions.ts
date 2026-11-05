@@ -1,214 +1,229 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/prisma";
-import { exigirPermissao } from "@/lib/auth";
-import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
-import { getSiteUrl } from "@/lib/site-url";
+import { z } from "zod";
 
-function parsePerfis(formData: FormData) {
-  return Array.from(
-    new Set(
-      formData
-        .getAll("perfis")
-        .map((value) => value.toString())
-        .filter(Boolean)
-    )
-  );
+import { exigirPermissao } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getSiteUrl } from "@/lib/site-url";
+import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+
+/**
+ * Gestão de usuários do ERP.
+ *
+ * As actions retornam { ok, error } em vez de lançar: o Next esconde a
+ * mensagem de erros lançados por server actions em produção.
+ */
+type Resultado = { ok: true } | { ok: false; error: string };
+
+const PERFIL_ADMIN = "admin_erp";
+
+const TipoConta = z.enum(["erp", "portal", "misto"]);
+const StatusUsuario = z.enum(["ativo", "inativo", "bloqueado"]);
+const Senha = z
+  .string()
+  .min(8, "A senha precisa ter pelo menos 8 caracteres.")
+  .max(72, "A senha pode ter no máximo 72 caracteres.");
+
+const DadosCriacao = z.object({
+  nome: z.string().trim().min(1, "Informe o nome.").max(120),
+  email: z.email("Informe um e-mail válido.").max(254).transform((email) => email.trim().toLowerCase()),
+  senha: Senha,
+  tipoConta: TipoConta.catch("erp"),
+  status: StatusUsuario.catch("ativo"),
+  perfis: z.array(z.uuid()).max(20),
+});
+
+const DadosAtualizacao = z.object({
+  usuarioId: z.uuid("Usuário inválido para atualização."),
+  nome: z.string().trim().min(1, "Informe o nome.").max(120),
+  tipoConta: TipoConta.catch("portal"),
+  status: StatusUsuario.catch("ativo"),
+  perfis: z.array(z.uuid()).max(20),
+});
+
+function lerFormulario(formData: FormData) {
+  return {
+    ...Object.fromEntries(
+      ["usuarioId", "nome", "email", "senha", "tipoConta", "status"].map((campo) => [
+        campo,
+        formData.get(campo)?.toString() ?? undefined,
+      ])
+    ),
+    perfis: Array.from(new Set(formData.getAll("perfis").map(String).filter(Boolean))),
+  };
 }
 
-async function sincronizarPerfis(usuarioId: string, perfilIds: string[]) {
-  await prisma.usuarioPerfil.deleteMany({
-    where: { usuarioId },
-  });
+function primeiroErro(erro: z.ZodError) {
+  return erro.issues[0]?.message ?? "Dados inválidos.";
+}
 
-  if (!perfilIds.length) {
-    return;
+function mensagemDe(error: unknown, padrao: string) {
+  return error instanceof Error && error.message ? error.message : padrao;
+}
+
+async function perfisExistem(perfilIds: string[]) {
+  if (!perfilIds.length) return true;
+  const total = await prisma.perfil.count({ where: { id: { in: perfilIds } } });
+  return total === perfilIds.length;
+}
+
+/**
+ * Impede que a alteração deixe o sistema sem administrador ativo
+ * ou que alguém remova o próprio acesso de administrador.
+ */
+async function verificarProtecaoAdmin(params: {
+  usuarioId: string;
+  sessaoUsuarioId: string;
+  novosPerfilIds: string[];
+  novoStatus: string;
+}): Promise<string | null> {
+  const perfilAdmin = await prisma.perfil.findUnique({ where: { nome: PERFIL_ADMIN }, select: { id: true } });
+  if (!perfilAdmin) return null;
+
+  const eraAdmin = await prisma.usuarioPerfil.findUnique({
+    where: { usuarioId_perfilId: { usuarioId: params.usuarioId, perfilId: perfilAdmin.id } },
+  });
+  const continuaAdmin = params.novosPerfilIds.includes(perfilAdmin.id) && params.novoStatus === "ativo";
+  if (!eraAdmin || continuaAdmin) return null;
+
+  if (params.usuarioId === params.sessaoUsuarioId) {
+    return "Você não pode remover o seu próprio acesso de administrador.";
   }
 
-  await prisma.usuarioPerfil.createMany({
-    data: perfilIds.map((perfilId) => ({
-      usuarioId,
-      perfilId,
-    })),
-    skipDuplicates: true,
+  const outrosAdminsAtivos = await prisma.usuarioPerfil.count({
+    where: {
+      perfilId: perfilAdmin.id,
+      usuarioId: { not: params.usuarioId },
+      usuario: { status: "ativo" },
+    },
   });
+  return outrosAdminsAtivos === 0 ? "O sistema precisa ter pelo menos um administrador ativo." : null;
 }
 
-function redirecionarComErro(mensagem: string): never {
-  throw new Error(mensagem);
-}
-
-export async function criarUsuarioErp(formData: FormData) {
+export async function criarUsuarioErp(formData: FormData): Promise<Resultado> {
   await exigirPermissao("usuarios:gerir");
 
-  const nome = formData.get("nome")?.toString().trim() ?? "";
-  const email = formData.get("email")?.toString().trim().toLowerCase() ?? "";
-  const senha = formData.get("senha")?.toString() ?? "";
-  const tipoConta = formData.get("tipoConta")?.toString() ?? "erp";
-  const status = formData.get("status")?.toString() ?? "ativo";
-  const perfilIds = parsePerfis(formData);
+  const dados = DadosCriacao.safeParse(lerFormulario(formData));
+  if (!dados.success) return { ok: false, error: primeiroErro(dados.error) };
+  const { nome, email, senha, tipoConta, status, perfis } = dados.data;
 
-  if (!nome || !email || !senha) {
-    redirecionarComErro("Preencha nome, e-mail e senha para criar o usuário.");
+  if (!(await perfisExistem(perfis))) {
+    return { ok: false, error: "Um ou mais perfis selecionados não existem." };
   }
 
-  if (senha.length < 8) {
-    redirecionarComErro("A senha precisa ter pelo menos 8 caracteres.");
+  const supabaseAdmin = criarClienteSupabaseAdmin();
+  const { data, error } = await supabaseAdmin.auth.admin.createUser({
+    email,
+    password: senha,
+    email_confirm: true,
+    user_metadata: { nome },
+  });
+  if (error || !data.user) {
+    return { ok: false, error: mensagemDe(error, "Não foi possível criar o usuário no Supabase Auth.") };
   }
+  const usuarioId = data.user.id;
 
   try {
-    const supabaseAdmin = criarClienteSupabaseAdmin();
-    const { data, error } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      password: senha,
-      email_confirm: true,
-      user_metadata: {
-        nome,
-      },
-    });
-
-    if (error || !data.user) {
-      throw error ?? new Error("Não foi possível criar o usuário no Supabase Auth.");
-    }
-
-    await prisma.usuario.upsert({
-      where: { id: data.user.id },
-      update: {
-        nome,
-        email,
-        tipoConta,
-        status,
-      },
-      create: {
-        id: data.user.id,
-        nome,
-        email,
-        tipoConta,
-        status,
-      },
-    });
-
-    await sincronizarPerfis(data.user.id, perfilIds);
-  } catch (error) {
-    const mensagem =
-      error instanceof Error ? error.message : "Não foi possível criar o usuário.";
-    redirecionarComErro(mensagem);
+    await prisma.$transaction([
+      prisma.usuario.upsert({
+        where: { id: usuarioId },
+        update: { nome, email, tipoConta, status },
+        create: { id: usuarioId, nome, email, tipoConta, status },
+      }),
+      prisma.usuarioPerfil.deleteMany({ where: { usuarioId } }),
+      prisma.usuarioPerfil.createMany({
+        data: perfis.map((perfilId) => ({ usuarioId, perfilId })),
+        skipDuplicates: true,
+      }),
+    ]);
+  } catch (erroBanco) {
+    // Compensação: sem o registro no banco, o login no Supabase ficaria órfão.
+    await supabaseAdmin.auth.admin.deleteUser(usuarioId).catch(() => {});
+    return { ok: false, error: mensagemDe(erroBanco, "Não foi possível criar o usuário.") };
   }
 
   revalidatePath("/erp/usuarios");
   return { ok: true };
 }
 
-export async function atualizarUsuarioErp(formData: FormData) {
-  await exigirPermissao("usuarios:gerir");
+export async function atualizarUsuarioErp(formData: FormData): Promise<Resultado> {
+  const sessao = await exigirPermissao("usuarios:gerir");
 
-  const usuarioId = formData.get("usuarioId")?.toString() ?? "";
-  const nome = formData.get("nome")?.toString().trim() ?? "";
-  const tipoConta = formData.get("tipoConta")?.toString() ?? "portal";
-  const status = formData.get("status")?.toString() ?? "ativo";
-  const perfilIds = parsePerfis(formData);
+  const dados = DadosAtualizacao.safeParse(lerFormulario(formData));
+  if (!dados.success) return { ok: false, error: primeiroErro(dados.error) };
+  const { usuarioId, nome, tipoConta, status, perfis } = dados.data;
 
-  if (!usuarioId || !nome) {
-    redirecionarComErro("Usuário inválido para atualização.");
+  const usuarioAtual = await prisma.usuario.findUnique({ where: { id: usuarioId }, select: { id: true } });
+  if (!usuarioAtual) return { ok: false, error: "Usuário não encontrado." };
+
+  if (!(await perfisExistem(perfis))) {
+    return { ok: false, error: "Um ou mais perfis selecionados não existem." };
   }
 
+  const bloqueio = await verificarProtecaoAdmin({
+    usuarioId,
+    sessaoUsuarioId: sessao.user.id,
+    novosPerfilIds: perfis,
+    novoStatus: status,
+  });
+  if (bloqueio) return { ok: false, error: bloqueio };
+
   try {
-    const usuarioAtual = await prisma.usuario.findUnique({
-      where: { id: usuarioId },
-      select: { id: true },
-    });
+    // Atualização e troca de perfis juntas: uma falha no meio não deixa o usuário sem perfis.
+    await prisma.$transaction([
+      prisma.usuario.update({ where: { id: usuarioId }, data: { nome, tipoConta, status } }),
+      prisma.usuarioPerfil.deleteMany({ where: { usuarioId } }),
+      prisma.usuarioPerfil.createMany({
+        data: perfis.map((perfilId) => ({ usuarioId, perfilId })),
+        skipDuplicates: true,
+      }),
+    ]);
 
-    if (!usuarioAtual) {
-      throw new Error("Usuário não encontrado.");
-    }
-
-    await prisma.usuario.update({
-      where: { id: usuarioId },
-      data: {
-        nome,
-        tipoConta,
-        status,
-      },
-    });
-
-    await sincronizarPerfis(usuarioId, perfilIds);
-
-    const supabaseAdmin = criarClienteSupabaseAdmin();
-    const { error } = await supabaseAdmin.auth.admin.updateUserById(usuarioId, {
+    const { error } = await criarClienteSupabaseAdmin().auth.admin.updateUserById(usuarioId, {
       user_metadata: { nome },
     });
-
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
   } catch (error) {
-    const mensagem =
-      error instanceof Error ? error.message : "Não foi possível atualizar o usuário.";
-    redirecionarComErro(mensagem);
+    return { ok: false, error: mensagemDe(error, "Não foi possível atualizar o usuário.") };
   }
 
   revalidatePath("/erp/usuarios");
   return { ok: true };
 }
 
-export async function definirSenhaUsuarioErp(formData: FormData) {
+export async function definirSenhaUsuarioErp(formData: FormData): Promise<Resultado> {
   await exigirPermissao("usuarios:gerir");
 
-  const usuarioId = formData.get("usuarioId")?.toString() ?? "";
-  const senha = formData.get("senha")?.toString() ?? "";
+  const dados = z
+    .object({ usuarioId: z.uuid("Usuário inválido para redefinição de senha."), senha: Senha })
+    .safeParse(lerFormulario(formData));
+  if (!dados.success) return { ok: false, error: primeiroErro(dados.error) };
 
-  if (!usuarioId) {
-    throw new Error("Usuário inválido para redefinição de senha.");
-  }
+  const usuario = await prisma.usuario.findUnique({ where: { id: dados.data.usuarioId }, select: { id: true } });
+  if (!usuario) return { ok: false, error: "Usuário não encontrado." };
 
-  if (senha.length < 8) {
-    throw new Error("A nova senha precisa ter pelo menos 8 caracteres.");
-  }
-
-  const usuarioAtual = await prisma.usuario.findUnique({
-    where: { id: usuarioId },
-    select: { id: true },
+  const { error } = await criarClienteSupabaseAdmin().auth.admin.updateUserById(usuario.id, {
+    password: dados.data.senha,
   });
+  if (error) return { ok: false, error: mensagemDe(error, "Não foi possível atualizar a senha.") };
 
-  if (!usuarioAtual) {
-    throw new Error("Usuário não encontrado.");
-  }
-
-  const supabaseAdmin = criarClienteSupabaseAdmin();
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(usuarioId, {
-    password: senha,
-  });
-
-  if (error) {
-    throw error;
-  }
+  return { ok: true };
 }
 
-export async function enviarRedefinicaoSenhaUsuarioErp(formData: FormData) {
+export async function enviarRedefinicaoSenhaUsuarioErp(formData: FormData): Promise<Resultado> {
   await exigirPermissao("usuarios:gerir");
 
-  const usuarioId = formData.get("usuarioId")?.toString() ?? "";
+  const usuarioId = z.uuid().safeParse(formData.get("usuarioId")?.toString());
+  if (!usuarioId.success) return { ok: false, error: "Usuário inválido para redefinição de senha." };
 
-  if (!usuarioId) {
-    throw new Error("Usuário inválido para redefinição de senha.");
-  }
+  const usuario = await prisma.usuario.findUnique({ where: { id: usuarioId.data }, select: { email: true } });
+  if (!usuario?.email) return { ok: false, error: "Este usuário não possui e-mail cadastrado." };
 
-  const usuario = await prisma.usuario.findUnique({
-    where: { id: usuarioId },
-    select: { email: true },
-  });
-
-  if (!usuario?.email) {
-    throw new Error("Este usuário não possui e-mail cadastrado.");
-  }
-
-  const supabaseAdmin = criarClienteSupabaseAdmin();
-  const { error } = await supabaseAdmin.auth.resetPasswordForEmail(usuario.email, {
+  const { error } = await criarClienteSupabaseAdmin().auth.resetPasswordForEmail(usuario.email, {
     redirectTo: `${getSiteUrl()}/redefinir-senha`,
   });
+  if (error) return { ok: false, error: mensagemDe(error, "Não foi possível enviar o e-mail.") };
 
-  if (error) {
-    throw error;
-  }
+  return { ok: true };
 }

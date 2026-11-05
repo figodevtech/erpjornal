@@ -276,7 +276,11 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
   async function handleCreate(formData: FormData) {
     setIsCreating(true);
     try {
-      await criarUsuarioErp(formData);
+      const resultado = await criarUsuarioErp(formData);
+      if (!resultado.ok) {
+        toast.error(resultado.error);
+        return;
+      }
       toast.success("Usuário criado.");
       setDialogCriacaoAberto(false);
       router.refresh();
@@ -290,7 +294,11 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
   async function handleUpdate(formData: FormData) {
     setIsUpdating(true);
     try {
-      await atualizarUsuarioErp(formData);
+      const resultado = await atualizarUsuarioErp(formData);
+      if (!resultado.ok) {
+        toast.error(resultado.error);
+        return;
+      }
       toast.success("Usuário atualizado.");
       setUsuarioSelecionadoId(null);
       router.refresh();
@@ -306,7 +314,11 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
     try {
       const formData = new FormData();
       formData.set("usuarioId", usuarioId);
-      await enviarRedefinicaoSenhaUsuarioErp(formData);
+      const resultado = await enviarRedefinicaoSenhaUsuarioErp(formData);
+      if (!resultado.ok) {
+        toast.error(resultado.error);
+        return;
+      }
       toast.success("E-mail de redefinição enviado.");
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Não foi possível enviar o e-mail.");
@@ -326,7 +338,11 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
         return;
       }
 
-      await definirSenhaUsuarioErp(formData);
+      const resultado = await definirSenhaUsuarioErp(formData);
+      if (!resultado.ok) {
+        toast.error(resultado.error);
+        return;
+      }
       toast.success("Senha atualizada.");
       setUsuarioSenhaId(null);
     } catch (error: unknown) {

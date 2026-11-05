@@ -7,6 +7,7 @@ import { useState } from "react";
 import {
   BookOpen,
   ChevronLeft,
+  ClipboardList,
   ChevronRight,
   FileText,
   Home,
@@ -42,6 +43,7 @@ type ErpSidebarProps = {
   podeGerirCuradoria: boolean;
   podeGerirUsuarios: boolean;
   podeGerirConfiguracoes: boolean;
+  podeVerAuditoria: boolean;
   usuario: {
     nome: string | null;
     email: string | null;
@@ -121,6 +123,7 @@ export default function ErpSidebar({
   podeGerirCuradoria,
   podeGerirUsuarios,
   podeGerirConfiguracoes,
+  podeVerAuditoria,
   usuario,
 }: ErpSidebarProps) {
   const pathname = usePathname();
@@ -302,7 +305,7 @@ export default function ErpSidebar({
             />
           )}
 
-          {(podeGerirUsuarios || podeGerirConfiguracoes) && (
+          {(podeGerirUsuarios || podeGerirConfiguracoes || podeVerAuditoria) && (
             <>
               <div className="my-2 h-px bg-gray-800" />
               {!collapsed && (
@@ -337,6 +340,16 @@ export default function ErpSidebar({
                   icon={<Settings className="h-4 w-4 text-red-400" />}
                   collapsed={collapsed}
                   active={isActive("/erp/configuracoes")}
+                  onNavigate={closeMobile}
+                />
+              )}
+              {podeVerAuditoria && (
+                <SidebarLink
+                  href="/erp/auditoria"
+                  label="Auditoria"
+                  icon={<ClipboardList className="h-4 w-4 text-red-400" />}
+                  collapsed={collapsed}
+                  active={isActive("/erp/auditoria")}
                   onNavigate={closeMobile}
                 />
               )}

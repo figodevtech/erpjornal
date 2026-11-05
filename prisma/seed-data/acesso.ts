@@ -47,6 +47,7 @@ export const PERMISSOES = [
   { modulo: "podcasts", acao: "criar", descricao: "Criar episódios de podcast" },
   { modulo: "podcasts", acao: "editar", descricao: "Editar episódios de podcast" },
   { modulo: "configuracoes", acao: "gerir", descricao: "Alterar configurações globais do sistema" },
+  { modulo: "auditoria", acao: "ler", descricao: "Visualizar e exportar a trilha de auditoria" },
   { modulo: "portal", acao: "salvar", descricao: "Salvar notícia" },
   { modulo: "portal", acao: "comentar", descricao: "Comentar notícia" },
   { modulo: "usuarios", acao: "gerir", descricao: "Gerenciar usuários e permissões" },

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { BookOpen, Edit3, Layers3, Loader2, Plus, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { excluirCategoria, salvarCategoria } from "../actions";
+import { slugify } from "@/lib/slug";
 
 type CategoriaItem = {
   id: string;
@@ -17,15 +18,6 @@ type CategoriaItem = {
   artigosCount: number;
   subcategoriasCount: number;
 };
-
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-}
 
 function ModalShell({
   open,

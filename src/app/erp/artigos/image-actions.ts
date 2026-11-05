@@ -12,6 +12,7 @@ import {
 } from "@/lib/storage/buckets";
 import { fetchExterno, lerCorpoLimitado } from "@/lib/http/fetch-externo";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
+import { slugify } from "@/lib/slug";
 
 const ARTICLE_IMAGES_BUCKET = STORAGE_BUCKETS.articleImages;
 const OPENAI_IMAGE_GENERATIONS_URL = "https://api.openai.com/v1/images/generations";
@@ -44,16 +45,6 @@ function getOpenAIApiKey() {
   return apiKey;
 }
 
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "")
-    .slice(0, 80);
-}
-
 function extensionFromMimeType(mimeType: string) {
   if (mimeType.includes("png")) return "png";
   if (mimeType.includes("webp")) return "webp";
@@ -63,7 +54,7 @@ function extensionFromMimeType(mimeType: string) {
 async function uploadArticleImage(bytes: Buffer, mimeType: string, title: string) {
   const supabase = criarClienteSupabaseAdmin();
   const ext = extensionFromMimeType(mimeType);
-  const baseName = slugify(title) || "materia";
+  const baseName = slugify(title, 80) || "materia";
   const path = `covers/${new Date().getFullYear()}/${baseName}-${randomUUID()}.${ext}`;
 
   const { error } = await supabase.storage.from(ARTICLE_IMAGES_BUCKET.name).upload(path, bytes, {

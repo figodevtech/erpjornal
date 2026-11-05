@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "melhorias/**"]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Typecheck, lint e testes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      # O postinstall roda `prisma generate`, que não precisa de banco nem de variáveis.
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Testes
+        run: npm test
+
+# O build de produção fica fora do CI porque precisa do banco (páginas e sitemap
+# consultam o Postgres no build). Rode `npm run build` localmente ou no deploy.

@@ -132,6 +132,7 @@ model Artigo {
   redirecionamentos RedirecionamentoSlug[]
   tags              ArtigoTag[]
   plantoes          Plantao[]
+  envioNewsletter   EnvioNewsletter?
   // Soft-delete (PRD: nenhum registro é apagado fisicamente)
   excluidoEm        DateTime?              @map("excluido_em")
 
@@ -420,15 +421,40 @@ model VideoCurto {
   @@map("videos_curtos")
 }
 
+/// Inscrição na newsletter com dupla confirmação (LGPD): só recebe quem confirmou pelo e-mail.
 model InscricaoNewsletter {
-  id       String   @id @default(uuid()) @db.Uuid
-  email    String   @unique
-  nome     String?
-  temas    String[]
-  origem   String?
-  criadoEm DateTime @default(now()) @map("criado_em")
+  id                   String    @id @default(uuid()) @db.Uuid
+  email                String    @unique
+  nome                 String?
+  temas                String[]
+  origem               String?
+  /// pendente | confirmado | descadastrado
+  status               String    @default("pendente")
+  /// Segredo dos links de confirmação e descadastro (não adivinhável)
+  token                String    @unique @default(uuid())
+  confirmacaoEnviadaEm DateTime? @map("confirmacao_enviada_em")
+  confirmadoEm         DateTime? @map("confirmado_em")
+  descadastradoEm      DateTime? @map("descadastrado_em")
+  criadoEm             DateTime  @default(now()) @map("criado_em")
 
+  @@index([status])
   @@map("inscricoes_newsletter")
+}
+
+/// Disparo da newsletter de uma matéria (um por matéria: impede envio em dobro).
+model EnvioNewsletter {
+  id            String    @id @default(uuid()) @db.Uuid
+  artigoId      String    @unique @map("artigo_id") @db.Uuid
+  /// enviando | enviado | parcial | falhou
+  status        String    @default("enviando")
+  destinatarios Int       @default(0)
+  enviados      Int       @default(0)
+  erro          String?
+  iniciadoEm    DateTime  @default(now()) @map("iniciado_em")
+  concluidoEm   DateTime? @map("concluido_em")
+  artigo        Artigo    @relation(fields: [artigoId], references: [id], onDelete: Cascade)
+
+  @@map("envios_newsletter")
 }
 
 model AppConfig {

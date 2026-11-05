@@ -18,6 +18,7 @@ export default async function RevistaDetalhePage({ params }: { params: Promise<{
     where: { id },
     include: {
       artigos: {
+        where: { excluidoEm: null },
         orderBy: [{ ordemNaRevista: "asc" }, { criadoEm: "asc" }],
         include: {
           autor: { select: { nome: true } },

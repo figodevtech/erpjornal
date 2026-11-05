@@ -1,5 +1,6 @@
 import NewsletterForm from "@/components/portal/NewsletterForm";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
+import { filtroArtigoNoAr } from "@/lib/data/artigos";
 import EconomyTicker from "@/components/portal/EconomyTicker";
 import RevistaCarousel from "@/components/portal/RevistaCarousel";
 import type { RevistaCarouselItem } from "@/components/portal/RevistaCarousel";
@@ -57,7 +58,7 @@ export default async function PortalHome() {
   const revistaBruta = await prisma.revista.findFirst({
     where: {
       artigos: {
-        some: { status: STATUS_ARTIGO.publicado },
+        some: { ...filtroArtigoNoAr(), excluidoEm: null },
       },
     },
     orderBy: [{ dataPublicacao: "desc" }, { createdAt: "desc" }],
@@ -70,11 +71,11 @@ export default async function PortalHome() {
       capaUrl: true,
       _count: {
         select: {
-          artigos: true,
+          artigos: { where: { ...filtroArtigoNoAr(), excluidoEm: null } },
         },
       },
       artigos: {
-        where: { status: STATUS_ARTIGO.publicado },
+        where: { ...filtroArtigoNoAr(), excluidoEm: null },
         orderBy: [{ ordemNaRevista: "asc" }, { dataPublicacao: "desc" }, { criadoEm: "desc" }],
         take: 8,
         select: {

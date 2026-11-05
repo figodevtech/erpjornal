@@ -15,7 +15,7 @@ export default async function RevistasPage() {
     orderBy: [{ dataPublicacao: "desc" }, { createdAt: "desc" }],
     include: {
       _count: {
-        select: { artigos: true },
+        select: { artigos: { where: { excluidoEm: null } } },
       },
     },
   });

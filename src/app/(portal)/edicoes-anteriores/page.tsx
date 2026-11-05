@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
+import { filtroArtigoNoAr } from "@/lib/data/artigos";
 import type { Metadata } from "next";
 
 import EdicoesAnterioresContent, { type RevistaEdicao } from "./EdicoesAnterioresContent";
@@ -17,7 +17,8 @@ export default async function EdicoesAnterioresPage() {
     take: 60,
     include: {
       artigos: {
-        where: { status: STATUS_ARTIGO.publicado },
+        // includes não passam pelo filtro automático de soft-delete
+        where: { ...filtroArtigoNoAr(), excluidoEm: null },
         orderBy: [{ ordemNaRevista: "asc" }, { criadoEm: "asc" }],
         include: {
           autor: { select: { nome: true } },
@@ -25,7 +26,7 @@ export default async function EdicoesAnterioresPage() {
         },
       },
       _count: {
-        select: { artigos: true },
+        select: { artigos: { where: { ...filtroArtigoNoAr(), excluidoEm: null } } },
       },
     },
   });

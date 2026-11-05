@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "@/generated/prisma/client";
 import { SUPABASE_ROOT_CA_2021 } from "@/lib/db/supabase-ca";
+import { aplicarExclusaoLogica } from "@/lib/db/exclusao-logica";
 
 /**
  * TLS da conexão com o banco, sempre com verificação de certificado:
@@ -44,11 +45,35 @@ export function criarPrismaClient(connectionString = process.env.DATABASE_URL) {
     keepAlive: true,
   });
 
-  return new PrismaClient({ adapter });
+  return comExclusaoLogica(new PrismaClient({ adapter }));
 }
 
+/** Models com soft-delete (coluna excluido_em): exclusões viram `excluidoEm = agora`. */
+/**
+ * Leituras dos models com soft-delete ignoram registros excluídos automaticamente.
+ * Para incluí-los, passe `excluidoEm` explicitamente no where
+ * (ex.: `excluidoEm: undefined` para todos, `{ not: null }` só os excluídos).
+ *
+ * Atenção: relações carregadas via `include`/`select` não passam por aqui;
+ * filtre `excluidoEm: null` nelas quando necessário.
+ */
+function comExclusaoLogica(cliente: PrismaClient) {
+  return cliente.$extends({
+    name: "exclusao-logica",
+    query: {
+      $allModels: {
+        async $allOperations({ model, operation, args, query }) {
+          return query(aplicarExclusaoLogica(model, operation, args));
+        },
+      },
+    },
+  });
+}
+
+export type ClientePrisma = ReturnType<typeof criarPrismaClient>;
+
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
+  prisma: ClientePrisma | undefined;
 };
 
 export const prisma = globalForPrisma.prisma ?? criarPrismaClient();

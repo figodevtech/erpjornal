@@ -108,7 +108,7 @@ export default function RevistaCard({ revista, podeEditar }: RevistaCardProps) {
       <ConfirmationDialog
         open={confirmOpen}
         title="Excluir revista"
-        description={`Esta acao remove a edicao ${revista.edicao} e exclui definitivamente ${revista._count.artigos} artigo(s) vinculado(s).`}
+        description={`A edição ${revista.edicao} sai do portal e do ERP. Os ${revista._count.artigos} artigo(s) vinculado(s) continuam guardados com ela e podem ser recuperados pelo banco.`}
         confirmLabel="Excluir"
         cancelLabel="Cancelar"
         tone="danger"

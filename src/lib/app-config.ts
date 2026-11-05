@@ -1,7 +1,6 @@
 import "server-only";
 
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
 
@@ -24,7 +23,8 @@ export type AppConfigSnapshot = {
   marketTickerEnabled: boolean;
 };
 
-type PrismaExecutor = typeof prisma | Prisma.TransactionClient;
+// Cliente ou transação: só o model appConfig é usado aqui.
+type PrismaExecutor = Pick<typeof prisma, "appConfig">;
 
 function getCurrentUsageMonth(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {

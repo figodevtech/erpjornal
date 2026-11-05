@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import { filtroArtigoNoAr } from "@/lib/data/artigos";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 
 export const revalidate = 300;
@@ -25,7 +25,8 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
     where: { id },
     include: {
       artigos: {
-        where: { status: STATUS_ARTIGO.publicado },
+        // includes não passam pelo filtro automático de soft-delete
+        where: { ...filtroArtigoNoAr(), excluidoEm: null },
         orderBy: [{ ordemNaRevista: "asc" }, { criadoEm: "asc" }],
         include: {
           autor: { select: { nome: true } },

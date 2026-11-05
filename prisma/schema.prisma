@@ -32,7 +32,7 @@ model Usuario {
   criadoEm        DateTime          @default(now()) @map("criado_em")
   atualizadoEm    DateTime          @updatedAt @map("atualizado_em")
   perfis          UsuarioPerfil[]
-  logsAcao        LogAcao[]
+  logsAuditoria   LogAuditoria[]
   artigosAutor    Artigo[]          @relation("ArtigoAutor")
   artigosEditor   Artigo[]          @relation("ArtigoEditor")
   artigosRevisor  Artigo[]          @relation("ArtigoRevisor")
@@ -90,44 +90,47 @@ model PerfilPermissao {
 }
 
 model Artigo {
-  id                String           @id @default(uuid()) @db.Uuid
+  id                String                 @id @default(uuid()) @db.Uuid
   titulo            String
-  slug              String           @unique
-  corpoTexto        String           @map("corpo_texto")
+  slug              String                 @unique
+  corpoTexto        String                 @map("corpo_texto")
   resumo            String?
-  autorId           String           @map("autor_id") @db.Uuid
-  editorId          String?          @map("editor_id") @db.Uuid
-  revisorId         String?          @map("revisor_id") @db.Uuid
-  categoriaId       String?          @map("categoria_id") @db.Uuid
-  status            StatusArtigo     @default(pauta)
-  dataPublicacao    DateTime?        @map("data_publicacao")
-  visualizacoes     Int              @default(0)
-  urlImagemOg       String?          @map("url_imagem_og")
-  criadoEm          DateTime         @default(now()) @map("criado_em")
-  atualizadoEm      DateTime         @updatedAt @map("atualizado_em")
+  autorId           String                 @map("autor_id") @db.Uuid
+  editorId          String?                @map("editor_id") @db.Uuid
+  revisorId         String?                @map("revisor_id") @db.Uuid
+  categoriaId       String?                @map("categoria_id") @db.Uuid
+  status            StatusArtigo           @default(pauta)
+  dataPublicacao    DateTime?              @map("data_publicacao")
+  visualizacoes     Int                    @default(0)
+  urlImagemOg       String?                @map("url_imagem_og")
+  criadoEm          DateTime               @default(now()) @map("criado_em")
+  atualizadoEm      DateTime               @updatedAt @map("atualizado_em")
   estado            String?
-  observacoesLegais String?          @map("observacoes_legais")
-  statusLegal       String           @default("pendente") @map("status_legal")
+  observacoesLegais String?                @map("observacoes_legais")
+  statusLegal       String                 @default("pendente") @map("status_legal")
   regiao            String?
-  ehPremium         Boolean          @default(false) @map("eh_premium")
-  canaisPublicacao  String[]         @default(["portal"]) @map("canais_publicacao")
-  autorExterno      String?          @map("autor_externo")
-  urlFonte          String?          @map("url_fonte")
-  revisorHumano     String?          @map("revisor_humano")
-  itemRssId         String?          @unique @map("item_rss_id") @db.Uuid
-  revistaId         String?          @map("revista_id") @db.Uuid
-  ordemNaRevista    Int?             @map("ordem_revista")
-  logsAcao          LogAcao[]
-  autor             Usuario          @relation("ArtigoAutor", fields: [autorId], references: [id])
-  categoria         Categoria?       @relation(fields: [categoriaId], references: [id])
-  editor            Usuario?         @relation("ArtigoEditor", fields: [editorId], references: [id])
-  revisor           Usuario?         @relation("ArtigoRevisor", fields: [revisorId], references: [id])
-  itemRss           ItemRssBruto?    @relation(fields: [itemRssId], references: [id])
-  revista           Revista?         @relation(fields: [revistaId], references: [id], onDelete: Cascade)
+  ehPremium         Boolean                @default(false) @map("eh_premium")
+  canaisPublicacao  String[]               @default(["portal"]) @map("canais_publicacao")
+  autorExterno      String?                @map("autor_externo")
+  urlFonte          String?                @map("url_fonte")
+  revisorHumano     String?                @map("revisor_humano")
+  itemRssId         String?                @unique @map("item_rss_id") @db.Uuid
+  revistaId         String?                @map("revista_id") @db.Uuid
+  ordemNaRevista    Int?                   @map("ordem_revista")
+  logsAuditoria     LogAuditoria[]
+  autor             Usuario                @relation("ArtigoAutor", fields: [autorId], references: [id])
+  categoria         Categoria?             @relation(fields: [categoriaId], references: [id])
+  editor            Usuario?               @relation("ArtigoEditor", fields: [editorId], references: [id])
+  revisor           Usuario?               @relation("ArtigoRevisor", fields: [revisorId], references: [id])
+  itemRss           ItemRssBruto?          @relation(fields: [itemRssId], references: [id])
+  revista           Revista?               @relation(fields: [revistaId], references: [id], onDelete: Cascade)
   versoes           VersaoArtigo[]
   checagensFato     ChecagemFato[]
   notasFonte        NotaFonte[]
   artigosPoliticos  ArtigoPolitico[]
+  redirecionamentos RedirecionamentoSlug[]
+  // Soft-delete (PRD: nenhum registro é apagado fisicamente)
+  excluidoEm        DateTime?              @map("excluido_em")
 
   @@index([status, dataPublicacao])
   @@index([categoriaId])
@@ -145,6 +148,9 @@ model Revista {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
   artigos        Artigo[]
+
+  // Soft-delete (PRD: nenhum registro é apagado fisicamente)
+  excluidoEm DateTime? @map("excluido_em")
 
   @@map("revistas")
 }
@@ -164,6 +170,9 @@ model Politico {
   criadoEm          DateTime         @default(now()) @map("criado_em")
   atualizadoEm      DateTime         @updatedAt @map("atualizado_em")
   artigosPoliticos  ArtigoPolitico[]
+
+  // Soft-delete (PRD: nenhum registro é apagado fisicamente)
+  excluidoEm DateTime? @map("excluido_em")
 
   @@map("politicos")
 }
@@ -219,19 +228,45 @@ model Categoria {
   categoriaPai   Categoria?  @relation("Subcategorias", fields: [categoriaPaiId], references: [id])
   subcategorias  Categoria[] @relation("Subcategorias")
 
+  // Matérias desta categoria só podem ser publicadas com ao menos 1 checagem de fato
+  exigeChecagem Boolean   @default(false) @map("exige_checagem")
+  // Soft-delete (PRD: nenhum registro é apagado fisicamente)
+  excluidoEm    DateTime? @map("excluido_em")
+
   @@map("categorias")
 }
 
-model LogAcao {
-  id        String   @id @default(uuid()) @db.Uuid
-  usuarioId String   @map("usuario_id") @db.Uuid
-  acao      String
-  artigoId  String?  @map("artigo_id") @db.Uuid
-  dataHora  DateTime @default(now()) @map("data_hora")
-  artigo    Artigo?  @relation(fields: [artigoId], references: [id], onDelete: SetNull)
-  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+/// Trilha de auditoria (PRD): quem fez o quê, quando, de onde, e o antes/depois.
+model LogAuditoria {
+  id           String   @id @default(uuid()) @db.Uuid
+  usuarioId    String   @map("usuario_id") @db.Uuid
+  acao         String
+  entidade     String   @default("artigo")
+  entidadeId   String?  @map("entidade_id") @db.Uuid
+  artigoId     String?  @map("artigo_id") @db.Uuid
+  dadoAnterior Json?    @map("dado_anterior")
+  dadoNovo     Json?    @map("dado_novo")
+  ip           String?
+  userAgent    String?  @map("user_agent")
+  criadoEm     DateTime @default(now()) @map("criado_em")
+  artigo       Artigo?  @relation(fields: [artigoId], references: [id], onDelete: SetNull)
+  usuario      Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
 
-  @@map("logs_acao")
+  @@index([entidade, entidadeId])
+  @@index([usuarioId])
+  @@index([criadoEm])
+  @@map("logs_auditoria")
+}
+
+/// Slugs antigos de matérias publicadas: /noticia/<antigo> responde 301 para o atual.
+model RedirecionamentoSlug {
+  slugAntigo String   @id @map("slug_antigo")
+  artigoId   String   @map("artigo_id") @db.Uuid
+  criadoEm   DateTime @default(now()) @map("criado_em")
+  artigo     Artigo   @relation(fields: [artigoId], references: [id], onDelete: Cascade)
+
+  @@index([artigoId])
+  @@map("redirecionamentos_slug")
 }
 
 model Midia {
@@ -267,6 +302,8 @@ model Anuncio {
   dataFim      DateTime? @map("data_fim")
   criadoEm     DateTime  @default(now()) @map("criado_em")
   atualizadoEm DateTime  @updatedAt @map("atualizado_em")
+  // Soft-delete (PRD: nenhum registro é apagado fisicamente)
+  excluidoEm   DateTime? @map("excluido_em")
 
   @@index([ativo, dataFim])
   @@map("anuncios")
@@ -381,6 +418,9 @@ model FonteRss {
   ativa       Boolean        @default(true) @map("ativa")
   items       ItemRssBruto[]
 
+  // Soft-delete (PRD: nenhum registro é apagado fisicamente)
+  excluidoEm DateTime? @map("excluido_em")
+
   @@map("fontes_rss")
 }
 
@@ -438,6 +478,9 @@ model MediaKit {
   secoes  MediaKitSection[]
   versoes MediaKitVersion[]
   assets  MediaKitAsset[]
+
+  // Soft-delete (PRD: nenhum registro é apagado fisicamente)
+  excluidoEm DateTime? @map("excluido_em")
 
   @@map("media_kits")
 }

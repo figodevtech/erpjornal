@@ -235,3 +235,38 @@ export async function enviarRedefinicaoSenhaUsuarioErp(formData: FormData): Prom
   await registrarAuditoria({ usuarioId: sessao.user.id, acao: "ENVIO_REDEFINICAO_SENHA", entidade: "usuario", entidadeId: usuarioId.data });
   return { ok: true };
 }
+
+/**
+ * Remove os autenticadores (MFA) de um usuário que perdeu o celular: no próximo
+ * login ele cadastra um novo. Ninguém redefine o próprio segundo fator.
+ */
+export async function redefinirMfaUsuarioErp(formData: FormData): Promise<Resultado> {
+  const sessao = await exigirPermissao("usuarios:gerir");
+
+  const usuarioId = z.uuid().safeParse(formData.get("usuarioId")?.toString());
+  if (!usuarioId.success) return { ok: false, error: "Usuário inválido para redefinição do MFA." };
+  if (usuarioId.data === sessao.user.id) {
+    return { ok: false, error: "Você não pode redefinir o seu próprio MFA. Peça a outro administrador." };
+  }
+
+  const admin = criarClienteSupabaseAdmin().auth.admin;
+  const { data, error } = await admin.mfa.listFactors({ userId: usuarioId.data });
+  if (error) return { ok: false, error: mensagemDe(error, "Não foi possível consultar o MFA do usuário.") };
+
+  const fatores = data?.factors ?? [];
+  if (fatores.length === 0) return { ok: false, error: "Este usuário não tem autenticador cadastrado." };
+
+  for (const fator of fatores) {
+    const { error: erroRemocao } = await admin.mfa.deleteFactor({ id: fator.id, userId: usuarioId.data });
+    if (erroRemocao) return { ok: false, error: mensagemDe(erroRemocao, "Não foi possível remover o autenticador.") };
+  }
+
+  await registrarAuditoria({
+    usuarioId: sessao.user.id,
+    acao: "REDEFINICAO_MFA",
+    entidade: "usuario",
+    entidadeId: usuarioId.data,
+    depois: { autenticadoresRemovidos: fatores.length },
+  });
+  return { ok: true };
+}

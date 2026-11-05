@@ -53,6 +53,7 @@ export const ROTULOS_ACAO: Record<string, string> = {
   CURADORIA_ENVIO_REVISAO: "Curadoria enviada à revisão",
   DEFINICAO_SENHA: "Definição de senha",
   ENVIO_REDEFINICAO_SENHA: "Envio de redefinição de senha",
+  REDEFINICAO_MFA: "Redefinição do MFA",
   EXPORTACAO: "Exportação",
 };
 

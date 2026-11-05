@@ -30,7 +30,7 @@ No painel do projeto:
 
 1. **Auth → Sign In / Providers:** deixe *Email* ligado e **desligue** “Allow new users to sign up”. Contas são criadas pelo ERP.
 2. **Auth → URL Configuration:** *Site URL* = `http://localhost:3000`; em *Redirect URLs* adicione `http://localhost:3000/redefinir-senha` (e o domínio de produção depois).
-3. **Auth → Multi-Factor:** mantenha o TOTP habilitado.
+3. **Auth → Multi-Factor:** mantenha o TOTP (*Authenticator app*) habilitado. Admin e editor precisam dele para usar o ERP: no primeiro login, o sistema pede para cadastrar o celular.
 
 ### 2. Variáveis de ambiente
 
@@ -102,6 +102,18 @@ npm run db:deploy
 - **Regras de artigos** (em `src/lib/editorial/permissoes-artigo.ts`):
   - edita o autor ou quem tem `editar_todos`;
   - publicar, despublicar e arquivar exigem `artigos:publicar`.
+
+### Autenticação em dois fatores (MFA)
+- **Quem precisa:** admin e editor (`MFA_OBRIGATORIO=true`, o padrão), e qualquer pessoa que já tenha cadastrado um autenticador.
+- **Como funciona:** depois da senha, o ERP manda para `/seguranca/mfa`, onde a pessoa cadastra o aplicativo (QR code) ou digita o código. Até confirmar, a sessão fica sem as permissões do ERP: páginas, actions e rotas recusam.
+- **Nível da sessão:** é lido do token já validado pelo Supabase Auth (`aal2` = senha + código). As regras puras estão em `src/lib/mfa.ts`.
+- **Celular perdido:** outro administrador usa *Usuários → Ações → Redefinir MFA*. Se for o único admin, remova o fator no painel do Supabase (*Authentication → Users → usuário → MFA*).
+
+### Exclusão lógica e auditoria
+- **Nada é apagado de verdade:** artigos, revistas, categorias, políticos, anúncios, feeds e mídia kits recebem `excluido_em`. Uma extensão do Prisma (`src/lib/db/exclusao-logica.ts`) esconde os excluídos nas leituras; para incluí-los, passe `excluidoEm` no `where` (ex.: `excluidoEm: undefined`). Relações em `include` não são filtradas automaticamente.
+- **Trilha de auditoria:** toda action de escrita chama `registrarAuditoria()` (`src/lib/auditoria.ts`), que grava quem, o quê, antes/depois, IP e user-agent. Senhas e tokens nunca entram no log. A consulta e a exportação CSV ficam em `/erp/auditoria` (permissão `auditoria:ler`).
+- **Matéria publicada:** cada edição guarda a versão anterior; o slug só muda com `artigos:publicar`, e o endereço antigo redireciona para o novo.
+- **Checagem obrigatória:** categorias marcadas com "exige checagem" não publicam matéria sem ao menos uma checagem de fato.
 
 ### Fluxo editorial
 `pauta → apuração → redação → revisão → jurídico → publicado`, além de `arquivado`. A fonte única dos status e das regras é `src/lib/editorial/status.ts`. Matérias publicadas com data futura ficam agendadas e só aparecem no portal na hora marcada (`filtroArtigoNoAr` em `src/lib/data/artigos.ts`).

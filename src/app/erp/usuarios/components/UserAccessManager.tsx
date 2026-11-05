@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown, KeyRound, Loader2, Mail, Pencil, Plus, Save, Shield, UserCog, Users, X } from "lucide-react";
+import { ChevronDown, KeyRound, Loader2, Mail, Pencil, Plus, Save, Shield, ShieldOff, UserCog, Users, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -13,6 +13,7 @@ import {
   criarUsuarioErp,
   definirSenhaUsuarioErp,
   enviarRedefinicaoSenhaUsuarioErp,
+  redefinirMfaUsuarioErp,
 } from "../actions";
 
 type PerfilItem = {
@@ -139,15 +140,19 @@ function PerfilCheckboxes({
 function UserActionsDropdown({
   usuario,
   sendingReset,
+  resettingMfa,
   onEdit,
   onSendReset,
   onSetPassword,
+  onResetMfa,
 }: {
   usuario: UsuarioItem;
   sendingReset: boolean;
+  resettingMfa: boolean;
   onEdit: () => void;
   onSendReset: () => void;
   onSetPassword: () => void;
+  onResetMfa: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [dropUp, setDropUp] = useState(false);
@@ -157,7 +162,7 @@ function UserActionsDropdown({
     const rect = rootRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    const estimatedMenuHeight = 156;
+    const estimatedMenuHeight = 200;
     const spacing = 12;
     const availableBelow = window.innerHeight - rect.bottom;
     const availableAbove = rect.top;
@@ -248,6 +253,19 @@ function UserActionsDropdown({
             <KeyRound className="h-4 w-4 text-gray-400" />
             Definir senha
           </button>
+          <button
+            type="button"
+            role="menuitem"
+            disabled={resettingMfa}
+            onClick={() => {
+              setOpen(false);
+              onResetMfa();
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-bold text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:text-gray-400"
+          >
+            {resettingMfa ? <Loader2 className="h-4 w-4 animate-spin text-gray-400" /> : <ShieldOff className="h-4 w-4 text-gray-400" />}
+            Redefinir MFA (celular perdido)
+          </button>
         </div>
       )}
     </div>
@@ -262,6 +280,7 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
+  const [isResettingMfa, setIsResettingMfa] = useState(false);
   const [isSettingPassword, setIsSettingPassword] = useState(false);
 
   const usuarioSelecionado = useMemo(
@@ -324,6 +343,28 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
       toast.error(error instanceof Error ? error.message : "Não foi possível enviar o e-mail.");
     } finally {
       setIsSendingReset(false);
+    }
+  }
+
+  async function handleResetMfa(usuario: UsuarioItem) {
+    const nome = usuario.nome || usuario.email || "este usuário";
+    if (!window.confirm(`Remover o autenticador de ${nome}? No próximo login, a pessoa cadastra um novo celular.`)) {
+      return;
+    }
+    setIsResettingMfa(true);
+    try {
+      const formData = new FormData();
+      formData.set("usuarioId", usuario.id);
+      const resultado = await redefinirMfaUsuarioErp(formData);
+      if (!resultado.ok) {
+        toast.error(resultado.error);
+        return;
+      }
+      toast.success("MFA redefinido. A pessoa vai cadastrar um novo autenticador no próximo login.");
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : "Não foi possível redefinir o MFA.");
+    } finally {
+      setIsResettingMfa(false);
     }
   }
 
@@ -448,9 +489,11 @@ export default function UserAccessManager({ usuarios, perfis }: UserAccessManage
                 <UserActionsDropdown
                   usuario={usuario}
                   sendingReset={isSendingReset}
+                  resettingMfa={isResettingMfa}
                   onEdit={() => setUsuarioSelecionadoId(usuario.id)}
                   onSendReset={() => void handleSendPasswordReset(usuario.id)}
                   onSetPassword={() => setUsuarioSenhaId(usuario.id)}
+                  onResetMfa={() => void handleResetMfa(usuario)}
                 />
               </div>
             </article>

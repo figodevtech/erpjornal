@@ -1,0 +1,11 @@
+# Fim de linha LF no repositório e na cópia de trabalho (evita diffs/avisos CRLF no Windows)
+* text=auto eol=lf
+
+# Binários
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary

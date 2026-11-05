@@ -14,7 +14,7 @@ export async function atualizarSessaoSupabase(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, headers) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
 
           response = NextResponse.next({
@@ -23,6 +23,12 @@ export async function atualizarSessaoSupabase(request: NextRequest) {
 
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
+          );
+
+          // Cabeçalhos anti-cache enviados pelo @supabase/ssr junto com os cookies de
+          // sessão: impedem que um CDN sirva o token de um usuário para outro.
+          Object.entries(headers ?? {}).forEach(([nome, valor]) =>
+            response.headers.set(nome, valor)
           );
         },
       },

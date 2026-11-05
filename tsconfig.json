@@ -38,7 +38,6 @@
   ],
   "exclude": [
     "node_modules",
-    ".next/dev",
-    "scratch"
+    ".next/dev"
   ]
 }

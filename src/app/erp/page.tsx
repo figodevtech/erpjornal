@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { CheckCircle, Clock, Eye, FileText, Newspaper, TrendingUp } from "lucide-react";
+import { CalendarClock, CheckCircle, Clock, Eye, FileText, Search, TrendingUp } from "lucide-react";
 
-import { getEditorialStats } from "@/app/actions/dashboard";
 import { exigirAcessoErp, temAlgumaPermissao } from "@/lib/auth";
+import { obterEstatisticasEditoriais } from "@/lib/data/dashboard";
+import { ETAPAS_FLUXO, STATUS_INFO } from "@/lib/editorial/status";
 
 export const dynamic = "force-dynamic";
 
 export default async function ERPDashboardPage() {
   const session = await exigirAcessoErp();
-  const stats = await getEditorialStats();
+  const { contagens, populares } = await obterEstatisticasEditoriais();
   const podeCriarArtigos = temAlgumaPermissao(session, [
     "artigos:criar",
     "artigos:editar",
@@ -16,10 +17,10 @@ export default async function ERPDashboardPage() {
   ]);
 
   const cards = [
-    { title: "Total de Materias", value: stats.counts.total, icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
-    { title: "Em Rascunho", value: stats.counts.draft, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-    { title: "Publicadas", value: stats.counts.published, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
-    { title: "Arquivadas", value: stats.counts.scheduled, icon: Newspaper, color: "text-gray-600", bg: "bg-gray-100" },
+    { title: "Em produção", value: contagens.emProducao, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
+    { title: "Em revisão", value: contagens.emRevisao, icon: Search, color: "text-orange-600", bg: "bg-orange-50" },
+    { title: "Publicadas", value: contagens.publicadas, icon: CheckCircle, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { title: "Agendadas", value: contagens.agendadas, icon: CalendarClock, color: "text-blue-600", bg: "bg-blue-50" },
   ];
 
   return (
@@ -51,22 +52,22 @@ export default async function ERPDashboardPage() {
               <div className="rounded-lg bg-red-50 p-2">
                 <Eye className="h-5 w-5 text-red-600" />
               </div>
-              <h2 className="font-bold text-gray-900">Top 5 - Mais Visualizadas (Tempo Real)</h2>
+              <h2 className="font-bold text-gray-900">Top 5 - Mais visualizadas</h2>
             </div>
           </div>
 
           <div className="flex-1">
-            {stats.popular.length > 0 ? (
+            {populares.length > 0 ? (
               <div className="divide-y divide-gray-50">
-                {stats.popular.map((artigo, idx) => (
+                {populares.map((artigo, idx) => (
                   <div key={artigo.id} className="flex items-center gap-4 p-4 transition-colors hover:bg-gray-50">
                     <span className="w-8 text-2xl font-black text-gray-200">0{idx + 1}</span>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-bold text-gray-900">{artigo.title}</div>
+                      <div className="truncate font-bold text-gray-900">{artigo.titulo}</div>
                       <div className="text-xs text-gray-500">/{artigo.slug}</div>
                     </div>
                     <div className="flex items-center gap-2 rounded-full bg-red-50 px-3 py-1">
-                      <span className="text-xs font-black text-red-700">{artigo.views}</span>
+                      <span className="text-xs font-black text-red-700">{artigo.visualizacoes}</span>
                       <Eye className="h-3 w-3 text-red-700" />
                     </div>
                   </div>
@@ -85,28 +86,40 @@ export default async function ERPDashboardPage() {
               <div>
                 <div className="mb-1 flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
                   <span>Publicadas</span>
-                  <span>{Math.round((stats.counts.published / (stats.counts.total || 1)) * 100)}%</span>
+                  <span>{Math.round((contagens.publicadas / (contagens.total || 1)) * 100)}%</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-gray-800">
                   <div
                     className="h-full rounded-full bg-emerald-500"
-                    style={{ width: `${(stats.counts.published / (stats.counts.total || 1)) * 100}%` }}
+                    style={{ width: `${(contagens.publicadas / (contagens.total || 1)) * 100}%` }}
                   />
                 </div>
               </div>
               <div>
                 <div className="mb-1 flex justify-between text-xs font-bold uppercase tracking-widest text-gray-400">
-                  <span>Rascunhos</span>
-                  <span>{Math.round((stats.counts.draft / (stats.counts.total || 1)) * 100)}%</span>
+                  <span>Em produção</span>
+                  <span>{Math.round((contagens.emProducao / (contagens.total || 1)) * 100)}%</span>
                 </div>
                 <div className="h-2 overflow-hidden rounded-full bg-gray-800">
                   <div
                     className="h-full rounded-full bg-amber-500"
-                    style={{ width: `${(stats.counts.draft / (stats.counts.total || 1)) * 100}%` }}
+                    style={{ width: `${(contagens.emProducao / (contagens.total || 1)) * 100}%` }}
                   />
                 </div>
               </div>
             </div>
+            <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              {ETAPAS_FLUXO.map((etapa) => (
+                <div key={etapa} className="flex justify-between border-b border-gray-800 pb-1">
+                  <dt className="text-gray-400">{STATUS_INFO[etapa].label}</dt>
+                  <dd className="font-black">{contagens.porEtapa[etapa]}</dd>
+                </div>
+              ))}
+              <div className="flex justify-between border-b border-gray-800 pb-1">
+                <dt className="text-gray-400">Total</dt>
+                <dd className="font-black">{contagens.total}</dd>
+              </div>
+            </dl>
           </div>
 
           <div className="mt-8 border-t border-gray-800 pt-8">

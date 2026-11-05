@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MoveLeft } from "lucide-react";
 
 import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
+import { ETAPAS_FLUXO } from "@/lib/editorial/status";
 import { prisma } from "@/lib/prisma";
 
 import { KanbanBoard } from "../components/KanbanBoard";
@@ -10,18 +11,34 @@ export default async function ArticlesKanbanPage() {
   const session = await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
   const podeCriar = temPermissao(session, "artigos:criar");
 
-  const artigos = await prisma.artigo.findMany({
-    where: {
-      revistaId: null,
-    },
-    include: {
-      autor: true,
-      categoria: true,
-    },
-    orderBy: {
-      atualizadoEm: "desc",
-    },
-  });
+  // Só os campos que o card usa: antes ia o artigo inteiro (corpo HTML incluído) e
+  // todos os dados do autor (e-mail etc.) para o navegador.
+  const campos = {
+    id: true,
+    titulo: true,
+    status: true,
+    criadoEm: true,
+    autor: { select: { nome: true } },
+    categoria: { select: { nome: true, cor: true } },
+  } as const;
+
+  const [emAndamento, publicados] = await Promise.all([
+    // Etapas anteriores à publicação (arquivados ficam fora do Kanban).
+    prisma.artigo.findMany({
+      where: { revistaId: null, status: { in: ETAPAS_FLUXO.filter((etapa) => etapa !== "publicado") } },
+      select: campos,
+      orderBy: { atualizadoEm: "desc" },
+      take: 300,
+    }),
+    // Coluna "Publicado": só os 50 mais recentes.
+    prisma.artigo.findMany({
+      where: { revistaId: null, status: "publicado" },
+      select: campos,
+      orderBy: { dataPublicacao: "desc" },
+      take: 50,
+    }),
+  ]);
+  const artigos = [...emAndamento, ...publicados];
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">

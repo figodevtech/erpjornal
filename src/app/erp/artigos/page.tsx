@@ -4,19 +4,23 @@ import { Prisma } from "@/generated/prisma/client";
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { STATUS_INFO, isStatusArtigo } from "@/lib/editorial/status";
+import { inteiroLimitado } from "@/lib/http/parametros";
 
 import ArticleFilters from "./components/ArticleFilters";
 import ArticleActionsDropdown from "./components/ArticleActionsDropdown";
 
+const POR_PAGINA = 30;
+
 interface PageProps {
-  searchParams: Promise<{ search?: string; status?: string }>;
+  searchParams: Promise<{ search?: string; status?: string; pagina?: string }>;
 }
 
 export default async function ArtigosPage({ searchParams }: PageProps) {
   const session = await exigirPermissao("artigos:ler");
   const resolvedParams = await searchParams;
-  const search = resolvedParams?.search || "";
+  const search = (resolvedParams?.search || "").slice(0, 200);
   const status = resolvedParams?.status || "";
+  const pagina = inteiroLimitado(resolvedParams?.pagina, { padrao: 1, min: 1, max: 10_000 });
   const podeCriar = temPermissao(session, "artigos:criar");
   const podeEditarFluxo =
     temPermissao(session, "artigos:editar") || temPermissao(session, "artigos:publicar");
@@ -31,11 +35,31 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
     whereClause.status = status;
   }
 
-  const artigos = await prisma.artigo.findMany({
-    where: whereClause,
-    orderBy: { criadoEm: "desc" },
-    include: { autor: true },
-  });
+  // Paginado e só com os campos exibidos (antes carregava todos os artigos com o corpo).
+  const [artigos, total] = await Promise.all([
+    prisma.artigo.findMany({
+      where: whereClause,
+      orderBy: { criadoEm: "desc" },
+      skip: (pagina - 1) * POR_PAGINA,
+      take: POR_PAGINA,
+      select: {
+        id: true,
+        titulo: true,
+        status: true,
+        criadoEm: true,
+        autor: { select: { nome: true } },
+      },
+    }),
+    prisma.artigo.count({ where: whereClause }),
+  ]);
+  const totalPaginas = Math.max(1, Math.ceil(total / POR_PAGINA));
+  const linkPagina = (numero: number) => {
+    const params = new URLSearchParams();
+    if (search) params.set("search", search);
+    if (status) params.set("status", status);
+    params.set("pagina", String(numero));
+    return `/erp/artigos?${params.toString()}`;
+  };
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -114,6 +138,28 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
             </tbody>
           </table>
         </div>
+        {totalPaginas > 1 && (
+          <nav
+            className="flex items-center justify-between border-t border-gray-200 bg-gray-50 px-6 py-3 text-sm text-gray-600"
+            aria-label="Paginação de artigos"
+          >
+            <span>
+              Página {pagina} de {totalPaginas} · {total} artigos
+            </span>
+            <div className="flex gap-2">
+              {pagina > 1 && (
+                <Link href={linkPagina(pagina - 1)} className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 font-medium hover:bg-gray-100">
+                  Anterior
+                </Link>
+              )}
+              {pagina < totalPaginas && (
+                <Link href={linkPagina(pagina + 1)} className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 font-medium hover:bg-gray-100">
+                  Próxima
+                </Link>
+              )}
+            </div>
+          </nav>
+        )}
       </div>
     </div>
   );

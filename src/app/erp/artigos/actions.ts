@@ -180,40 +180,42 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
     const revistaId = existing.revistaId;
     const ordemNaRevista = revistaId ? existing.ordemNaRevista : null;
 
-    await prisma.artigo.update({
-      where: { id },
-      data: {
-        ...data,
-        status: finalStatus,
-        revistaId,
-        dataPublicacao: finalPublishDate,
-        ordemNaRevista,
-        checagensFato: {
-          deleteMany: {},
-          create: factChecks,
+    // Artigo e log de auditoria juntos: nunca fica uma edição sem registro (ou vice-versa).
+    await prisma.$transaction([
+      prisma.artigo.update({
+        where: { id },
+        data: {
+          ...data,
+          status: finalStatus,
+          revistaId,
+          dataPublicacao: finalPublishDate,
+          ordemNaRevista,
+          checagensFato: {
+            deleteMany: {},
+            create: factChecks,
+          },
+          artigosPoliticos: {
+            deleteMany: {},
+            create: entidadesRelacionadas.map(({ politicoId, papel }) => ({
+              papel,
+              politico: {
+                connect: { id: politicoId },
+              },
+            })),
+          },
         },
-        artigosPoliticos: {
-          deleteMany: {},
-          create: entidadesRelacionadas.map(({ politicoId, papel }) => ({
-            papel,
-            politico: {
-              connect: { id: politicoId },
-            },
-          })),
+      }),
+      prisma.logAcao.create({
+        data: {
+          usuarioId: session.user.id,
+          acao:
+            finalStatus === "publicado" && existing.status !== "publicado"
+              ? "PUBLICACAO"
+              : "EDICAO",
+          artigoId: id,
         },
-      },
-    });
-
-    await prisma.logAcao.create({
-      data: {
-        usuarioId: session.user.id,
-        acao:
-          finalStatus === "publicado" && existing.status !== "publicado"
-            ? "PUBLICACAO"
-            : "EDICAO",
-        artigoId: id,
-      },
-    });
+      }),
+    ]);
   } else {
     const finalStatus = resolverStatusAoSalvar({
       solicitado: statusSolicitado,
@@ -223,34 +225,36 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
     const revistaId = requestedRevistaId;
     const ordemNaRevista = revistaId ? (await prisma.artigo.count({ where: { revistaId } })) + 1 : null;
 
-    const novoArtigo = await prisma.artigo.create({
-      data: {
-        ...data,
-        status: finalStatus,
-        revistaId,
-        dataPublicacao: finalStatus === "publicado" ? dataPublicacaoPermitida ?? new Date() : null,
-        autorId: session.user.id,
-        ordemNaRevista,
-        checagensFato: {
-          create: factChecks,
+    await prisma.$transaction(async (tx) => {
+      const novoArtigo = await tx.artigo.create({
+        data: {
+          ...data,
+          status: finalStatus,
+          revistaId,
+          dataPublicacao: finalStatus === "publicado" ? dataPublicacaoPermitida ?? new Date() : null,
+          autorId: session.user.id,
+          ordemNaRevista,
+          checagensFato: {
+            create: factChecks,
+          },
+          artigosPoliticos: {
+            create: entidadesRelacionadas.map(({ politicoId, papel }) => ({
+              papel,
+              politico: {
+                connect: { id: politicoId },
+              },
+            })),
+          },
         },
-        artigosPoliticos: {
-          create: entidadesRelacionadas.map(({ politicoId, papel }) => ({
-            papel,
-            politico: {
-              connect: { id: politicoId },
-            },
-          })),
-        },
-      },
-    });
+      });
 
-    await prisma.logAcao.create({
-      data: {
-        usuarioId: session.user.id,
-        acao: finalStatus === "publicado" ? "CRIACAO_E_PUBLICACAO" : "CRIACAO",
-        artigoId: novoArtigo.id,
-      },
+      await tx.logAcao.create({
+        data: {
+          usuarioId: session.user.id,
+          acao: finalStatus === "publicado" ? "CRIACAO_E_PUBLICACAO" : "CRIACAO",
+          artigoId: novoArtigo.id,
+        },
+      });
     });
   }
 

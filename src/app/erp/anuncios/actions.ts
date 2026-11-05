@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { AD_PAGE_TYPES, AD_PLACEMENTS, getAdPlacement } from "@/lib/ads";
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 function readString(formData: FormData, key: string) {
   return (formData.get(key)?.toString() ?? "").trim();
@@ -26,7 +27,7 @@ function isPrismaError(error: unknown): error is { code: string } {
 
 export async function salvarAnuncio(formData: FormData) {
   const id = readString(formData, "id") || null;
-  await exigirPermissao(id ? "anuncios:editar" : "anuncios:criar");
+  const sessao = await exigirPermissao(id ? "anuncios:editar" : "anuncios:criar");
 
   const titulo = readString(formData, "titulo");
   const imagemUrl = readString(formData, "imagemUrl");
@@ -55,16 +56,11 @@ export async function salvarAnuncio(formData: FormData) {
   const posicoes = [...placement.posicoes];
 
   try {
-    if (id) {
-      await prisma.anuncio.update({
-        where: { id },
-        data: { titulo, imagemUrl, linkUrl, altText, tamanho, paginas, posicoes, ativo, prioridade, dataInicio, dataFim },
-      });
-    } else {
-      await prisma.anuncio.create({
-        data: { titulo, imagemUrl, linkUrl, altText, tamanho, paginas, posicoes, ativo, prioridade, dataInicio, dataFim },
-      });
-    }
+    const dados = { titulo, imagemUrl, linkUrl, altText, tamanho, paginas, posicoes, ativo, prioridade, dataInicio, dataFim };
+    const salvo = id
+      ? await prisma.anuncio.update({ where: { id }, data: dados })
+      : await prisma.anuncio.create({ data: dados });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: id ? "EDICAO" : "CRIACAO", entidade: "anuncio", entidadeId: salvo.id, depois: dados });
   } catch (error: unknown) {
     if (isPrismaError(error) && error.code === "P2025") {
       throw new Error("Anúncio não encontrado.");
@@ -79,8 +75,12 @@ export async function salvarAnuncio(formData: FormData) {
 }
 
 export async function excluirAnuncio(id: string) {
-  await exigirPermissao("anuncios:editar");
-  await prisma.anuncio.delete({ where: { id } });
+  const sessao = await exigirPermissao("anuncios:editar");
+  // Exclusão lógica (PRD: nada é apagado fisicamente).
+  await prisma.$transaction(async (tx) => {
+    const anterior = await tx.anuncio.update({ where: { id }, data: { excluidoEm: new Date() } });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: "EXCLUSAO", entidade: "anuncio", entidadeId: id, antes: anterior }, tx);
+  });
 
   revalidatePath("/erp/anuncios");
   revalidatePath("/", "page");

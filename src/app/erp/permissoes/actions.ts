@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 type Resultado = { ok: true } | { ok: false; error: string };
 
@@ -23,7 +24,7 @@ function isPrismaError(error: unknown): error is { code: string } {
 }
 
 export async function salvarPermissoesPerfil(formData: FormData): Promise<Resultado> {
-  await exigirPermissao("usuarios:gerir");
+  const sessao = await exigirPermissao("usuarios:gerir");
 
   const dados = DadosPerfil.safeParse({
     perfilId: formData.get("perfilId")?.toString() ?? "",
@@ -81,6 +82,14 @@ export async function salvarPermissoesPerfil(formData: FormData): Promise<Result
     console.error("Erro ao salvar permissões:", error);
     return { ok: false, error: "Não foi possível salvar as permissões." };
   }
+
+  await registrarAuditoria({
+    usuarioId: sessao.user.id,
+    acao: perfilId ? "EDICAO" : "CRIACAO",
+    entidade: "perfil",
+    entidadeId: perfilId || null,
+    depois: { nome: nome || undefined, descricao, permissoes },
+  });
 
   revalidatePath("/erp/permissoes");
   revalidatePath("/erp/usuarios");

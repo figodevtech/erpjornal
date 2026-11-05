@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { exigirAlgumaPermissao, exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export async function suggestMediaTags(nome: string, tipo: string) {
   await exigirAlgumaPermissao(["midia:criar", "midia:editar"]);
@@ -27,7 +28,7 @@ export async function suggestMediaTags(nome: string, tipo: string) {
 
 export async function saveMedia(formData: FormData) {
   const id = formData.get("id") as string | null;
-  await (id ? exigirPermissao("midia:editar") : exigirPermissao("midia:criar"));
+  const sessao = await (id ? exigirPermissao("midia:editar") : exigirPermissao("midia:criar"));
 
   const url = formData.get("url") as string;
   const nome = formData.get("nome") as string;
@@ -58,11 +59,8 @@ export async function saveMedia(formData: FormData) {
     tagsIa,
   };
 
-  if (id) {
-    await prisma.midia.update({ where: { id }, data });
-  } else {
-    await prisma.midia.create({ data });
-  }
+  const salva = id ? await prisma.midia.update({ where: { id }, data }) : await prisma.midia.create({ data });
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: id ? "EDICAO" : "CRIACAO", entidade: "midia", entidadeId: salva.id, depois: { nome, tipo, url } });
 
   revalidatePath("/erp/midia");
   redirect("/erp/midia");

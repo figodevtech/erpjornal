@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 import { getSiteUrl } from "@/lib/site-url";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 
@@ -102,7 +103,7 @@ async function verificarProtecaoAdmin(params: {
 }
 
 export async function criarUsuarioErp(formData: FormData): Promise<Resultado> {
-  await exigirPermissao("usuarios:gerir");
+  const sessao = await exigirPermissao("usuarios:gerir");
 
   const dados = DadosCriacao.safeParse(lerFormulario(formData));
   if (!dados.success) return { ok: false, error: primeiroErro(dados.error) };
@@ -142,6 +143,8 @@ export async function criarUsuarioErp(formData: FormData): Promise<Resultado> {
     await supabaseAdmin.auth.admin.deleteUser(usuarioId).catch(() => {});
     return { ok: false, error: mensagemDe(erroBanco, "Não foi possível criar o usuário.") };
   }
+
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: "CRIACAO", entidade: "usuario", entidadeId: usuarioId, depois: { nome, email, tipoConta, status, perfis } });
 
   revalidatePath("/erp/usuarios");
   return { ok: true };
@@ -188,12 +191,14 @@ export async function atualizarUsuarioErp(formData: FormData): Promise<Resultado
     return { ok: false, error: mensagemDe(error, "Não foi possível atualizar o usuário.") };
   }
 
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: "EDICAO", entidade: "usuario", entidadeId: usuarioId, depois: { nome, tipoConta, status, perfis } });
+
   revalidatePath("/erp/usuarios");
   return { ok: true };
 }
 
 export async function definirSenhaUsuarioErp(formData: FormData): Promise<Resultado> {
-  await exigirPermissao("usuarios:gerir");
+  const sessao = await exigirPermissao("usuarios:gerir");
 
   const dados = z
     .object({ usuarioId: z.uuid("Usuário inválido para redefinição de senha."), senha: Senha })
@@ -208,11 +213,13 @@ export async function definirSenhaUsuarioErp(formData: FormData): Promise<Result
   });
   if (error) return { ok: false, error: mensagemDe(error, "Não foi possível atualizar a senha.") };
 
+  // Registra só o fato; a senha nunca vai para o log.
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: "DEFINICAO_SENHA", entidade: "usuario", entidadeId: usuario.id });
   return { ok: true };
 }
 
 export async function enviarRedefinicaoSenhaUsuarioErp(formData: FormData): Promise<Resultado> {
-  await exigirPermissao("usuarios:gerir");
+  const sessao = await exigirPermissao("usuarios:gerir");
 
   const usuarioId = z.uuid().safeParse(formData.get("usuarioId")?.toString());
   if (!usuarioId.success) return { ok: false, error: "Usuário inválido para redefinição de senha." };
@@ -225,5 +232,6 @@ export async function enviarRedefinicaoSenhaUsuarioErp(formData: FormData): Prom
   });
   if (error) return { ok: false, error: mensagemDe(error, "Não foi possível enviar o e-mail.") };
 
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: "ENVIO_REDEFINICAO_SENHA", entidade: "usuario", entidadeId: usuarioId.data });
   return { ok: true };
 }

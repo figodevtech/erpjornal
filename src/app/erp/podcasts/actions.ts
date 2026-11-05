@@ -5,10 +5,11 @@ import { redirect } from "next/navigation";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export async function savePodcast(formData: FormData) {
   const id = formData.get("id") as string | null;
-  await (id ? exigirPermissao("podcasts:editar") : exigirPermissao("podcasts:criar"));
+  const sessao = await (id ? exigirPermissao("podcasts:editar") : exigirPermissao("podcasts:criar"));
 
   const titulo = formData.get("titulo") as string;
   const slug = formData.get("slug") as string;
@@ -34,11 +35,10 @@ export async function savePodcast(formData: FormData) {
     tags,
   };
 
-  if (id) {
-    await prisma.episodioPodcast.update({ where: { id }, data });
-  } else {
-    await prisma.episodioPodcast.create({ data });
-  }
+  const salvo = id
+    ? await prisma.episodioPodcast.update({ where: { id }, data })
+    : await prisma.episodioPodcast.create({ data });
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: id ? "EDICAO" : "CRIACAO", entidade: "podcast", entidadeId: salvo.id, depois: data });
 
   revalidatePath("/erp/podcasts");
   revalidatePath("/podcasts");

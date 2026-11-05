@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 type ResultadoAcao = { ok: true } | { ok: false; error: string };
 
@@ -18,7 +19,7 @@ function apenasDigitos(formData: FormData, campo: string) {
 
 export async function upsertPolitician(formData: FormData): Promise<ResultadoAcao> {
   const id = formData.get("id") as string | null;
-  await exigirPermissao(id ? "entidades:editar" : "entidades:criar");
+  const sessao = await exigirPermissao(id ? "entidades:editar" : "entidades:criar");
 
   const data = {
     nome: texto(formData, "nome"),
@@ -34,11 +35,10 @@ export async function upsertPolitician(formData: FormData): Promise<ResultadoAca
   };
 
   try {
-    if (id) {
-      await prisma.politico.update({ where: { id }, data });
-    } else {
-      await prisma.politico.create({ data });
-    }
+    const salvo = id
+      ? await prisma.politico.update({ where: { id }, data })
+      : await prisma.politico.create({ data });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: id ? "EDICAO" : "CRIACAO", entidade: "entidade", entidadeId: salvo.id, depois: data });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       const campos = String(error.meta?.target ?? "");
@@ -54,8 +54,12 @@ export async function upsertPolitician(formData: FormData): Promise<ResultadoAca
 }
 
 export async function deletePolitician(id: string) {
-  await exigirPermissao("entidades:editar");
-  await prisma.politico.delete({ where: { id } });
+  const sessao = await exigirPermissao("entidades:editar");
+  // Exclusão lógica (PRD: nada é apagado fisicamente).
+  await prisma.$transaction(async (tx) => {
+    const anterior = await tx.politico.update({ where: { id }, data: { excluidoEm: new Date() } });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: "EXCLUSAO", entidade: "entidade", entidadeId: id, antes: anterior }, tx);
+  });
   revalidatePath("/erp/entidades");
 }
 

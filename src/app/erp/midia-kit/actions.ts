@@ -3,7 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { exigirPermissao, obterSessao } from "@/lib/auth";
+import { registrarAuditoria } from "@/lib/auditoria";
+import { exigirPermissao } from "@/lib/auth";
 import { Prisma, type MediaKitStatus } from "@/generated/prisma/client";
 import { MediaKitTheme, MediaKitSectionWithData } from "@/types/media-kit";
 import { toMediaKitSectionWithData } from "./section-mappers";
@@ -12,7 +13,7 @@ import { toMediaKitSectionWithData } from "./section-mappers";
  * Cria um novo Mídia Kit vazio.
  */
 export async function createMediaKit(formData: FormData) {
-  await exigirPermissao("midia-kit:criar");
+  const sessao = await exigirPermissao("midia-kit:criar");
 
   const nome = (formData.get("nome") as string)?.trim();
   const slug = (formData.get("slug") as string)?.trim();
@@ -22,8 +23,9 @@ export async function createMediaKit(formData: FormData) {
   }
 
   // Verifica se o slug já existe
+  // excluidoEm: undefined inclui kits excluídos: o slug deles continua reservado (único).
   const slugExistente = await prisma.mediaKit.findUnique({
-    where: { slug }
+    where: { slug, excluidoEm: undefined }
   });
 
   if (slugExistente) {
@@ -43,6 +45,8 @@ export async function createMediaKit(formData: FormData) {
       },
     },
   });
+
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: "CRIACAO", entidade: "midia_kit", entidadeId: mediaKit.id, depois: { nome, slug } });
 
   revalidatePath("/erp/midia-kit");
   redirect(`/erp/midia-kit/${mediaKit.id}/editor`);
@@ -81,15 +85,17 @@ export async function updateMediaKit(id: string, data: {
  * Deleta um Mídia Kit e todas as suas dependências.
  */
 export async function deleteMediaKit(id: string) {
-  await exigirPermissao("midia-kit:editar");
+  const sessao = await exigirPermissao("midia-kit:editar");
 
   const mediaKit = await prisma.mediaKit.findUnique({
     where: { id },
     select: { slug: true }
   });
 
-  await prisma.mediaKit.delete({
-    where: { id },
+  // Exclusão lógica (PRD: nada é apagado fisicamente).
+  await prisma.$transaction(async (tx) => {
+    const anterior = await tx.mediaKit.update({ where: { id }, data: { excluidoEm: new Date() } });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: "EXCLUSAO", entidade: "midia_kit", entidadeId: id, antes: anterior }, tx);
   });
 
   revalidatePath("/erp/midia-kit");
@@ -177,8 +183,7 @@ export async function updateSectionOrder(mediaKitId: string, sectionOrders: { id
  * Publica um Mídia Kit (Gera snapshot/versão).
  */
 export async function publishMediaKit(id: string) {
-  await exigirPermissao("midia-kit:publicar");
-  const sessao = await obterSessao();
+  const sessao = await exigirPermissao("midia-kit:publicar");
 
   const mediaKit = await prisma.mediaKit.findUnique({
     where: { id },
@@ -210,7 +215,7 @@ export async function publishMediaKit(id: string) {
       data: {
         mediaKitId: id,
         snapshot: snapshot as unknown as Prisma.InputJsonValue,
-        usuarioId: sessao?.user.id,
+        usuarioId: sessao.user.id,
       }
     }),
     // Atualiza status do kit
@@ -222,6 +227,8 @@ export async function publishMediaKit(id: string) {
       }
     })
   ]);
+
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: "PUBLICACAO", entidade: "midia_kit", entidadeId: id });
 
   revalidatePath("/erp/midia-kit");
   revalidatePath(`/erp/midia-kit/${id}`);

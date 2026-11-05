@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
 import {
   STORAGE_BUCKETS,
@@ -34,7 +35,7 @@ function extensionFromMimeType(mimeType: string) {
 
 export async function saveRevista(formData: FormData) {
   const id = formData.get("id") as string | null;
-  await (id ? exigirPermissao("revistas:editar") : exigirPermissao("revistas:criar"));
+  const sessao = await (id ? exigirPermissao("revistas:editar") : exigirPermissao("revistas:criar"));
 
   const titulo = (formData.get("titulo") as string)?.trim();
   const descricao = ((formData.get("descricao") as string) || "").trim() || null;
@@ -56,6 +57,7 @@ export async function saveRevista(formData: FormData) {
   const revista = id
     ? await prisma.revista.update({ where: { id }, data })
     : await prisma.revista.create({ data });
+  await registrarAuditoria({ usuarioId: sessao.user.id, acao: id ? "EDICAO" : "CRIACAO", entidade: "revista", entidadeId: revista.id, depois: data });
 
   revalidatePath("/erp/revistas");
   revalidatePath(`/erp/revistas/${revista.id}`);
@@ -152,9 +154,14 @@ export async function updateRevistaArticleOrder(revistaId: string, articleIds: s
 }
 
 export async function deleteRevista(id: string) {
-  await exigirPermissao("revistas:editar");
+  const sessao = await exigirPermissao("revistas:editar");
 
-  await prisma.revista.delete({ where: { id } });
+  // Exclusão lógica: a revista some do portal e do ERP; os artigos continuam
+  // vinculados a ela (antes viravam matérias avulsas) e podem ser recuperados.
+  await prisma.$transaction(async (tx) => {
+    const anterior = await tx.revista.update({ where: { id }, data: { excluidoEm: new Date() } });
+    await registrarAuditoria({ usuarioId: sessao.user.id, acao: "EXCLUSAO", entidade: "revista", entidadeId: id, antes: anterior }, tx);
+  });
 
   revalidatePath("/erp/revistas");
   revalidatePath("/erp/artigos");

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { registrarAuditoria } from "@/lib/auditoria";
 
 export async function saveSource(formData: FormData) {
   const id = formData.get("id") as string | null;
@@ -22,11 +23,11 @@ export async function saveSource(formData: FormData) {
 
   const data = { nome, cargo, organizacao, email, telefone, nivelSigilo, notas };
 
-  if (id) {
-    await prisma.fonte.update({ where: { id }, data });
-  } else {
-    await prisma.fonte.create({ data: { ...data, criadorId: session.user.id } });
-  }
+  const salva = id
+    ? await prisma.fonte.update({ where: { id }, data })
+    : await prisma.fonte.create({ data: { ...data, criadorId: session.user.id } });
+  // Fonte é dado sigiloso: o log registra a ação, não o conteúdo de contato.
+  await registrarAuditoria({ usuarioId: session.user.id, acao: id ? "EDICAO" : "CRIACAO", entidade: "fonte", entidadeId: salva.id, depois: { nome: data.nome, nivelSigilo: data.nivelSigilo } });
 
   revalidatePath("/erp/fontes");
   redirect("/erp/fontes");

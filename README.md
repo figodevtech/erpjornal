@@ -115,6 +115,16 @@ npm run db:deploy
 - **Matéria publicada:** cada edição guarda a versão anterior; o slug só muda com `artigos:publicar`, e o endereço antigo redireciona para o novo.
 - **Checagem obrigatória:** categorias marcadas com "exige checagem" não publicam matéria sem ao menos uma checagem de fato.
 
+### Newsletter, plantão e alertas
+- **Inscrição com dupla confirmação (LGPD):** o formulário grava a inscrição como *pendente* e envia um link (vale 7 dias). Só quem confirma recebe. Confirmar e sair da lista acontecem por botão (POST), porque filtros de e-mail abrem os links sozinhos. Todo envio traz o link de descadastro e o cabeçalho de descadastro de um clique (`List-Unsubscribe-Post`).
+- **Envio:** matéria publicada com o canal *Newsletter* sai para os confirmados uma única vez, até 48h depois de entrar no ar, em lotes de 100 pelo Resend (`src/lib/newsletter/`). O disparo roda depois da publicação (`after`).
+- **Matérias agendadas:** a rota `/api/cron/newsletter` envia as que entraram no ar. Agende a cada 10–15 min com `Authorization: Bearer $CRON_SECRET` (Vercel Cron no plano Pro, ou um agendador externo). Sem cron, elas saem junto com a próxima publicação.
+- **ERP:** `/erp/newsletter` (permissão `newsletter:gerir`) mostra inscritos e envios, exporta CSV e apaga dados a pedido do titular. Essa é a única exclusão física do sistema, e fica na auditoria sem o e-mail.
+- **Plantão:** avisos na faixa do topo do portal (`/erp/plantao`, permissão `plantao:gerir`). Com `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`, cada aviso também vai para o canal da redação.
+
+### Cache do portal
+As páginas ficam no route group `(portal)`. Para invalidar páginas dinâmicas, use os helpers de `src/lib/cache/portal.ts`: `revalidatePath("/noticia/[slug]", "page")` sem o grupo não invalida nada.
+
 ### Fluxo editorial
 `pauta → apuração → redação → revisão → jurídico → publicado`, além de `arquivado`. A fonte única dos status e das regras é `src/lib/editorial/status.ts`. Matérias publicadas com data futura ficam agendadas e só aparecem no portal na hora marcada (`filtroArtigoNoAr` em `src/lib/data/artigos.ts`).
 

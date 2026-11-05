@@ -156,7 +156,11 @@ export default function ArticleForm({
     setError("");
     startTransition(async () => {
       try {
-        await saveArticle(formData);
+        // Em caso de sucesso a action redireciona; erros de validação voltam como resultado.
+        const resultado = await saveArticle(formData);
+        if (resultado && !resultado.ok) {
+          setError(resultado.error);
+        }
       } catch (err: unknown) {
         setError((err as Error).message || "Erro interno ao salvar.");
       }

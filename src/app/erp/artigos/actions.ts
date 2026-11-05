@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { redirect } from "next/navigation";
 
 import { exigirAlgumaPermissao, exigirPermissao, temPermissao } from "@/lib/auth";
@@ -23,28 +24,75 @@ function lerDataPublicacao(valor: string | null): Date | null {
   return isNaN(data.getTime()) ? null : data;
 }
 
-export async function saveArticle(formData: FormData) {
-  const id = formData.get("id") as string | null;
+// Links e imagens viram href/src no portal: só http(s) (nada de javascript:).
+const UrlHttpOpcional = z.union([z.literal(""), z.url({ protocol: /^https?$/, message: "Use um link http(s) válido." })]);
+const UuidOpcional = z.union([z.literal(""), z.uuid()]);
+
+const CamposArtigo = z.object({
+  id: UuidOpcional,
+  titulo: z.string().trim().min(1, "Informe o título.").max(300, "O título pode ter no máximo 300 caracteres."),
+  slug: z
+    .string()
+    .trim()
+    .min(1, "Informe o slug.")
+    .max(200)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "O slug deve ter só letras minúsculas, números e hífens."),
+  resumo: z.string().trim().max(1000, "O resumo pode ter no máximo 1000 caracteres."),
+  categoriaId: UuidOpcional,
+  revistaId: UuidOpcional,
+  urlFonte: UrlHttpOpcional,
+  urlImagemOg: UrlHttpOpcional,
+  autorExterno: z.string().trim().max(120),
+  canaisPublicacao: z.array(z.enum(["portal", "newsletter", "redes_sociais"])).max(3),
+  politicoIds: z.array(z.uuid()).max(50),
+});
+
+const ChecagemFato = z.object({
+  urlFonte: UrlHttpOpcional,
+  urlDocumento: UrlHttpOpcional,
+  statusVerificacao: z.string().trim().max(30).catch("verificado"),
+});
+
+function texto(formData: FormData, campo: string) {
+  return formData.get(campo)?.toString() ?? "";
+}
+
+export async function saveArticle(formData: FormData): Promise<{ ok: false; error: string } | void> {
+  const campos = CamposArtigo.safeParse({
+    id: texto(formData, "id"),
+    titulo: texto(formData, "titulo"),
+    slug: texto(formData, "slug"),
+    resumo: texto(formData, "resumo"),
+    categoriaId: texto(formData, "categoriaId"),
+    revistaId: texto(formData, "revistaId"),
+    urlFonte: texto(formData, "urlFonte").trim(),
+    urlImagemOg: texto(formData, "urlImagemOg").trim(),
+    autorExterno: texto(formData, "autorExterno"),
+    canaisPublicacao: formData.getAll("canaisPublicacao").map(String),
+    politicoIds: formData.getAll("politicoIds").map(String),
+  });
+
+  const id = campos.success ? campos.data.id || null : null;
   const session = id
     ? await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"])
     : await exigirPermissao("artigos:criar");
 
-  const titulo = formData.get("titulo") as string;
-  const slug = formData.get("slug") as string;
-  const resumo = formData.get("resumo") as string;
+  if (!campos.success) {
+    return { ok: false, error: campos.error.issues[0]?.message ?? "Dados do artigo inválidos." };
+  }
+
+  const { titulo, slug, resumo, categoriaId, canaisPublicacao, autorExterno: autorExternoBruto } = campos.data;
   // Barreira contra XSS: todo HTML de matéria é sanitizado antes de ir para o banco.
-  const corpoTexto = sanitizarHtmlArtigo(formData.get("corpoTexto") as string);
-  const categoriaId = formData.get("categoriaId") as string;
+  const corpoTexto = sanitizarHtmlArtigo(texto(formData, "corpoTexto"));
   const statusSolicitado = formData.get("status");
   const dataSolicitada = lerDataPublicacao(formData.get("dataPublicacao") as string | null);
-  const canaisPublicacao = formData.getAll("canaisPublicacao") as string[];
-  const urlFonte = (formData.get("urlFonte") as string) || null;
-  const autorExterno = (formData.get("autorExterno") as string) || null;
-  const requestedRevistaId = (formData.get("revistaId") as string) || null;
-  const urlImagemOg = (formData.get("urlImagemOg") as string) || null;
+  const urlFonte = campos.data.urlFonte || null;
+  const autorExterno = autorExternoBruto || null;
+  const requestedRevistaId = campos.data.revistaId || null;
+  const urlImagemOg = campos.data.urlImagemOg || null;
 
-  if (!titulo || !slug || !corpoTexto) {
-    throw new Error("Campos obrigatorios ausentes");
+  if (!corpoTexto) {
+    return { ok: false, error: "O corpo da matéria está vazio." };
   }
 
   const podePublicar = temPermissao(session, "artigos:publicar");
@@ -74,23 +122,37 @@ export async function saveArticle(formData: FormData) {
     urlImagemOg,
   };
 
-  const factChecksCount = parseInt((formData.get("checagensFato_count") as string) || "0");
-  const factChecks = [];
+  const factChecksCount = Math.min(50, Math.max(0, Number.parseInt(texto(formData, "checagensFato_count"), 10) || 0));
+  const factChecks: { urlFonte: string | null; urlDocumento: string | null; statusVerificacao: string }[] = [];
   for (let i = 0; i < factChecksCount; i++) {
-    const urlFonteChecagem = formData.get(`fact_check_url_${i}`) as string;
-    const urlDocumento = formData.get(`fact_check_doc_${i}`) as string;
-    const statusVerificacao = formData.get(`fact_check_status_${i}`) as string;
-    if (urlFonteChecagem || urlDocumento) {
-      factChecks.push({ urlFonte: urlFonteChecagem, urlDocumento, statusVerificacao });
+    const checagem = ChecagemFato.safeParse({
+      urlFonte: texto(formData, `fact_check_url_${i}`).trim(),
+      urlDocumento: texto(formData, `fact_check_doc_${i}`).trim(),
+      statusVerificacao: texto(formData, `fact_check_status_${i}`),
+    });
+    if (!checagem.success) {
+      return { ok: false, error: `Checagem de fato ${i + 1}: ${checagem.error.issues[0]?.message}` };
+    }
+    const { urlFonte: urlChecagem, urlDocumento, statusVerificacao } = checagem.data;
+    if (urlChecagem || urlDocumento) {
+      factChecks.push({ urlFonte: urlChecagem || null, urlDocumento: urlDocumento || null, statusVerificacao });
     }
   }
 
-  const politicoIds = formData.getAll("politicoIds") as string[];
+  const politicoIds = campos.data.politicoIds;
   const entidadesRelacionadas = politicoIds.map((politicoId) => ({
     politicoId,
     papel: ((formData.get(`entidadePapel_${politicoId}`) as string) || "").trim() || null,
   }));
   let previousRevistaId: string | null = null;
+
+  const slugEmUso = await prisma.artigo.findFirst({
+    where: { slug, ...(id ? { NOT: { id } } : {}) },
+    select: { id: true },
+  });
+  if (slugEmUso) {
+    return { ok: false, error: "Já existe outra matéria com este slug. Ajuste o slug e salve de novo." };
+  }
 
   if (id) {
     if (!podeEditar && !podePublicar) {

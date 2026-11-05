@@ -14,51 +14,56 @@ type ThemeContextValue = {
 const ThemeContext = React.createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "theme";
 
-function getSystemTheme(): ResolvedTheme {
-  if (typeof window === "undefined") {
-    return "light";
-  }
+// Preferências lidas como "fontes externas" (useSyncExternalStore): sem setState em
+// useEffect e sem guardar o tema antigo num closure. Antes, quem trocava para
+// "escuro" voltava a seguir o sistema quando o esquema do sistema operacional mudava.
+const ouvintesDoTema = new Set<() => void>();
 
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+function lerTemaSalvo(): ThemeOption {
+  const salvo = window.localStorage.getItem(STORAGE_KEY);
+  return salvo === "light" || salvo === "dark" || salvo === "system" ? salvo : "system";
 }
 
-function applyTheme(theme: ThemeOption) {
-  const resolved = theme === "system" ? getSystemTheme() : theme;
+function assinarTema(aviso: () => void) {
+  ouvintesDoTema.add(aviso);
+  window.addEventListener("storage", aviso); // outras abas
+  return () => {
+    ouvintesDoTema.delete(aviso);
+    window.removeEventListener("storage", aviso);
+  };
+}
+
+const CONSULTA_ESCURO = "(prefers-color-scheme: dark)";
+
+function sistemaEstaEscuro() {
+  return window.matchMedia(CONSULTA_ESCURO).matches;
+}
+
+function assinarEsquemaDoSistema(aviso: () => void) {
+  const consulta = window.matchMedia(CONSULTA_ESCURO);
+  consulta.addEventListener("change", aviso);
+  return () => consulta.removeEventListener("change", aviso);
+}
+
+function aplicarNoDocumento(tema: ResolvedTheme) {
   const root = document.documentElement;
-
-  root.classList.toggle("dark", resolved === "dark");
-  root.style.colorScheme = resolved;
-
-  return resolved;
+  root.classList.toggle("dark", tema === "dark");
+  root.style.colorScheme = tema;
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = React.useState<ThemeOption>("system");
-  const [resolvedTheme, setResolvedTheme] = React.useState<ResolvedTheme>("light");
+  const theme = React.useSyncExternalStore<ThemeOption>(assinarTema, lerTemaSalvo, () => "system");
+  const sistemaEscuro = React.useSyncExternalStore(assinarEsquemaDoSistema, sistemaEstaEscuro, () => false);
+  const resolvedTheme: ResolvedTheme = theme === "system" ? (sistemaEscuro ? "dark" : "light") : theme;
 
+  // Efeito só sincroniza o DOM (sistema externo); não altera estado do React.
   React.useEffect(() => {
-    const storedTheme = window.localStorage.getItem(STORAGE_KEY) as ThemeOption | null;
-    const nextTheme: ThemeOption =
-      storedTheme === "light" || storedTheme === "dark" || storedTheme === "system"
-        ? storedTheme
-        : "system";
-
-    setThemeState(nextTheme);
-    setResolvedTheme(applyTheme(nextTheme));
-
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = () => {
-      setResolvedTheme(applyTheme(nextTheme === "system" ? "system" : nextTheme));
-    };
-
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, []);
+    aplicarNoDocumento(resolvedTheme);
+  }, [resolvedTheme]);
 
   const setTheme = React.useCallback((nextTheme: ThemeOption) => {
-    setThemeState(nextTheme);
     window.localStorage.setItem(STORAGE_KEY, nextTheme);
-    setResolvedTheme(applyTheme(nextTheme));
+    ouvintesDoTema.forEach((aviso) => aviso());
   }, []);
 
   const value = React.useMemo(

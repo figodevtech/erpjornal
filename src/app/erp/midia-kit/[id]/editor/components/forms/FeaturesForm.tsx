@@ -7,7 +7,7 @@ interface Props {
   onChange: (data: Partial<MediaKitFeaturesData>) => void;
 }
 
-export default function FeaturesForm({ mediaKitId, data, onChange }: Props) {
+export default function FeaturesForm({ data, onChange }: Props) {
   const items = data.items || [];
 
   function addItem() {

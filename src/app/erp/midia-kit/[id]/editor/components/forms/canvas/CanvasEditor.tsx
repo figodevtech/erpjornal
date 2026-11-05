@@ -16,7 +16,7 @@ interface Props {
 
 type InteractionType = 'moving' | 'resizing' | 'rotating' | null;
 
-export default function CanvasEditor({ elements, selectedId, onSelect, onChangeElement, backgroundColor, canvasHeight }: Props) {
+export default function CanvasEditor({ elements, selectedId, onSelect, onChangeElement, backgroundColor }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [interaction, setInteraction] = useState<InteractionType>(null);
   const [activeHandle, setActiveHandle] = useState<string | null>(null);

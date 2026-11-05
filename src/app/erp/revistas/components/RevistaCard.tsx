@@ -1,6 +1,7 @@
 "use client";
 
 import { Calendar, FileText, Pencil, Trash2 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 
@@ -44,9 +45,9 @@ export default function RevistaCard({ revista, podeEditar }: RevistaCardProps) {
     <>
       <div className="group relative overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
         <Link href={`/erp/revistas/${revista.id}`} className="block">
-          <div className="aspect-[16/9] bg-gray-100">
+          <div className="relative aspect-[16/9] bg-gray-100">
             {revista.capaUrl ? (
-              <img src={revista.capaUrl} alt={revista.titulo} className="h-full w-full object-cover" />
+              <Image src={revista.capaUrl} alt={revista.titulo} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover" />
             ) : (
               <div className="flex h-full items-center justify-center bg-gray-900 text-white">
                 <FileText className="h-10 w-10 opacity-50" />

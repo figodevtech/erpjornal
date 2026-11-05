@@ -7,7 +7,7 @@ interface Props {
   onChange: (data: Partial<MediaKitStatsData>) => void;
 }
 
-export default function StatsForm({ mediaKitId, data, onChange }: Props) {
+export default function StatsForm({ data, onChange }: Props) {
   const items = data.items || [];
 
   function addItem() {

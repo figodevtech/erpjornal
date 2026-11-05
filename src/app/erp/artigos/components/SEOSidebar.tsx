@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Search, Info, TrendingUp, AlertCircle, CheckCircle2, XCircle, Tag, Sparkles } from "lucide-react";
+import React, { useMemo } from "react";
+import { Search } from "lucide-react";
 
 interface SEOSidebarProps {
   title: string;
@@ -17,56 +17,50 @@ interface SEOStats {
   }[];
 }
 
+// Análise derivada das props: calculada direto (antes era state + useEffect).
+function analisarSeo(title: string, resumo: string, content: string): SEOStats {
+  const checks: SEOStats["checks"] = [];
+  let score = 0;
+
+  // Título
+  if (title.length > 30 && title.length < 60) {
+    score += 25;
+    checks.push({ label: "Título com tamanho ideal (30-60 chars)", status: "success" });
+  } else {
+    checks.push({ label: "Título muito curto ou longo", status: "warning" });
+  }
+
+  // Resumo/Lead
+  if (resumo && resumo.length > 50) {
+    score += 25;
+    checks.push({ label: "Resumo/Lead presente", status: "success" });
+  } else {
+    checks.push({ label: "Adicione um resumo impactante", status: "error" });
+  }
+
+  // Conteúdo
+  const wordCount = content.replace(/<[^>]*>/g, "").split(/\s+/).length;
+  if (wordCount > 300) {
+    score += 25;
+    checks.push({ label: `Conteúdo rico (${wordCount} palavras)`, status: "success" });
+  } else {
+    checks.push({ label: "Texto muito curto para SEO", status: "warning" });
+  }
+
+  // Formatação (H2/H3)
+  const h2Count = (content.match(/<h2/g) || []).length;
+  if (h2Count > 0) {
+    score += 25;
+    checks.push({ label: "Uso de subtítulos (H2)", status: "success" });
+  } else {
+    checks.push({ label: "Considere usar subtítulos", status: "warning" });
+  }
+
+  return { score, checks };
+}
+
 export function SEOSidebar({ title, resumo, content }: SEOSidebarProps) {
-  const [stats, setStats] = useState<SEOStats>({
-    score: 0,
-    checks: []
-  });
-
-  const analyzeContent = () => {
-    const checks: SEOStats["checks"] = [];
-    let score = 0;
-
-    // Título
-    if (title.length > 30 && title.length < 60) {
-      score += 25;
-      checks.push({ label: "Título com tamanho ideal (30-60 chars)", status: "success" });
-    } else {
-      checks.push({ label: "Título muito curto ou longo", status: "warning" });
-    }
-
-    // Resumo/Lead
-    if (resumo && resumo.length > 50) {
-      score += 25;
-      checks.push({ label: "Resumo/Lead presente", status: "success" });
-    } else {
-      checks.push({ label: "Adicione um resumo impactante", status: "error" });
-    }
-
-    // Conteúdo
-    const wordCount = content.replace(/<[^>]*>/g, "").split(/\s+/).length;
-    if (wordCount > 300) {
-      score += 25;
-      checks.push({ label: `Conteúdo rico (${wordCount} palavras)`, status: "success" });
-    } else {
-      checks.push({ label: "Texto muito curto para SEO", status: "warning" });
-    }
-
-    // Formatação (H2/H3)
-    const h2Count = (content.match(/<h2/g) || []).length;
-    if (h2Count > 0) {
-      score += 25;
-      checks.push({ label: "Uso de subtítulos (H2)", status: "success" });
-    } else {
-      checks.push({ label: "Considere usar subtítulos", status: "warning" });
-    }
-
-    setStats({ score, checks });
-  };
-
-  useEffect(() => {
-    analyzeContent();
-  }, [title, resumo, content]);
+  const stats = useMemo(() => analisarSeo(title, resumo, content), [title, resumo, content]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

@@ -51,8 +51,6 @@ export default function SearchBar() {
 
   // Debounce e busca
   useEffect(() => {
-    setActiveIndex(-1);
-
     const performSearch = async () => {
       if (query.trim().length < 2) {
         setResults([]);
@@ -204,7 +202,10 @@ export default function SearchBar() {
                     ref={inputRef}
                     type="text"
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
+                      setActiveIndex(-1); // nova consulta: nenhuma sugestão selecionada
+                    }}
                     onKeyDown={handleKeyDown}
                     placeholder="Buscar notícias, temas ou autores..."
                     className="flex-1 bg-transparent border-none py-3 px-3 font-bold text-gray-900 dark:text-gray-100 placeholder:text-gray-400 focus:ring-0 outline-none"

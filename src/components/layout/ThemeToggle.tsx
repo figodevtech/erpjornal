@@ -3,16 +3,16 @@
 import * as React from "react";
 import { Moon, Sun, Monitor, ChevronDown } from "lucide-react";
 import { useTheme } from "@/app/providers";
+import { useMontado } from "@/lib/hooks/useMontado";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
+  // Evita mostrar o tema errado antes da hidratação.
+  const mounted = useMontado();
   const [isOpen, setIsOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
-  // Evita hidratação incorreta
   React.useEffect(() => {
-    setMounted(true);
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);

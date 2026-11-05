@@ -1,6 +1,7 @@
 import { Globe, Link as LinkIcon, MapPin, RefreshCcw } from "lucide-react";
 
 import { exigirPermissao } from "@/lib/auth";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 
 import { HarvestButton } from "./components/HarvestButton";
@@ -42,7 +43,7 @@ export default async function FontesCuradoriaPage() {
                 <div className="flex items-center gap-5">
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-gray-900 shadow-xl transition-transform duration-500 group-hover:rotate-3">
                     {fonte.logo ? (
-                      <img src={fonte.logo} alt="" className="h-10 w-10 object-contain brightness-0 invert" />
+                      <Image src={fonte.logo} alt="" width={40} height={40} className="h-10 w-10 object-contain brightness-0 invert" />
                     ) : (
                       <Globe className="h-8 w-8 text-white" />
                     )}
@@ -52,7 +53,7 @@ export default async function FontesCuradoriaPage() {
                       {fonte.name}
                     </h3>
                     <div className="flex flex-wrap items-center gap-2">
-                      <StatusToggle id={fonte.id} isActive={(fonte as any).ativa} />
+                      <StatusToggle id={fonte.id} isActive={fonte.ativa} />
                       <span className="rounded-xl border border-indigo-100 bg-indigo-50 px-2 py-1.5 text-[9px] font-black uppercase tracking-[0.15em] text-indigo-600">
                         {fonte.tone || "Jornalistico"}
                       </span>

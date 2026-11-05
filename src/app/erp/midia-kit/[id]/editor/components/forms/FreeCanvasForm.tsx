@@ -1,6 +1,6 @@
 "use client";
 
-import { Square, Type, Image as ImageIcon, Layers, Trash2, Move, Maximize, RotateCw, Palette, Type as TypeIcon } from "lucide-react";
+import { Square, Type, Image as ImageIcon, Layers, Trash2, Maximize, RotateCw, Palette, Type as TypeIcon } from "lucide-react";
 import { useState, useRef, useTransition } from "react";
 import ImageUploadField from "./ImageUploadField";
 import CanvasEditor from "./canvas/CanvasEditor";
@@ -96,7 +96,6 @@ export default function FreeCanvasForm({ mediaKitId, data, onChange }: Props) {
   }
 
   const [zoom, setZoom] = useState(1);
-  const [autoScale, setAutoScale] = useState(true);
 
   const selectedElement = elements.find(el => el.id === selectedId);
 
@@ -141,7 +140,6 @@ export default function FreeCanvasForm({ mediaKitId, data, onChange }: Props) {
               value={zoom} 
               onChange={(e) => {
                 setZoom(parseFloat(e.target.value));
-                setAutoScale(false);
               }}
               className="w-32 h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-rose-500" 
             />
@@ -313,10 +311,10 @@ export default function FreeCanvasForm({ mediaKitId, data, onChange }: Props) {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Alinhamento</label>
                   <div className="flex gap-2">
-                    {['left', 'center', 'right'].map(align => (
+                    {(['left', 'center', 'right'] as const).map(align => (
                       <button
                         key={align}
-                        onClick={() => updateElementStyle(selectedId!, { textAlign: align as any })}
+                        onClick={() => updateElementStyle(selectedId!, { textAlign: align })}
                         className={`flex-1 py-2 rounded-xl border text-[10px] font-black uppercase transition ${selectedElement.style?.textAlign === align ? 'bg-rose-500 border-rose-500 text-white' : 'bg-white border-gray-200 text-slate-600 hover:border-rose-200'}`}
                       >
                         {align === 'left' ? 'Esq' : align === 'center' ? 'Meio' : 'Dir'}

@@ -30,6 +30,8 @@ export const NewsletterTemplate: React.FC<Readonly<NewsletterTemplateProps>> = (
     </h1>
     
     {imageUrl && (
+      // E-mail: clientes de e-mail exigem <img> simples (next/image não se aplica).
+      // eslint-disable-next-line @next/next/no-img-element
       <img 
         src={imageUrl} 
         alt={title} 

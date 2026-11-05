@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export function SearchResultsSkeleton() {
   return (

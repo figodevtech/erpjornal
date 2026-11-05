@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, FileText, Film, ImageIcon, Plus, Upload } from "lucide-react";
 
@@ -88,10 +89,12 @@ export default async function MidiaPage() {
               >
                 <div className="relative flex h-40 items-center justify-center overflow-hidden bg-gray-100">
                   {media.tipo === "image" && media.url ? (
-                    <img
+                    <Image
                       src={media.url}
                       alt={media.nome}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      fill
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
                     <MediaTypeIcon tipo={media.tipo} />

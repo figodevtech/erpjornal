@@ -63,8 +63,7 @@ export default async function Header() {
                 Vídeos
               </Link>
             )}
-            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-            {categories.slice(0, 5).map((cat: any) => (
+            {categories.slice(0, 5).map((cat) => (
               <Link
                 key={cat.id}
                 href={`/categoria/${cat.slug}`}

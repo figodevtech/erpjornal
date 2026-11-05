@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useMontado } from "@/lib/hooks/useMontado";
 import { createPortal } from "react-dom";
 import { AlertTriangle, Loader2, X } from "lucide-react";
 
@@ -29,12 +30,9 @@ export default function ConfirmationDialog({
   onConfirm,
   onClose,
 }: ConfirmationDialogProps) {
-  const [mounted, setMounted] = useState(false);
+  // createPortal(document.body) só depois da hidratação.
+  const mounted = useMontado();
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (!open) return;

@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Filter, Calendar, User, Tag, ArrowUpDown, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 interface FilterOption {
   id: string;

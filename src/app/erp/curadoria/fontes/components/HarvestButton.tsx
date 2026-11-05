@@ -20,8 +20,8 @@ export function HarvestButton({ sourceId }: { sourceId: string }) {
           "Nenhum item novo foi importado. Isso acontece quando o feed já foi lido antes ou não expõe itens com link/guid válido."
         );
       }
-    } catch (err: any) {
-      toast.error(err.message);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Erro ao coletar o feed.");
     } finally {
       setLoading(false);
     }

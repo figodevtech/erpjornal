@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Play, Pause, FastForward, Rewind, Volume2 } from "lucide-react";
 
 interface OriginalPodcastPlayerProps {

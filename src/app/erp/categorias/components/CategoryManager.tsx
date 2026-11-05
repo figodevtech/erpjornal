@@ -96,32 +96,33 @@ export default function CategoryManager({
     [categoriaSelecionadaId, categorias]
   );
 
-  useEffect(() => {
-    if (!dialogAberto) {
-      setNome("");
-      setSlug("");
-      setEsfera("");
-      setCor("#c4170c");
-      setMetaDescricao("");
-      setCategoriaSelecionadaId(null);
-      return;
-    }
+  // O formulário é preenchido ao abrir e limpo ao fechar o diálogo (antes era um
+  // useEffect que chamava setState, causando renderizações em cascata).
+  function preencherFormulario(categoria: CategoriaItem | null) {
+    setCategoriaSelecionadaId(categoria?.id ?? null);
+    setNome(categoria?.nome ?? "");
+    setSlug(categoria?.slug ?? "");
+    setEsfera(categoria?.esfera ?? "");
+    setCor(categoria?.cor ?? "#c4170c");
+    setMetaDescricao(categoria?.metaDescricao ?? "");
+  }
 
-    if (categoriaSelecionada) {
-      setNome(categoriaSelecionada.nome);
-      setSlug(categoriaSelecionada.slug);
-      setEsfera(categoriaSelecionada.esfera ?? "");
-      setCor(categoriaSelecionada.cor ?? "#c4170c");
-      setMetaDescricao(categoriaSelecionada.metaDescricao ?? "");
-    }
-  }, [categoriaSelecionada, dialogAberto]);
+  function abrirDialogo(categoria: CategoriaItem | null) {
+    preencherFormulario(categoria);
+    setDialogAberto(true);
+  }
+
+  function fecharDialogo() {
+    setDialogAberto(false);
+    preencherFormulario(null);
+  }
 
   async function handleSubmit(formData: FormData) {
     setIsSaving(true);
     try {
       await salvarCategoria(formData);
       toast.success(categoriaSelecionada ? "Categoria atualizada." : "Categoria criada.");
-      setDialogAberto(false);
+      fecharDialogo();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Erro ao salvar categoria.");
     } finally {
@@ -134,7 +135,7 @@ export default function CategoryManager({
     try {
       await excluirCategoria(id);
       toast.success("Categoria excluida.");
-      setDialogAberto(false);
+      fecharDialogo();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : "Erro ao excluir categoria.");
     } finally {
@@ -154,10 +155,7 @@ export default function CategoryManager({
         {podeCriar && (
           <button
             type="button"
-            onClick={() => {
-              setCategoriaSelecionadaId(null);
-              setDialogAberto(true);
-            }}
+            onClick={() => abrirDialogo(null)}
             className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-indigo-700"
           >
             <Plus className="h-4 w-4" />
@@ -202,10 +200,7 @@ export default function CategoryManager({
                 {podeEditar && (
                   <button
                     type="button"
-                    onClick={() => {
-                      setCategoriaSelecionadaId(categoria.id);
-                      setDialogAberto(true);
-                    }}
+                    onClick={() => abrirDialogo(categoria)}
                     className="inline-flex items-center gap-2 rounded-xl bg-gray-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-black"
                   >
                     <Edit3 className="h-4 w-4" />
@@ -236,7 +231,7 @@ export default function CategoryManager({
 
       <ModalShell
         open={dialogAberto}
-        onClose={() => !isSaving && !isDeleting && setDialogAberto(false)}
+        onClose={() => !isSaving && !isDeleting && fecharDialogo()}
         title={categoriaSelecionada ? "Editar categoria" : "Nova categoria"}
         subtitle="Defina o nome, slug e metadados visuais da editoria."
       >
@@ -335,7 +330,7 @@ export default function CategoryManager({
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => setDialogAberto(false)}
+                onClick={() => fecharDialogo()}
                 disabled={isSaving || isDeleting}
                 className="inline-flex items-center justify-center rounded-xl border border-gray-200 px-5 py-3 text-sm font-bold text-gray-600 transition hover:bg-gray-50 disabled:opacity-50"
               >

@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useTransition, useState } from "react";
-import { saveArticle } from "../actions";
+import React, { useEffect, useRef, useTransition, useState } from "react";
+import { saveArticle, salvarRascunhoAutomatico } from "../actions";
 
 interface Category {
   id: string;
@@ -115,6 +115,50 @@ export default function ArticleForm({
   const effectiveRevistaId = revistaId ?? initialData?.revistaId ?? null;
   const { config, refreshConfig } = useConfig();
   const articleQuotaReached = config.articleRewriteUsage >= config.articleRewriteLimit;
+
+  // Matéria publicada: o slug é a URL pública e só quem publica pode mudá-lo (o antigo vira 301).
+  const materiaPublicada = statusAtual === "publicado";
+  const slugTravado = materiaPublicada && !canPublish;
+
+  // Salvamento automático (30s) de título, resumo e corpo, só para matérias já criadas e não publicadas.
+  const artigoId = initialData?.id ?? null;
+  const salvamentoAutomaticoAtivo = Boolean(artigoId) && statusAtual !== "publicado" && statusAtual !== "arquivado";
+  const [salvamento, setSalvamento] = useState<
+    { estado: "ocioso" } | { estado: "salvando" } | { estado: "salvo"; em: string } | { estado: "erro"; mensagem: string }
+  >({ estado: "ocioso" });
+  const conteudoRef = useRef({ titulo: currentTitle, resumo: currentResumo, corpoTexto: currentText });
+  const ultimoSalvoRef = useRef(JSON.stringify({ titulo: currentTitle, resumo: currentResumo, corpoTexto: currentText }));
+
+  useEffect(() => {
+    conteudoRef.current = { titulo: currentTitle, resumo: currentResumo, corpoTexto: currentText };
+  }, [currentTitle, currentResumo, currentText]);
+
+  useEffect(() => {
+    if (!salvamentoAutomaticoAtivo || !artigoId) return;
+    let emAndamento = false;
+    const intervalo = window.setInterval(async () => {
+      const conteudo = conteudoRef.current;
+      const assinatura = JSON.stringify(conteudo);
+      if (emAndamento || assinatura === ultimoSalvoRef.current || !conteudo.titulo.trim()) return;
+      emAndamento = true;
+      setSalvamento({ estado: "salvando" });
+      try {
+        const resultado = await salvarRascunhoAutomatico({ id: artigoId, ...conteudo });
+        if (resultado.ok) {
+          ultimoSalvoRef.current = assinatura;
+          setSalvamento({ estado: "salvo", em: resultado.salvoEm });
+        } else {
+          setSalvamento({ estado: "erro", mensagem: resultado.error });
+          if (resultado.parar) window.clearInterval(intervalo);
+        }
+      } catch {
+        setSalvamento({ estado: "erro", mensagem: "Sem conexão com o servidor; tentaremos de novo em 30s." });
+      } finally {
+        emAndamento = false;
+      }
+    }, 30_000);
+    return () => window.clearInterval(intervalo);
+  }, [salvamentoAutomaticoAtivo, artigoId]);
 
   const formatSlug = (val: string) => {
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -249,6 +293,21 @@ export default function ArticleForm({
             </>
           )}
         </button>
+
+        {salvamentoAutomaticoAtivo && (
+          <span
+            role="status"
+            aria-live="polite"
+            className={`ml-auto shrink-0 pl-3 text-xs font-medium ${salvamento.estado === "erro" ? "text-rose-600" : "text-gray-500"}`}
+            title={salvamento.estado === "erro" ? salvamento.mensagem : undefined}
+          >
+            {salvamento.estado === "ocioso" && "Salvamento automático ligado"}
+            {salvamento.estado === "salvando" && "Salvando rascunho…"}
+            {salvamento.estado === "salvo" &&
+              `Rascunho salvo às ${new Date(salvamento.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+            {salvamento.estado === "erro" && `Rascunho não salvo: ${salvamento.mensagem}`}
+          </span>
+        )}
       </div>
 
       <form action={handleAction} className={`transition-all duration-500 ${viewMode === "preview" ? "opacity-0 invisible h-0" : ""}`}>
@@ -293,10 +352,19 @@ export default function ArticleForm({
                 name="slug" 
                 required 
                 defaultValue={initialData?.slug}
+                readOnly={slugTravado}
+                aria-describedby={materiaPublicada ? "ajuda-slug" : undefined}
                 onChange={(e) => e.target.value = formatSlug(e.target.value)}
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 text-gray-600 font-mono text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all" 
+                className={`w-full border border-gray-200 rounded-lg p-3 font-mono text-sm outline-none transition-all ${slugTravado ? "cursor-not-allowed bg-gray-100 text-gray-400" : "bg-gray-50 text-gray-600 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"}`}
                 placeholder="ex: nova-reforma-impacto"
               />
+              {materiaPublicada && (
+                <p id="ajuda-slug" className="mt-1.5 text-xs text-gray-500">
+                  {slugTravado
+                    ? "Matéria publicada: o endereço só pode ser alterado por quem publica."
+                    : "Matéria publicada: se você alterar o endereço, o antigo passa a redirecionar (301) para o novo."}
+                </p>
+              )}
             </div>
 
             <div>

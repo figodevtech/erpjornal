@@ -18,6 +18,7 @@ import {
   Megaphone,
   MicVocal,
   Newspaper,
+  Radio,
   Rss,
   Settings,
   Shield,
@@ -45,6 +46,7 @@ type ErpSidebarProps = {
   podeGerirUsuarios: boolean;
   podeGerirConfiguracoes: boolean;
   podeVerAuditoria: boolean;
+  podeGerirPlantao: boolean;
   usuario: {
     nome: string | null;
     email: string | null;
@@ -125,6 +127,7 @@ export default function ErpSidebar({
   podeGerirUsuarios,
   podeGerirConfiguracoes,
   podeVerAuditoria,
+  podeGerirPlantao,
   usuario,
 }: ErpSidebarProps) {
   const pathname = usePathname();
@@ -222,6 +225,16 @@ export default function ErpSidebar({
               icon={<FileText className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/artigos")}
+              onNavigate={closeMobile}
+            />
+          )}
+          {podeGerirPlantao && (
+            <SidebarLink
+              href="/erp/plantao"
+              label="Plantão"
+              icon={<Radio className="h-4 w-4 text-red-400" />}
+              collapsed={collapsed}
+              active={isActive("/erp/plantao")}
               onNavigate={closeMobile}
             />
           )}

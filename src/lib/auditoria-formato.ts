@@ -18,6 +18,7 @@ export const ENTIDADES_AUDITADAS = [
   "perfil",
   "configuracao",
   "auditoria",
+  "plantao",
 ] as const;
 
 export type EntidadeAuditada = (typeof ENTIDADES_AUDITADAS)[number];
@@ -37,6 +38,7 @@ export const ROTULOS_ENTIDADE: Record<EntidadeAuditada, string> = {
   perfil: "Perfil de acesso",
   configuracao: "Configuração",
   auditoria: "Auditoria",
+  plantao: "Plantão",
 };
 
 export const ROTULOS_ACAO: Record<string, string> = {
@@ -55,6 +57,7 @@ export const ROTULOS_ACAO: Record<string, string> = {
   ENVIO_REDEFINICAO_SENHA: "Envio de redefinição de senha",
   REDEFINICAO_MFA: "Redefinição do MFA",
   EXPORTACAO: "Exportação",
+  ENCERRAMENTO: "Encerramento",
 };
 
 export function rotuloAcao(acao: string) {

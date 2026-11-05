@@ -48,6 +48,7 @@ export const PERMISSOES = [
   { modulo: "podcasts", acao: "editar", descricao: "Editar episódios de podcast" },
   { modulo: "configuracoes", acao: "gerir", descricao: "Alterar configurações globais do sistema" },
   { modulo: "auditoria", acao: "ler", descricao: "Visualizar e exportar a trilha de auditoria" },
+  { modulo: "plantao", acao: "gerir", descricao: "Publicar e encerrar avisos de plantão no portal" },
   { modulo: "portal", acao: "salvar", descricao: "Salvar notícia" },
   { modulo: "portal", acao: "comentar", descricao: "Comentar notícia" },
   { modulo: "usuarios", acao: "gerir", descricao: "Gerenciar usuários e permissões" },
@@ -73,6 +74,7 @@ export const PERMISSOES_POR_PERFIL: Record<NomePerfil, ChavePermissao[]> = {
     "midia:ler", "midia:criar", "midia:editar",
     "midia-kit:ler", "midia-kit:criar", "midia-kit:editar", "midia-kit:publicar",
     "podcasts:ler", "podcasts:criar", "podcasts:editar",
+    "plantao:gerir",
   ],
   reporter_erp: [
     "artigos:ler", "artigos:criar", "artigos:editar",

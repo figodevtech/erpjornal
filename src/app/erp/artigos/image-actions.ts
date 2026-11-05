@@ -5,9 +5,14 @@ import { randomUUID } from "node:crypto";
 import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { exigirAlgumaPermissao } from "@/lib/auth";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import {
+  STORAGE_BUCKETS,
+  mensagemErroUpload,
+  validarArquivoParaBucket,
+} from "@/lib/storage/buckets";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 
-const ARTICLE_IMAGES_BUCKET = process.env.SUPABASE_ARTICLE_IMAGES_BUCKET || "article-images";
+const ARTICLE_IMAGES_BUCKET = STORAGE_BUCKETS.articleImages;
 const OPENAI_IMAGE_GENERATIONS_URL = "https://api.openai.com/v1/images/generations";
 const OPENAI_IMAGE_EDITS_URL = "https://api.openai.com/v1/images/edits";
 
@@ -54,41 +59,22 @@ function extensionFromMimeType(mimeType: string) {
   return "jpg";
 }
 
-async function ensureArticleImagesBucket() {
-  const supabase = criarClienteSupabaseAdmin();
-  const { data: bucket } = await supabase.storage.getBucket(ARTICLE_IMAGES_BUCKET);
-
-  if (!bucket) {
-    const { error } = await supabase.storage.createBucket(ARTICLE_IMAGES_BUCKET, {
-      public: true,
-      allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
-      fileSizeLimit: 15 * 1024 * 1024,
-    });
-
-    if (error) {
-      throw new Error(`Nao foi possivel criar o bucket de imagens: ${error.message}`);
-    }
-  }
-
-  return supabase;
-}
-
 async function uploadArticleImage(bytes: Buffer, mimeType: string, title: string) {
-  const supabase = await ensureArticleImagesBucket();
+  const supabase = criarClienteSupabaseAdmin();
   const ext = extensionFromMimeType(mimeType);
   const baseName = slugify(title) || "materia";
   const path = `covers/${new Date().getFullYear()}/${baseName}-${randomUUID()}.${ext}`;
 
-  const { error } = await supabase.storage.from(ARTICLE_IMAGES_BUCKET).upload(path, bytes, {
+  const { error } = await supabase.storage.from(ARTICLE_IMAGES_BUCKET.name).upload(path, bytes, {
     contentType: mimeType,
     upsert: false,
   });
 
   if (error) {
-    throw new Error(`Nao foi possivel enviar a imagem para o Supabase: ${error.message}`);
+    throw new Error(mensagemErroUpload(ARTICLE_IMAGES_BUCKET, error.message));
   }
 
-  const { data } = supabase.storage.from(ARTICLE_IMAGES_BUCKET).getPublicUrl(path);
+  const { data } = supabase.storage.from(ARTICLE_IMAGES_BUCKET.name).getPublicUrl(path);
   return data.publicUrl;
 }
 
@@ -247,8 +233,9 @@ export async function uploadArticleCoverImage(formData: FormData) {
     throw new Error("Selecione um arquivo de imagem.");
   }
 
-  if (!file.type.startsWith("image/")) {
-    throw new Error("O arquivo selecionado precisa ser uma imagem.");
+  const erroArquivo = validarArquivoParaBucket(ARTICLE_IMAGES_BUCKET, file);
+  if (erroArquivo) {
+    throw new Error(erroArquivo);
   }
 
   const bytes = Buffer.from(await file.arrayBuffer());

@@ -8,8 +8,13 @@ import { redirect } from "next/navigation";
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { criarClienteSupabaseAdmin } from "@/lib/supabase/admin";
+import {
+  STORAGE_BUCKETS,
+  mensagemErroUpload,
+  validarArquivoParaBucket,
+} from "@/lib/storage/buckets";
 
-const REVISTA_COVERS_BUCKET = process.env.SUPABASE_REVISTA_COVERS_BUCKET || "revista-covers";
+const REVISTA_COVERS_BUCKET = STORAGE_BUCKETS.revistaCovers;
 
 function slugify(value: string) {
   return value
@@ -25,25 +30,6 @@ function extensionFromMimeType(mimeType: string) {
   if (mimeType.includes("png")) return "png";
   if (mimeType.includes("webp")) return "webp";
   return "jpg";
-}
-
-async function ensureRevistaCoversBucket() {
-  const supabase = criarClienteSupabaseAdmin();
-  const { data: bucket } = await supabase.storage.getBucket(REVISTA_COVERS_BUCKET);
-
-  if (!bucket) {
-    const { error } = await supabase.storage.createBucket(REVISTA_COVERS_BUCKET, {
-      public: true,
-      allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
-      fileSizeLimit: 20 * 1024 * 1024,
-    });
-
-    if (error) {
-      throw new Error(`Nao foi possivel criar o bucket de capas de revistas: ${error.message}`);
-    }
-  }
-
-  return supabase;
 }
 
 export async function saveRevista(formData: FormData) {
@@ -92,8 +78,9 @@ export async function updateRevistaCover(formData: FormData) {
     throw new Error("Selecione uma imagem de capa.");
   }
 
-  if (!file.type.startsWith("image/")) {
-    throw new Error("O arquivo precisa ser uma imagem.");
+  const erroArquivo = validarArquivoParaBucket(REVISTA_COVERS_BUCKET, file);
+  if (erroArquivo) {
+    throw new Error(erroArquivo);
   }
 
   const revista = await prisma.revista.findUnique({
@@ -105,21 +92,21 @@ export async function updateRevistaCover(formData: FormData) {
     throw new Error("Revista nao encontrada.");
   }
 
-  const supabase = await ensureRevistaCoversBucket();
+  const supabase = criarClienteSupabaseAdmin();
   const ext = extensionFromMimeType(file.type);
   const path = `covers/${slugify(revista.titulo) || "revista"}-${randomUUID()}.${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
 
-  const { error } = await supabase.storage.from(REVISTA_COVERS_BUCKET).upload(path, bytes, {
+  const { error } = await supabase.storage.from(REVISTA_COVERS_BUCKET.name).upload(path, bytes, {
     contentType: file.type,
     upsert: false,
   });
 
   if (error) {
-    throw new Error(`Nao foi possivel enviar a capa: ${error.message}`);
+    throw new Error(mensagemErroUpload(REVISTA_COVERS_BUCKET, error.message));
   }
 
-  const { data } = supabase.storage.from(REVISTA_COVERS_BUCKET).getPublicUrl(path);
+  const { data } = supabase.storage.from(REVISTA_COVERS_BUCKET.name).getPublicUrl(path);
 
   await prisma.revista.update({
     where: { id: revistaId },

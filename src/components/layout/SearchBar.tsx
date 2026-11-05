@@ -7,7 +7,7 @@ import { SearchResult } from "@/lib/services/search-service";
 import SearchSuggestions from "../search/SearchSuggestions";
 import RecentSearches from "../search/RecentSearches";
 import TrendingSearches from "../search/TrendingSearches";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion } from "motion/react";
 
 export default function SearchBar() {
   const [isOpen, setIsOpen] = useState(false);

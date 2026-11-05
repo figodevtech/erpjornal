@@ -1,85 +1,56 @@
 "use server";
 
-import { randomUUID } from "crypto";
+import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function upsertPolitician(formData: FormData) {
+type ResultadoAcao = { ok: true } | { ok: false; error: string };
+
+function texto(formData: FormData, campo: string) {
+  return ((formData.get(campo) as string) || "").trim() || null;
+}
+
+function apenasDigitos(formData: FormData, campo: string) {
+  return ((formData.get(campo) as string) || "").replace(/\D/g, "") || null;
+}
+
+export async function upsertPolitician(formData: FormData): Promise<ResultadoAcao> {
   const id = formData.get("id") as string | null;
   await exigirPermissao(id ? "entidades:editar" : "entidades:criar");
 
-  const nome = ((formData.get("nome") as string) || "").trim() || null;
-  const cpf = ((formData.get("cpf") as string) || "").replace(/\D/g, "") || null;
-  const cnpj = ((formData.get("cnpj") as string) || "").replace(/\D/g, "") || null;
-  const categoriaEntidade = ((formData.get("categoriaEntidade") as string) || "").trim() || null;
-  const cargo = ((formData.get("cargo") as string) || "").trim() || null;
-  const partido = ((formData.get("partido") as string) || "").trim() || null;
-  const regiao = ((formData.get("regiao") as string) || "").trim() || null;
-  const estado = ((formData.get("estado") as string) || "").trim().toUpperCase().slice(0, 2) || null;
-  const biografia = ((formData.get("biografia") as string) || "").trim() || null;
-
   const data = {
-    nome,
-    cpf,
-    cnpj,
-    categoriaEntidade,
-    cargo,
-    partido,
-    regiao,
-    estado,
-    biografia,
+    nome: texto(formData, "nome"),
+    // Vazio vira null: o índice único do banco permite vários NULL, mas não várias strings vazias.
+    cpf: apenasDigitos(formData, "cpf"),
+    cnpj: apenasDigitos(formData, "cnpj"),
+    categoriaEntidade: texto(formData, "categoriaEntidade"),
+    cargo: texto(formData, "cargo"),
+    partido: texto(formData, "partido"),
+    regiao: texto(formData, "regiao"),
+    estado: texto(formData, "estado")?.toUpperCase().slice(0, 2) || null,
+    biografia: texto(formData, "biografia"),
   };
 
-  if (id) {
-    await prisma.$executeRaw`
-      update public.politicos
-      set
-        nome = ${data.nome},
-        cpf = ${data.cpf},
-        cnpj = ${data.cnpj},
-        categoria_entidade = ${data.categoriaEntidade},
-        cargo = ${data.cargo},
-        partido = ${data.partido},
-        regiao = ${data.regiao},
-        estado = ${data.estado},
-        biografia = ${data.biografia},
-        atualizado_em = now()
-      where id = ${id}::uuid
-    `;
-  } else {
-    await prisma.$executeRaw`
-      insert into public.politicos (
-        id,
-        nome,
-        cpf,
-        cnpj,
-        categoria_entidade,
-        cargo,
-        partido,
-        regiao,
-        estado,
-        biografia,
-        atualizado_em
-      )
-      values (
-        ${randomUUID()}::uuid,
-        ${data.nome},
-        ${data.cpf},
-        ${data.cnpj},
-        ${data.categoriaEntidade},
-        ${data.cargo},
-        ${data.partido},
-        ${data.regiao},
-        ${data.estado},
-        ${data.biografia},
-        now()
-      )
-    `;
+  try {
+    if (id) {
+      await prisma.politico.update({ where: { id }, data });
+    } else {
+      await prisma.politico.create({ data });
+    }
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const campos = String(error.meta?.target ?? "");
+      const documento = campos.includes("cnpj") ? "CNPJ" : "CPF";
+      return { ok: false, error: `Já existe uma entidade cadastrada com este ${documento}.` };
+    }
+    console.error("Erro ao salvar entidade:", error);
+    return { ok: false, error: "Erro ao salvar entidade." };
   }
 
   revalidatePath("/erp/entidades");
+  return { ok: true };
 }
 
 export async function deletePolitician(id: string) {
@@ -90,32 +61,19 @@ export async function deletePolitician(id: string) {
 
 export async function getPoliticians() {
   await exigirPermissao("entidades:ler");
-  return prisma.$queryRaw<
-    Array<{
-      id: string;
-      nome: string | null;
-      cpf: string | null;
-      cnpj: string | null;
-      categoriaEntidade: string | null;
-      cargo: string | null;
-      partido: string | null;
-      biografia: string | null;
-      regiao: string | null;
-      estado: string | null;
-    }>
-  >`
-    select
-      id,
-      nome,
-      cpf,
-      cnpj,
-      categoria_entidade as "categoriaEntidade",
-      cargo,
-      partido,
-      biografia,
-      regiao,
-      estado
-    from public.politicos
-    order by nome asc nulls last, criado_em desc
-  `;
+  return prisma.politico.findMany({
+    select: {
+      id: true,
+      nome: true,
+      cpf: true,
+      cnpj: true,
+      categoriaEntidade: true,
+      cargo: true,
+      partido: true,
+      biografia: true,
+      regiao: true,
+      estado: true,
+    },
+    orderBy: [{ nome: { sort: "asc", nulls: "last" } }, { criadoEm: "desc" }],
+  });
 }

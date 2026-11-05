@@ -114,7 +114,11 @@ export default function PoliticianManager({
 
     startTransition(async () => {
       try {
-        await upsertPolitician(formData);
+        const resultado = await upsertPolitician(formData);
+        if (!resultado.ok) {
+          alert(resultado.error);
+          return;
+        }
         setEditing(null);
         window.location.reload();
       } catch {

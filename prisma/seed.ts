@@ -1,113 +1,59 @@
-import { PrismaClient, StatusArtigo } from "@prisma/client";
+/**
+ * Seed do banco: perfis/permissões, usuário admin (Supabase Auth) e conteúdo de exemplo.
+ *
+ * Uso: npm run db:seed   (depois de `npm run db:deploy` e `npm run db:setup`)
+ *
+ * Idempotente:
+ * - Conteúdo: só cria o que ainda não existe (não sobrescreve edições feitas no ERP).
+ * - Permissões: só ADICIONA as que faltam aos perfis padrão (preserva ajustes do ERP).
+ * - Usuários: se o e-mail já existe no Supabase Auth, reaproveita (a senha não é alterada).
+ */
+import "dotenv/config";
+
+import { Prisma, PrismaClient, type StatusArtigo } from "@prisma/client";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+import { PERFIS, PERMISSOES, PERMISSOES_POR_PERFIL, type NomePerfil } from "./seed-data/acesso";
+import {
+  ANUNCIOS,
+  ARTIGOS,
+  CATEGORIAS,
+  ENTIDADES,
+  FONTES,
+  FONTES_RSS,
+  MIDIA_KIT,
+  type AutorSeed,
+  type SlugCategoria,
+} from "./seed-data/conteudo";
+import { idEstavel } from "./seed-data/ids";
+import { ARTIGOS_EDICAO_2, REVISTA_EDICAO_2 } from "./seed-data/revista-edicao-2";
 
 const prisma = new PrismaClient();
+const HORA = 60 * 60 * 1000;
+const resumo: string[] = [];
 
-const ids = {
-  admin: "11111111-1111-4111-8111-111111111111",
-  editora: "22222222-2222-4222-8222-222222222222",
-  reporter: "33333333-3333-4333-8333-333333333333",
-  catPolitica: "a1111111-1111-4111-8111-111111111111",
-  catEconomia: "a2222222-2222-4222-8222-222222222222",
-  catGestao: "a3333333-3333-4333-8333-333333333333",
-  lula: "b1111111-1111-4111-8111-111111111111",
-  tarcisio: "b2222222-2222-4222-8222-222222222222",
-  fontePlanejamento: "c1111111-1111-4111-8111-111111111111",
-  fonteIndustria: "c2222222-2222-4222-8222-222222222222",
-  rssPolitica: "d1111111-1111-4111-8111-111111111111",
-  rssEconomia: "d2222222-2222-4222-8222-222222222222",
-  rssItem1: "d3333333-3333-4333-8333-333333333333",
-  rssItem2: "d4444444-4444-4444-8444-444444444444",
-  artigo1: "e1111111-1111-4111-8111-111111111111",
-  artigo2: "e2222222-2222-4222-8222-222222222222",
-  artigo3: "e3333333-3333-4333-8333-333333333333",
-};
+function exigirEnv(nome: string) {
+  const valor = process.env[nome]?.trim();
+  if (!valor) throw new Error(`Variável ${nome} não definida no .env (veja .env.example).`);
+  return valor;
+}
 
-const perfis = [
-  { nome: "admin_erp", descricao: "Acesso total ao ERP" },
-  { nome: "editor_erp", descricao: "Edita e publica conteúdo" },
-  { nome: "reporter_erp", descricao: "Cria e edita conteúdo próprio" },
-  { nome: "juridico_erp", descricao: "Responsável por revisão jurídica" },
-  { nome: "leitor_portal", descricao: "Usuário autenticado do portal" },
-  { nome: "autor_portal", descricao: "Pode salvar e comentar notícias" },
-];
+const json = (valor: unknown) => JSON.parse(JSON.stringify(valor)) as Prisma.InputJsonValue;
 
-const permissoes = [
-  { modulo: "artigos", acao: "ler", descricao: "Visualizar artigos" },
-  { modulo: "artigos", acao: "criar", descricao: "Criar artigos" },
-  { modulo: "artigos", acao: "editar", descricao: "Editar artigos" },
-  { modulo: "artigos", acao: "editar_todos", descricao: "Editar artigos de qualquer autor" },
-  { modulo: "artigos", acao: "publicar", descricao: "Publicar artigos" },
-  { modulo: "revistas", acao: "ler", descricao: "Visualizar revistas" },
-  { modulo: "revistas", acao: "criar", descricao: "Criar revistas" },
-  { modulo: "revistas", acao: "editar", descricao: "Editar revistas" },
-  { modulo: "categorias", acao: "ler", descricao: "Visualizar categorias editoriais" },
-  { modulo: "categorias", acao: "criar", descricao: "Criar categorias editoriais" },
-  { modulo: "categorias", acao: "editar", descricao: "Editar categorias editoriais" },
-  { modulo: "entidades", acao: "ler", descricao: "Visualizar entidades" },
-  { modulo: "entidades", acao: "criar", descricao: "Criar entidades" },
-  { modulo: "entidades", acao: "editar", descricao: "Editar entidades" },
-  { modulo: "fontes", acao: "ler", descricao: "Visualizar fontes" },
-  { modulo: "fontes", acao: "criar", descricao: "Criar fontes" },
-  { modulo: "fontes", acao: "editar", descricao: "Editar fontes" },
-  { modulo: "fontes", acao: "confidencial", descricao: "Visualizar fontes confidenciais" },
-  { modulo: "curadoria", acao: "ler", descricao: "Visualizar curadoria" },
-  { modulo: "curadoria", acao: "aprovar", descricao: "Aprovar itens de curadoria" },
-  { modulo: "curadoria", acao: "gerir", descricao: "Gerenciar feeds e coleta RSS" },
-  { modulo: "midia", acao: "ler", descricao: "Visualizar biblioteca de mídia" },
-  { modulo: "midia", acao: "criar", descricao: "Cadastrar ativos de mídia" },
-  { modulo: "midia", acao: "editar", descricao: "Editar ativos de mídia" },
-  { modulo: "midia-kit", acao: "ler", descricao: "Visualizar midia kits" },
-  { modulo: "midia-kit", acao: "criar", descricao: "Criar midia kits" },
-  { modulo: "midia-kit", acao: "editar", descricao: "Editar midia kits" },
-  { modulo: "midia-kit", acao: "publicar", descricao: "Publicar midia kits" },
-  { modulo: "anuncios", acao: "ler", descricao: "Visualizar anuncios" },
-  { modulo: "anuncios", acao: "criar", descricao: "Criar anuncios" },
-  { modulo: "anuncios", acao: "editar", descricao: "Editar anuncios" },
-  { modulo: "podcasts", acao: "ler", descricao: "Visualizar podcasts" },
-  { modulo: "podcasts", acao: "criar", descricao: "Criar episódios de podcast" },
-  { modulo: "podcasts", acao: "editar", descricao: "Editar episódios de podcast" },
-  { modulo: "portal", acao: "salvar", descricao: "Salvar notícia" },
-  { modulo: "portal", acao: "comentar", descricao: "Comentar notícia" },
-  { modulo: "usuarios", acao: "gerir", descricao: "Gerenciar acessos" },
-];
+// ---------------------------------------------------------------------------
+// Acesso (RBAC)
+// ---------------------------------------------------------------------------
 
-const permissoesPorPerfil: Record<string, string[]> = {
-  admin_erp: permissoes.map((p) => `${p.modulo}:${p.acao}`),
-  editor_erp: [
-    "artigos:ler", "artigos:criar", "artigos:editar", "artigos:editar_todos", "artigos:publicar",
-    "revistas:ler", "revistas:criar", "revistas:editar",
-    "categorias:ler", "categorias:criar", "categorias:editar",
-    "entidades:ler", "entidades:criar", "entidades:editar",
-    "fontes:ler", "fontes:criar", "fontes:editar", "fontes:confidencial",
-    "curadoria:ler", "curadoria:aprovar", "curadoria:gerir",
-    "midia:ler", "midia:criar", "midia:editar",
-    "midia-kit:ler", "midia-kit:criar", "midia-kit:editar", "midia-kit:publicar",
-    "podcasts:ler", "podcasts:criar", "podcasts:editar",
-  ],
-  reporter_erp: [
-    "artigos:ler", "artigos:criar", "artigos:editar",
-    "revistas:ler",
-    "categorias:ler",
-    "entidades:ler",
-    "fontes:ler", "fontes:criar",
-    "curadoria:ler",
-    "midia:ler",
-    "podcasts:ler",
-  ],
-  juridico_erp: ["artigos:ler", "artigos:editar", "artigos:editar_todos", "curadoria:ler", "fontes:ler"],
-  leitor_portal: ["portal:salvar"],
-  autor_portal: ["portal:salvar", "portal:comentar"],
-};
-
-const html1 = "<p>O novo pacote de investimentos em infraestrutura pressiona estados e municipios a profissionalizar o acompanhamento de entregas. A proposta combina repasses, indicadores de desempenho e um painel publico de monitoramento para reduzir atrasos e ampliar transparencia.</p><p>Gestores ouvidos pela reportagem afirmam que a principal novidade esta na governanca: cada projeto nasce com metas, risco mapeado e gatilhos de reprogramacao. Isso melhora a leitura sobre custo, prazo e impacto social.</p>";
-const html2 = "<p>Empresas industriais aceleraram projetos de rastreabilidade depois que financiamento e exportacao passaram a depender de evidencias mais robustas de origem, energia e conformidade. O tema saiu da prateleira regulatoria e virou agenda de margem e reputacao.</p><p>O desafio agora e padronizar a troca de dados entre fornecedores, operacao e auditoria. Sem interoperabilidade, a maior parte do valor da rastreabilidade se perde na execucao.</p>";
-const html3 = "<p>Governadores discutem um consorcio para compras de nuvem, observabilidade e ciberseguranca. A leitura e que contratos cooperados podem reduzir custo unitario e elevar resiliencia em servicos digitais criticos.</p><p>O debate ainda passa por governanca, autonomia estadual e definicao de lotes tecnicos. Se der certo, o modelo pode virar referencia para compras conjuntas em outras frentes do governo digital.</p>";
-
-async function main() {
-  for (const perfil of perfis) {
-    await prisma.perfil.upsert({ where: { nome: perfil.nome }, update: perfil, create: perfil });
+async function seedAcesso() {
+  for (const perfil of PERFIS) {
+    await prisma.perfil.upsert({
+      where: { nome: perfil.nome },
+      update: { descricao: perfil.descricao },
+      create: perfil,
+    });
   }
-  for (const permissao of permissoes) {
+
+  for (const permissao of PERMISSOES) {
     await prisma.permissao.upsert({
       where: { modulo_acao: { modulo: permissao.modulo, acao: permissao.acao } },
       update: { descricao: permissao.descricao },
@@ -115,98 +61,327 @@ async function main() {
     });
   }
 
-  const perfisDb = await prisma.perfil.findMany();
-  const permissoesDb = await prisma.permissao.findMany();
-  const perfilPorNome = new Map(perfisDb.map((p) => [p.nome, p]));
-  const permissaoPorChave = new Map(permissoesDb.map((p) => [`${p.modulo}:${p.acao}`, p]));
+  const perfis = new Map((await prisma.perfil.findMany()).map((p) => [p.nome, p.id]));
+  const permissoes = new Map(
+    (await prisma.permissao.findMany()).map((p) => [`${p.modulo}:${p.acao}`, p.id])
+  );
 
-  for (const [perfilNome, lista] of Object.entries(permissoesPorPerfil)) {
-    const perfil = perfilPorNome.get(perfilNome);
-    if (!perfil) continue;
-    await prisma.perfilPermissao.deleteMany({ where: { perfilId: perfil.id } });
-    await prisma.perfilPermissao.createMany({
-      data: lista.map((chave) => permissaoPorChave.get(chave)).filter(Boolean).map((p) => ({ perfilId: perfil.id, permissaoId: p!.id })),
+  let vinculos = 0;
+  for (const [perfilNome, chaves] of Object.entries(PERMISSOES_POR_PERFIL)) {
+    const perfilId = perfis.get(perfilNome)!;
+    const { count } = await prisma.perfilPermissao.createMany({
+      data: chaves.map((chave) => ({ perfilId, permissaoId: permissoes.get(chave)! })),
       skipDuplicates: true,
     });
+    vinculos += count;
   }
 
-  const usuarios = [
-    { id: ids.admin, nome: "Marina Campos", email: "marina.campos@revistagestao.local", tipoConta: "misto", perfis: ["admin_erp", "autor_portal"] },
-    { id: ids.editora, nome: "Helena Duarte", email: "helena.duarte@revistagestao.local", tipoConta: "erp", perfis: ["editor_erp"] },
-    { id: ids.reporter, nome: "Caio Nogueira", email: "caio.nogueira@revistagestao.local", tipoConta: "erp", perfis: ["reporter_erp"] },
-  ];
+  resumo.push(`Acesso: ${PERFIS.length} perfis, ${PERMISSOES.length} permissões, ${vinculos} vínculo(s) novo(s)`);
+  return perfis;
+}
 
-  for (const usuario of usuarios) {
-    await prisma.usuario.upsert({
-      where: { id: usuario.id },
-      update: { nome: usuario.nome, email: usuario.email, tipoConta: usuario.tipoConta, status: "ativo" },
-      create: { id: usuario.id, nome: usuario.nome, email: usuario.email, tipoConta: usuario.tipoConta, status: "ativo" },
+// ---------------------------------------------------------------------------
+// Usuários (Supabase Auth + tabela usuarios)
+// ---------------------------------------------------------------------------
+
+async function buscarUsuarioAuth(supabase: SupabaseClient, email: string) {
+  const porPagina = 200;
+  for (let pagina = 1; ; pagina++) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page: pagina, perPage: porPagina });
+    if (error) throw new Error(`Supabase Auth: ${error.message}`);
+    const encontrado = data.users.find((u) => u.email?.toLowerCase() === email);
+    if (encontrado) return encontrado;
+    if (data.users.length < porPagina) return null;
+  }
+}
+
+async function garantirUsuario(
+  supabase: SupabaseClient,
+  perfis: Map<string, string>,
+  dados: { email: string; senha: string; nome: string; perfis: NomePerfil[] }
+) {
+  const email = dados.email.toLowerCase();
+  let authUser = await buscarUsuarioAuth(supabase, email);
+  let situacao = "já existia";
+
+  if (!authUser) {
+    const { data, error } = await supabase.auth.admin.createUser({
+      email,
+      password: dados.senha,
+      email_confirm: true,
+      user_metadata: { nome: dados.nome },
     });
-    await prisma.usuarioPerfil.deleteMany({ where: { usuarioId: usuario.id } });
-    await prisma.usuarioPerfil.createMany({
-      data: usuario.perfis.map((nome) => ({ usuarioId: usuario.id, perfilId: perfilPorNome.get(nome)!.id })),
-      skipDuplicates: true,
-    });
+    if (error || !data.user) throw new Error(`Não foi possível criar ${email}: ${error?.message}`);
+    authUser = data.user;
+    situacao = "criado";
   }
 
-  for (const categoria of [
-    { id: ids.catPolitica, nome: "Politica Institucional", slug: "politica-institucional", esfera: "Nacional", cor: "#991b1b", metaDescricao: "Cobertura de negociacao politica e agenda institucional." },
-    { id: ids.catEconomia, nome: "Economia e Orcamento", slug: "economia-orcamento", esfera: "Nacional", cor: "#1d4ed8", metaDescricao: "Investimento, orcamento e ambiente economico." },
-    { id: ids.catGestao, nome: "Gestao Publica", slug: "gestao-publica", esfera: "Nacional", cor: "#047857", metaDescricao: "Governanca, servicos digitais e modernizacao administrativa." },
-  ]) {
-    await prisma.categoria.upsert({ where: { slug: categoria.slug }, update: categoria, create: categoria });
+  const conflito = await prisma.usuario.findFirst({
+    where: { email, NOT: { id: authUser.id } },
+    select: { id: true },
+  });
+  if (conflito) {
+    throw new Error(
+      `A tabela usuarios já tem ${email} com outro id (${conflito.id}). Remova o registro antigo e rode o seed de novo.`
+    );
   }
 
-  for (const politico of [
-    { id: ids.lula, nome: "Luiz Inacio Lula da Silva", cargo: "Presidente da Republica", partido: "PT", biografia: "Presidente com foco em investimento, federacao e agenda social.", regiao: "Nacional", estado: "DF" },
-    { id: ids.tarcisio, nome: "Tarcisio de Freitas", cargo: "Governador", partido: "Republicanos", biografia: "Governador com agenda de infraestrutura e digitalizacao.", regiao: "Sudeste", estado: "SP" },
-  ]) {
-    await prisma.politico.upsert({ where: { id: politico.id }, update: politico, create: politico });
-  }
+  await prisma.usuario.upsert({
+    where: { id: authUser.id },
+    update: { email, status: "ativo" },
+    create: { id: authUser.id, nome: dados.nome, email, tipoConta: "erp", status: "ativo" },
+  });
 
-  for (const fonte of [
-    { id: ids.fontePlanejamento, nome: "Laura Mendonca", cargo: "Assessora especial", organizacao: "Ministerio do Planejamento", email: "laura@planejamento.local", telefone: "(61) 99999-1001", nivelSigilo: "reservado", notas: "Acompanha carteira de investimentos e cronogramas.", criadorId: ids.editora },
-    { id: ids.fonteIndustria, nome: "Patricia Silveira", cargo: "Diretora de estrategia", organizacao: "Associacao da Industria Digital", email: "patricia@industria.local", telefone: "(11) 99999-3003", nivelSigilo: "confidencial", notas: "Tem boa leitura de cadeia industrial e digitalizacao fabril.", criadorId: ids.admin },
-  ]) {
-    await prisma.fonte.upsert({ where: { id: fonte.id }, update: fonte, create: fonte });
-  }
-
-  for (const fonteRss of [
-    { id: ids.rssPolitica, name: "Radar Politico Nacional", urlFeed: "https://exemplo.local/rss/politica.xml", tone: "jornalistico", regiao: "Nacional", estado: "DF", cacheTtl: 30, ativa: true },
-    { id: ids.rssEconomia, name: "Economia em Movimento", urlFeed: "https://exemplo.local/rss/economia.xml", tone: "direto", regiao: "Sudeste", estado: "SP", cacheTtl: 15, ativa: true },
-  ]) {
-    await prisma.fonteRss.upsert({ where: { urlFeed: fonteRss.urlFeed }, update: fonteRss, create: fonteRss });
-  }
-
-  for (const item of [
-    { id: ids.rssItem1, sourceId: ids.rssPolitica, guid: "rss-item-investimentos-regionais", tituloOriginal: "Governo acelera carteira de investimentos regionais", linkOriginal: "https://exemplo.local/noticias/investimentos-regionais", autorOriginal: "Radar Politico Nacional", description: "Nova rodada de projetos prioriza conectividade, saude e monitoramento publico.", thumbnail: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80", dataPublicacao: new Date("2026-04-02T10:30:00.000Z"), status: "published" },
-    { id: ids.rssItem2, sourceId: ids.rssEconomia, guid: "rss-item-rastreabilidade-industrial", tituloOriginal: "Industria amplia uso de rastreabilidade em linhas exportadoras", linkOriginal: "https://exemplo.local/noticias/rastreabilidade-industrial", autorOriginal: "Economia em Movimento", description: "Empresas aceleram projetos para elevar conformidade e visibilidade de cadeia.", thumbnail: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1600&q=80", dataPublicacao: new Date("2026-04-05T14:00:00.000Z"), status: "selected" },
-  ]) {
-    await prisma.itemRssBruto.upsert({ where: { guid: item.guid }, update: item, create: item });
-  }
-
-  for (const artigo of [
-    { id: ids.artigo1, titulo: "Pacote de infraestrutura pressiona estados a elevar governanca de projetos", slug: "pacote-infraestrutura-governanca-projetos", corpoTexto: html1, resumo: "Nova carteira de investimentos combina repasse, indicador de desempenho e transparencia para acelerar entregas.", autorId: ids.editora, editorId: ids.admin, categoriaId: ids.catGestao, status: StatusArtigo.publicado, dataPublicacao: new Date("2026-04-03T12:00:00.000Z"), visualizacoes: 1842, urlImagemOg: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1600&q=80", estado: "DF", statusLegal: "aprovado", regiao: "Nacional", canaisPublicacao: ["portal", "newsletter"], autorExterno: "Radar Politico Nacional", urlFonte: "https://exemplo.local/noticias/investimentos-regionais", revisorHumano: "Renata Paes", itemRssId: ids.rssItem1 },
-    { id: ids.artigo2, titulo: "Rastreabilidade vira criterio de financiamento na industria exportadora", slug: "rastreabilidade-criterio-financiamento-industria-exportadora", corpoTexto: html2, resumo: "Companhias com dados mais confiaveis ganham vantagem em auditoria, financiamento e acesso a mercados.", autorId: ids.reporter, editorId: ids.editora, categoriaId: ids.catEconomia, status: StatusArtigo.publicado, dataPublicacao: new Date("2026-04-06T11:15:00.000Z"), visualizacoes: 973, urlImagemOg: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=1600&q=80", estado: "SP", statusLegal: "aprovado", regiao: "Sudeste", ehPremium: true, canaisPublicacao: ["portal"], autorExterno: "Economia em Movimento", urlFonte: "https://exemplo.local/noticias/rastreabilidade-industrial", revisorHumano: "Renata Paes" },
-    { id: ids.artigo3, titulo: "Consorcio regional para compras de nuvem avanca entre governadores", slug: "consorcio-regional-compras-nuvem-governadores", corpoTexto: html3, resumo: "Estados negociam padroes tecnicos e compras cooperadas para reduzir custo e elevar resiliencia digital.", autorId: ids.admin, editorId: ids.editora, categoriaId: ids.catPolitica, status: StatusArtigo.revisao, visualizacoes: 214, urlImagemOg: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1600&q=80", estado: "GO", statusLegal: "pendente", regiao: "Centro-Oeste", canaisPublicacao: ["portal"], revisorHumano: "Renata Paes" },
-  ]) {
-    await prisma.artigo.upsert({ where: { slug: artigo.slug }, update: artigo, create: artigo });
-  }
-
-  await prisma.artigoPolitico.createMany({
-    data: [
-      { artigoId: ids.artigo1, politicoId: ids.lula },
-      { artigoId: ids.artigo3, politicoId: ids.tarcisio },
-    ],
+  await prisma.usuarioPerfil.createMany({
+    data: dados.perfis.map((nome) => ({ usuarioId: authUser.id, perfilId: perfis.get(nome)! })),
     skipDuplicates: true,
   });
 
-  console.log("Seed concluido: perfis, usuarios e conteudo editorial de exemplo criados.");
+  resumo.push(`Usuário ${email} (${dados.perfis.join(", ")}): ${situacao}`);
+  return authUser.id;
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-}).finally(async () => {
-  await prisma.$disconnect();
-});
+async function seedUsuarios(perfis: Map<string, string>): Promise<Record<AutorSeed, string>> {
+  const supabase = createClient(
+    exigirEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    exigirEnv("SUPABASE_SERVICE_ROLE_KEY"),
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+
+  const senhaAdmin = exigirEnv("SEED_ADMIN_PASSWORD");
+  if (senhaAdmin.length < 8) throw new Error("SEED_ADMIN_PASSWORD precisa ter pelo menos 8 caracteres.");
+
+  const admin = await garantirUsuario(supabase, perfis, {
+    email: exigirEnv("SEED_ADMIN_EMAIL"),
+    senha: senhaAdmin,
+    nome: exigirEnv("SEED_ADMIN_NOME"),
+    perfis: ["admin_erp"],
+  });
+
+  const senhaDemo = process.env.SEED_DEMO_PASSWORD?.trim();
+  if (!senhaDemo) {
+    resumo.push("Usuários de demonstração: não criados (SEED_DEMO_PASSWORD vazia)");
+    return { admin, editor: admin, reporter: admin };
+  }
+  if (senhaDemo.length < 8) throw new Error("SEED_DEMO_PASSWORD precisa ter pelo menos 8 caracteres.");
+
+  const editor = await garantirUsuario(supabase, perfis, {
+    email: "editor.demo@example.com",
+    senha: senhaDemo,
+    nome: "Helena Duarte (demo)",
+    perfis: ["editor_erp"],
+  });
+  const reporter = await garantirUsuario(supabase, perfis, {
+    email: "reporter.demo@example.com",
+    senha: senhaDemo,
+    nome: "Caio Nogueira (demo)",
+    perfis: ["reporter_erp"],
+  });
+  await garantirUsuario(supabase, perfis, {
+    email: "juridico.demo@example.com",
+    senha: senhaDemo,
+    nome: "Renata Paes (demo)",
+    perfis: ["juridico_erp"],
+  });
+
+  return { admin, editor, reporter };
+}
+
+// ---------------------------------------------------------------------------
+// Conteúdo de exemplo
+// ---------------------------------------------------------------------------
+
+async function seedCategorias() {
+  const ids = {} as Record<SlugCategoria, string>;
+  let criadas = 0;
+  for (const categoria of CATEGORIAS) {
+    const existente = await prisma.categoria.findUnique({ where: { slug: categoria.slug }, select: { id: true } });
+    if (existente) {
+      ids[categoria.slug] = existente.id;
+      continue;
+    }
+    const criada = await prisma.categoria.create({
+      data: { id: idEstavel(`categoria:${categoria.slug}`), ...categoria },
+    });
+    ids[categoria.slug] = criada.id;
+    criadas++;
+  }
+  resumo.push(`Categorias: ${criadas} criada(s) de ${CATEGORIAS.length}`);
+  return ids;
+}
+
+async function seedEntidadesEFontes(adminId: string) {
+  const entidadeIds: Record<string, string> = {};
+  for (const { chave, ...entidade } of ENTIDADES) {
+    const id = idEstavel(`entidade:${chave}`);
+    await prisma.politico.upsert({ where: { id }, update: {}, create: { id, ...entidade } });
+    entidadeIds[chave] = id;
+  }
+
+  for (const { chave, ...fonte } of FONTES) {
+    const id = idEstavel(`fonte:${chave}`);
+    await prisma.fonte.upsert({ where: { id }, update: {}, create: { id, ...fonte, criadorId: adminId } });
+  }
+
+  for (const fonteRss of FONTES_RSS) {
+    await prisma.fonteRss.upsert({
+      where: { urlFeed: fonteRss.urlFeed },
+      update: {},
+      create: { id: idEstavel(`rss:${fonteRss.urlFeed}`), ...fonteRss, ativa: true },
+    });
+  }
+
+  resumo.push(
+    `Entidades: ${ENTIDADES.length} | Fontes (CRM): ${FONTES.length} | Feeds RSS: ${FONTES_RSS.length}`
+  );
+  return entidadeIds;
+}
+
+async function seedArtigos(
+  autores: Record<AutorSeed, string>,
+  categorias: Record<SlugCategoria, string>,
+  entidades: Record<string, string>
+) {
+  const agora = Date.now();
+  let criados = 0;
+
+  for (const artigo of ARTIGOS) {
+    const existe = await prisma.artigo.findUnique({ where: { slug: artigo.slug }, select: { id: true } });
+    if (existe) continue;
+
+    const publicado = artigo.status === "publicado";
+    await prisma.artigo.create({
+      data: {
+        id: idEstavel(`artigo:${artigo.chave}`),
+        titulo: artigo.titulo,
+        slug: artigo.slug,
+        resumo: artigo.resumo,
+        corpoTexto: artigo.corpoTexto,
+        status: artigo.status,
+        categoriaId: categorias[artigo.categoria],
+        autorId: autores[artigo.autor],
+        editorId: publicado ? autores.editor : null,
+        dataPublicacao: publicado ? new Date(agora - (artigo.publicadoHaHoras ?? 0) * HORA) : null,
+        visualizacoes: artigo.visualizacoes ?? 0,
+        urlImagemOg: artigo.urlImagemOg,
+        estado: artigo.estado,
+        regiao: artigo.regiao,
+        ehPremium: artigo.ehPremium ?? false,
+        canaisPublicacao: artigo.canaisPublicacao ?? ["portal"],
+        statusLegal: artigo.statusLegal ?? "pendente",
+        observacoesLegais: artigo.observacoesLegais ?? null,
+        revisorHumano: artigo.revisorHumano ?? null,
+        artigosPoliticos: {
+          create: (artigo.entidades ?? []).map(({ chave, papel }) => ({
+            papel,
+            politico: { connect: { id: entidades[chave] } },
+          })),
+        },
+        checagensFato: { create: artigo.checagens ?? [] },
+      },
+    });
+    criados++;
+  }
+
+  resumo.push(`Artigos avulsos: ${criados} criado(s) de ${ARTIGOS.length}`);
+}
+
+async function seedRevista(autorId: string, categorias: Record<SlugCategoria, string>) {
+  const revistaId = idEstavel("revista:edicao-2");
+  await prisma.revista.upsert({
+    where: { id: revistaId },
+    update: {},
+    create: { id: revistaId, ...REVISTA_EDICAO_2, dataPublicacao: new Date() },
+  });
+
+  const agora = Date.now();
+  let criados = 0;
+  for (const [indice, artigo] of ARTIGOS_EDICAO_2.entries()) {
+    const existe = await prisma.artigo.findUnique({ where: { slug: artigo.slug }, select: { id: true } });
+    if (existe) continue;
+
+    const ordem = indice + 1;
+    await prisma.artigo.create({
+      data: {
+        id: idEstavel(`artigo:${artigo.slug}`),
+        titulo: artigo.titulo,
+        slug: artigo.slug,
+        resumo: artigo.resumo,
+        corpoTexto: artigo.paragrafos.map((paragrafo) => `<p>${paragrafo}</p>`).join(""),
+        status: "publicado" satisfies StatusArtigo,
+        categoriaId: categorias[artigo.categoria],
+        autorId,
+        dataPublicacao: new Date(agora - ordem * HORA),
+        urlImagemOg: `https://images.unsplash.com/photo-${artigo.imagem}?auto=format&fit=crop&w=1600&q=80`,
+        estado: artigo.estado,
+        regiao: artigo.regiao,
+        statusLegal: "aprovado",
+        canaisPublicacao: ["portal"],
+        revistaId,
+        ordemNaRevista: ordem,
+      },
+    });
+    criados++;
+  }
+
+  resumo.push(`Revista "${REVISTA_EDICAO_2.titulo}": ${criados} artigo(s) criado(s) de ${ARTIGOS_EDICAO_2.length}`);
+}
+
+async function seedAnunciosEMidiaKit() {
+  let anuncios = 0;
+  for (const { chave, ...anuncio } of ANUNCIOS) {
+    const id = idEstavel(`anuncio:${chave}`);
+    const existe = await prisma.anuncio.findUnique({ where: { id }, select: { id: true } });
+    if (existe) continue;
+    await prisma.anuncio.create({ data: { id, ...anuncio, dataInicio: new Date(), dataFim: null } });
+    anuncios++;
+  }
+
+  const kitExiste = await prisma.mediaKit.findUnique({ where: { slug: MIDIA_KIT.slug }, select: { id: true } });
+  if (!kitExiste) {
+    await prisma.mediaKit.create({
+      data: {
+        id: idEstavel(`midia-kit:${MIDIA_KIT.slug}`),
+        nome: MIDIA_KIT.nome,
+        slug: MIDIA_KIT.slug,
+        status: "PUBLISHED",
+        publicadoEm: new Date(),
+        tema: json(MIDIA_KIT.tema),
+        secoes: {
+          create: MIDIA_KIT.secoes.map((secao, ordem) => ({
+            tipo: secao.tipo,
+            titulo: secao.titulo,
+            ordem,
+            data: json(secao.data),
+          })),
+        },
+      },
+    });
+  }
+
+  resumo.push(
+    `Anúncios-modelo: ${anuncios} criado(s) de ${ANUNCIOS.length} | Mídia kit /midia-kit/${MIDIA_KIT.slug}: ${kitExiste ? "já existia" : "criado"}`
+  );
+}
+
+async function main() {
+  const perfis = await seedAcesso();
+  const autores = await seedUsuarios(perfis);
+  const categorias = await seedCategorias();
+  const entidades = await seedEntidadesEFontes(autores.admin);
+  await seedArtigos(autores, categorias, entidades);
+  await seedRevista(autores.admin, categorias);
+  await seedAnunciosEMidiaKit();
+
+  console.log("Seed concluído:");
+  for (const linha of resumo) console.log(`  ✓ ${linha}`);
+}
+
+main()
+  .catch((erro) => {
+    console.error("✗ Seed falhou:", erro instanceof Error ? erro.message : erro);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

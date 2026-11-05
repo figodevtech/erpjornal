@@ -38,7 +38,11 @@ export default function ArticleActionsDropdown({ articleId, title, canEdit }: Ar
   async function handleDelete() {
     setPending(true);
     try {
-      await deleteArticle(articleId);
+      const result = await deleteArticle(articleId);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
       toast.success("Artigo excluido.");
       setConfirmOpen(false);
       router.refresh();

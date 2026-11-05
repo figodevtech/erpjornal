@@ -3,11 +3,11 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { podeAcessarErp, temAlgumaPermissao, temPermissao } from "@/lib/rbac";
 import { criarClienteSupabaseServer } from "@/lib/supabase/server";
 
-export function isPermissaoErp(permissao: string) {
-  return !permissao.startsWith("portal:");
-}
+// Regras puras de permissão vivem em src/lib/rbac.ts; reexportadas por compatibilidade.
+export { isPermissaoErp, podeAcessarErp, temAlgumaPermissao, temPermissao } from "@/lib/rbac";
 
 function normalizarRole(perfis: string[]) {
   if (perfis.includes("admin_erp")) return "admin";
@@ -108,18 +108,6 @@ export async function exigirSessao() {
   }
 
   return sessao;
-}
-
-export function temPermissao(sessao: SessaoAplicacao, permissao: string) {
-  return sessao.user.permissoes.includes(permissao);
-}
-
-export function temAlgumaPermissao(sessao: SessaoAplicacao, permissoes: string[]) {
-  return permissoes.some((permissao) => temPermissao(sessao, permissao));
-}
-
-export function podeAcessarErp(sessao: SessaoAplicacao) {
-  return sessao.user.permissoes.some(isPermissaoErp);
 }
 
 export async function exigirAcessoErp() {

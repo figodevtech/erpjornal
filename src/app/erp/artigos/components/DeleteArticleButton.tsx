@@ -23,6 +23,10 @@ export default function DeleteArticleButton({ articleId, title, redirectTo = "/e
     setPending(true);
     try {
       const result = await deleteArticle(articleId);
+      if (!result.ok) {
+        toast.error(result.error);
+        return;
+      }
       toast.success("Artigo excluido.");
       setOpen(false);
       router.push(result.revistaId ? `/erp/revistas/${result.revistaId}` : redirectTo);

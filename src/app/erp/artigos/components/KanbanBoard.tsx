@@ -120,10 +120,15 @@ export function KanbanBoard({ initialArticles }: { initialArticles: Article[] })
       // Persist status change
       if (artigo && overColumn !== initialArticles.find(a => a.id === activeId)?.status) {
         try {
-          await updateArticleStatus(activeId, overColumn as StatusArtigo);
-          toast.success("Status atualizado com sucesso!");
-        } catch (error) {
-          toast.error(`Falha ao atualizar: ${(error as Error).message}`);
+          const resultado = await updateArticleStatus(activeId, overColumn as StatusArtigo);
+          if (resultado.ok) {
+            toast.success("Status atualizado com sucesso!");
+          } else {
+            toast.error(resultado.error);
+            setArticles(initialArticles);
+          }
+        } catch {
+          toast.error("Falha ao atualizar o status. Tente novamente.");
           setArticles(initialArticles);
         }
       }

@@ -7,6 +7,11 @@ import { exigirAlgumaPermissao, exigirPermissao, temPermissao } from "@/lib/auth
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
 import {
+  motivoBloqueioExclusao,
+  motivoBloqueioMudancaStatus,
+  podeEditarArtigo,
+} from "@/lib/editorial/permissoes-artigo";
+import {
   isStatusArtigo,
   resolverStatusAoSalvar,
   type StatusArtigo,
@@ -44,7 +49,6 @@ export async function saveArticle(formData: FormData) {
 
   const podePublicar = temPermissao(session, "artigos:publicar");
   const podeEditar = temPermissao(session, "artigos:editar");
-  const podeEditarTodos = temPermissao(session, "artigos:editar_todos");
   const observacoesLegais = podeEditar ? (formData.get("observacoesLegais") as string) || null : null;
   const statusLegal = podeEditar ? (formData.get("statusLegal") as string) || "pendente" : "pendente";
   // Só quem publica pode definir a data de publicação.
@@ -97,7 +101,7 @@ export async function saveArticle(formData: FormData) {
     if (!existing) throw new Error("Artigo nao encontrado");
     previousRevistaId = existing.revistaId;
 
-    if (!podeEditarTodos && existing.autorId !== session.user.id) {
+    if (!podeEditarArtigo(session, existing)) {
       throw new Error("Voce nao tem permissao para editar este artigo.");
     }
 
@@ -202,12 +206,18 @@ export async function saveArticle(formData: FormData) {
   redirect(finalRevistaId ? `/erp/revistas/${finalRevistaId}` : "/erp/artigos");
 }
 
-export async function updateArticleStatus(id: string, newStatus: StatusArtigo) {
+type ResultadoAcao = { ok: true } | { ok: false; error: string };
+
+/**
+ * Move o artigo de etapa (Kanban). Retorna { ok, error } em vez de lançar:
+ * o Next esconde a mensagem de erros lançados por server actions em produção.
+ */
+export async function updateArticleStatus(id: string, newStatus: StatusArtigo): Promise<ResultadoAcao> {
   const session = await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
 
   // Server actions recebem dados do cliente: valida o status antes de usar.
   if (!isStatusArtigo(newStatus)) {
-    throw new Error("Status de artigo invalido.");
+    return { ok: false, error: "Status de artigo inválido." };
   }
 
   const artigo = await prisma.artigo.findUnique({
@@ -222,55 +232,52 @@ export async function updateArticleStatus(id: string, newStatus: StatusArtigo) {
     },
   });
 
-  if (!artigo) throw new Error("Artigo nao encontrado");
+  if (!artigo) return { ok: false, error: "Artigo não encontrado." };
+  if (artigo.status === newStatus) return { ok: true };
 
-  const podePublicar = temPermissao(session, "artigos:publicar");
-  const podeEditar = temPermissao(session, "artigos:editar");
+  // Autor ou editar_todos; publicar/despublicar/arquivar exige artigos:publicar.
+  const bloqueio = motivoBloqueioMudancaStatus(session, artigo, newStatus);
+  if (bloqueio) return { ok: false, error: bloqueio };
 
-  if (newStatus === "publicado" && !podePublicar) {
-    throw new Error("Voce nao tem permissao para publicar.");
-  }
-
-  if (newStatus !== "publicado" && !podeEditar) {
-    throw new Error("Voce nao tem permissao para alterar o fluxo editorial.");
-  }
-
-  await prisma.versaoArtigo.create({
-    data: {
-      artigoId: id,
-      titulo: artigo.titulo,
-      resumo: artigo.resumo,
-      corpoTexto: artigo.corpoTexto,
-      status: artigo.status,
-      usuarioId: session.user.id,
-      resumoMudancas: `Mudanca de status via Kanban para: ${newStatus}`,
-    },
-  });
-
-  await prisma.artigo.update({
-    where: { id },
-    data: {
-      status: newStatus,
-      dataPublicacao: newStatus === "publicado" ? artigo.dataPublicacao || new Date() : null,
-    },
-  });
-
-  await prisma.logAcao.create({
-    data: {
-      usuarioId: session.user.id,
-      acao: `MOVER_KANBAN: ${artigo.status} -> ${newStatus}`,
-      artigoId: id,
-    },
-  });
+  await prisma.$transaction([
+    prisma.versaoArtigo.create({
+      data: {
+        artigoId: id,
+        titulo: artigo.titulo,
+        resumo: artigo.resumo,
+        corpoTexto: artigo.corpoTexto,
+        status: artigo.status,
+        usuarioId: session.user.id,
+        resumoMudancas: `Mudanca de status via Kanban para: ${newStatus}`,
+      },
+    }),
+    prisma.artigo.update({
+      where: { id },
+      data: {
+        status: newStatus,
+        dataPublicacao: newStatus === "publicado" ? artigo.dataPublicacao || new Date() : null,
+      },
+    }),
+    prisma.logAcao.create({
+      data: {
+        usuarioId: session.user.id,
+        acao: `MOVER_KANBAN: ${artigo.status} -> ${newStatus}`,
+        artigoId: id,
+      },
+    }),
+  ]);
 
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
   revalidatePath("/");
   revalidatePath("/noticia/[slug]", "page");
   revalidatePath("/categoria/[slug]", "page");
+  return { ok: true };
 }
 
-export async function deleteArticle(id: string) {
+export async function deleteArticle(
+  id: string
+): Promise<{ ok: true; revistaId: string | null } | { ok: false; error: string }> {
   const session = await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
 
   const artigo = await prisma.artigo.findUnique({
@@ -278,31 +285,31 @@ export async function deleteArticle(id: string) {
     select: {
       id: true,
       autorId: true,
+      status: true,
       revistaId: true,
       slug: true,
+      titulo: true,
     },
   });
 
   if (!artigo) {
-    throw new Error("Artigo nao encontrado.");
+    return { ok: false, error: "Artigo não encontrado." };
   }
 
-  const podeEditarTodos = temPermissao(session, "artigos:editar_todos");
-  if (!podeEditarTodos && artigo.autorId !== session.user.id) {
-    throw new Error("Voce nao tem permissao para excluir este artigo.");
-  }
+  // Quem pode editar; artigo publicado exige também artigos:publicar.
+  const bloqueio = motivoBloqueioExclusao(session, artigo);
+  if (bloqueio) return { ok: false, error: bloqueio };
 
-  await prisma.artigo.delete({
-    where: { id },
-  });
-
-  await prisma.logAcao.create({
-    data: {
-      usuarioId: session.user.id,
-      acao: "EXCLUSAO_ARTIGO",
-      artigoId: null,
-    },
-  });
+  await prisma.$transaction([
+    prisma.artigo.delete({ where: { id } }),
+    prisma.logAcao.create({
+      data: {
+        usuarioId: session.user.id,
+        acao: `EXCLUSAO_ARTIGO: ${artigo.slug}`,
+        artigoId: null,
+      },
+    }),
+  ]);
 
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
@@ -313,26 +320,37 @@ export async function deleteArticle(id: string) {
   revalidatePath("/noticia/[slug]", "page");
   revalidatePath("/categoria/[slug]", "page");
 
-  return { success: true, revistaId: artigo.revistaId };
+  return { ok: true, revistaId: artigo.revistaId };
 }
 
-export async function updateArticleAuthor(artigoId: string, newAuthorId: string) {
-  const session = await exigirPermissao("artigos:editar");
+/** Atribui outro autor ao artigo (ação de editor: exige artigos:editar_todos). */
+export async function updateArticleAuthor(artigoId: string, newAuthorId: string): Promise<ResultadoAcao> {
+  const session = await exigirPermissao("artigos:editar_todos");
 
-  await prisma.artigo.update({
-    where: { id: artigoId },
-    data: { autorId: newAuthorId },
+  const novoAutor = await prisma.usuario.findUnique({
+    where: { id: newAuthorId },
+    select: { id: true, status: true },
   });
+  if (!novoAutor || novoAutor.status !== "ativo") {
+    return { ok: false, error: "Autor inválido ou inativo." };
+  }
 
-  await prisma.logAcao.create({
-    data: {
-      usuarioId: session.user.id,
-      acao: `ATRIBUIR_AUTOR: ${newAuthorId}`,
-      artigoId,
-    },
-  });
+  await prisma.$transaction([
+    prisma.artigo.update({
+      where: { id: artigoId },
+      data: { autorId: newAuthorId },
+    }),
+    prisma.logAcao.create({
+      data: {
+        usuarioId: session.user.id,
+        acao: `ATRIBUIR_AUTOR: ${newAuthorId}`,
+        artigoId,
+      },
+    }),
+  ]);
 
   revalidatePath("/erp/artigos/kanban");
+  return { ok: true };
 }
 
 export async function getArticleVersions(artigoId: string) {

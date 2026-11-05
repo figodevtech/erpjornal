@@ -1,4 +1,4 @@
-import { withSentryConfig } from "@sentry/nextjs";
+import { withSentryConfig } from "@sentry/nextjs/config";
 import type { NextConfig } from "next";
 
 // Host do Supabase Storage do projeto atual (imagens enviadas pelo ERP).
@@ -52,23 +52,24 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Configurações do Sentry para automatizar sourcemaps e report de build
-const sentryBuildOptions = {
+// Configurações do Sentry para upload de sourcemaps no build.
+// Sem SENTRY_AUTH_TOKEN/ORG/PROJECT o upload é simplesmente pulado.
+const sentryBuildOptions: Parameters<typeof withSentryConfig>[1] = {
   authToken: process.env.SENTRY_AUTH_TOKEN,
-  org: "revista-gestao", 
-  project: "portal-noticias",
-  
-  // Otimiza o upload de sourcemaps para o cliente
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Envia também os sourcemaps de dependências do cliente
   widenClientFileUpload: true,
-  
-  // Cria uma rota de túnel para evitar bloqueadores de anúncios
+
+  // Rota de túnel para eventos do Sentry não serem barrados por bloqueadores de anúncio
   tunnelRoute: "/monitoring",
-  
-  // Suprime logs de progresso de build no dev
+
+  // Suprime logs de progresso no build
   silent: true,
-  
-  // Esconde sourcemaps originais no código final servido
-  hideSourceMaps: true,
+
+  // Os sourcemaps gerados são apagados após o upload (padrão do v11:
+  // sourcemaps.deleteSourcemapsAfterUpload = true), então não ficam públicos.
 };
 
 export default withSentryConfig(nextConfig, sentryBuildOptions);

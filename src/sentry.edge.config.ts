@@ -1,10 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
 
+import { COLETA_DE_DADOS, TAXA_AMOSTRAGEM_TRACES } from "@/lib/observabilidade/sentry";
+
+// Sentry no runtime Edge (proxy/middleware), carregado por src/instrumentation.ts.
 Sentry.init({
   dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN || "",
-  
-  // Amostragem para leves execuções na borda (Edge Functions)
-  tracesSampleRate: 1.0,
-  
-  enableLogs: true,
+  tracesSampleRate: TAXA_AMOSTRAGEM_TRACES,
+  dataCollection: COLETA_DE_DADOS,
 });

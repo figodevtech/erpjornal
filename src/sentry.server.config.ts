@@ -1,15 +1,10 @@
 import * as Sentry from "@sentry/nextjs";
 
+import { COLETA_DE_DADOS, TAXA_AMOSTRAGEM_TRACES } from "@/lib/observabilidade/sentry";
+
+// Sentry no runtime Node.js (carregado por src/instrumentation.ts).
 Sentry.init({
-  // Nota: No Server Side usamos SENTRY_DSN (privado) ou o publico se necessário
   dsn: process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN || "",
-
-  // Performance e rastreabilidade para o Banco de Dados
-  tracesSampleRate: 1.0,
-
-  // Captura variáveis locais no momento do erro para debug profundo
-  includeLocalVariables: true,
-
-  // Integração com logs (Pino/Winston) se detectados
-  enableLogs: true,
+  tracesSampleRate: TAXA_AMOSTRAGEM_TRACES,
+  dataCollection: COLETA_DE_DADOS,
 });

@@ -14,6 +14,7 @@ import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { slugify } from "@/lib/slug";
 import { revalidarMateriasNoPortal } from "@/lib/cache/portal";
+import { agendarDisparoNewsletter } from "@/lib/newsletter/disparo";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
@@ -136,6 +137,7 @@ async function criarArtigoDaCuradoria(
   revalidatePath("/erp/artigos/kanban");
   if (publicar) {
     revalidarMateriasNoPortal();
+    agendarDisparoNewsletter();
   }
 
   return { success: true, artigoId: artigo.id, publicado: publicar };

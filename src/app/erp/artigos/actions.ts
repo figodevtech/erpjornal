@@ -21,6 +21,7 @@ import {
   type StatusArtigo,
 } from "@/lib/editorial/status";
 import { revalidarMateriasNoPortal } from "@/lib/cache/portal";
+import { agendarDisparoNewsletter } from "@/lib/newsletter/disparo";
 
 /** Campos do artigo que vão para a auditoria (sem o corpo, que é grande). */
 function resumoParaAuditoria(artigo: {
@@ -368,6 +369,8 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
     revalidatePath(`/erp/revistas/${previousRevistaId}`);
   }
   revalidarMateriasNoPortal();
+  // Matéria no ar com o canal "newsletter": envia depois da resposta (só uma vez por matéria).
+  agendarDisparoNewsletter();
   redirect(finalRevistaId ? `/erp/revistas/${finalRevistaId}` : "/erp/artigos");
 }
 
@@ -529,6 +532,7 @@ export async function updateArticleStatus(id: string, newStatus: StatusArtigo): 
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
   revalidarMateriasNoPortal();
+  if (newStatus === "publicado") agendarDisparoNewsletter();
   return { ok: true };
 }
 

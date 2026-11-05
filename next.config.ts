@@ -1,33 +1,16 @@
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
-import { execSync } from "child_process";
-import fs from "fs";
-import path from "path";
 
-// Cópia de assets fora da sandbox
-const projectDir = process.cwd();
-try {
-  const logoSrc = path.join(projectDir, "LOGO PADÃO BRANCA E VERMELHA.png");
-  const logoDest = path.join(projectDir, "public/logo.png");
-  if (fs.existsSync(logoSrc)) {
-    fs.copyFileSync(logoSrc, logoDest);
-    console.log("[Setup] Logo copiada com sucesso para public/logo.png");
-  } else {
-    console.log("[Setup] Logo original não encontrada, pulando cópia.");
+// Host do Supabase Storage do projeto atual (imagens enviadas pelo ERP).
+const supabaseHostname = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_SUPABASE_URL
+      ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
+      : null;
+  } catch {
+    return null;
   }
-
-  const iconSrc = path.join(projectDir, "RG ICON.png");
-  const pyScript = path.join(projectDir, "scripts/add_background.py");
-  if (fs.existsSync(pyScript) && fs.existsSync(iconSrc)) {
-    execSync(`python3 "${pyScript}"`, { cwd: projectDir });
-    console.log("[Setup] Script Python do Favicon executado com sucesso!");
-  } else {
-    console.log("[Setup] Assets do favicon ou script não encontrados, pulando processamento.");
-  }
-} catch (e) {
-  console.error("[Setup] Erro ao executar cópia de assets:", e);
-}
-
+})();
 
 const nextConfig: NextConfig = {
   experimental: {
@@ -62,10 +45,9 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'admin.cnnbrasil.com.br',
       },
-      {
-        protocol: 'https',
-        hostname: 'mopkeehlcrmydlqrgdfe.supabase.co',
-      }
+      ...(supabaseHostname
+        ? [{ protocol: 'https' as const, hostname: supabaseHostname }]
+        : []),
     ],
   },
 };

@@ -1,14 +1,9 @@
-import { extractPlainTextFromHtml, splitTextIntoChunks } from '../tts-utils';
+import { describe, expect, it } from "vitest";
 
-/**
- * Teste unitário manual para verificação do extrator de texto TTS.
- * Pode ser executado via: npx tsx src/lib/__tests__/tts-utils.test.ts
- */
-async function testTtsUtils() {
-  console.log('🧪 Iniciando teste unitário de TtsUtils...');
+import { extractPlainTextFromHtml, splitTextIntoChunks } from "../tts-utils";
 
-  // Teste 1: Limpeza do HTML (extrair plain text)
-  const sampleHtml = `
+describe("extractPlainTextFromHtml", () => {
+  const html = `
     <h1>Título da Matéria</h1>
     <p>Este é o <strong>primeiro</strong> parágrafo de notícia.</p>
     <p>O segundo parágrafo vem agora.&nbsp;Onde temos espaços inquebráveis.</p>
@@ -16,30 +11,31 @@ async function testTtsUtils() {
     <p>Frase final aqui.</p>
   `;
 
-  const expectedTextSnippet = "Título da Matéria.\n\nEste é o primeiro parágrafo de notícia.";
-  const cleanResult = extractPlainTextFromHtml(sampleHtml);
+  it("remove tags e pontua títulos para a leitura em voz", () => {
+    const texto = extractPlainTextFromHtml(html);
+    expect(texto).toContain("Título da Matéria.\n\nEste é o primeiro parágrafo de notícia.");
+    expect(texto).not.toContain("<strong>");
+  });
 
-  console.log('--- HTML Limpo ---');
-  console.log(cleanResult);
+  it("decodifica entidades comuns", () => {
+    expect(extractPlainTextFromHtml(html)).toContain("agora. Onde temos");
+  });
 
-  if (!cleanResult.includes("Título da Matéria.\n\n") || cleanResult.includes("<strong>")) {
-    console.error('❌ Teste de extrator de texto falhou: Formato ou conteúdo incorreto.');
-    process.exit(1);
-  }
+  it("não lê o conteúdo de scripts e estilos", () => {
+    expect(extractPlainTextFromHtml("<p>Oi</p><script>alerta()</script><style>p{}</style>")).toBe("Oi");
+  });
 
-  // Teste 2: Chuncking do texto
-  const longText = "Esta é uma frase curta. Esta frase é propositalmente mais longa para testar a capacidade de quebra de blocos em sentenças menores para que a API de síntese de voz nativa não congele no Webview do celular.";
-  const chunks = splitTextIntoChunks(longText, 50);
+  it("devolve vazio para entrada vazia", () => {
+    expect(extractPlainTextFromHtml("")).toBe("");
+  });
+});
 
-  console.log('--- Chunks Gerados ---');
-  console.log(chunks);
-
-  if (chunks.length < 2 || chunks.some(c => c.length > 150)) { // 150 é margem de segurança do maxLength
-    console.error('❌ Teste de quebra de texto falhou.');
-    process.exit(1);
-  }
-
-  console.log('✅ Teste de TtsUtils finalizado com sucesso!');
-}
-
-testTtsUtils();
+describe("splitTextIntoChunks", () => {
+  it("quebra textos longos em blocos menores", () => {
+    const texto =
+      "Esta é uma frase curta. Esta frase é propositalmente mais longa para testar a capacidade de quebra de blocos em sentenças menores para que a API de síntese de voz nativa não congele no Webview do celular.";
+    const blocos = splitTextIntoChunks(texto, 50);
+    expect(blocos.length).toBeGreaterThan(1);
+    for (const bloco of blocos) expect(bloco.length).toBeLessThanOrEqual(60);
+  });
+});

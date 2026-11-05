@@ -2,6 +2,7 @@
 
 import { exigirAlgumaPermissao } from "@/lib/auth";
 import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
+import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
 
 type RephrasedArticle = {
   new_title: string;
@@ -91,7 +92,7 @@ function parseRephrasedArticle(value: string): RephrasedArticle {
 
   return {
     new_title: parsed.new_title,
-    new_text: parsed.new_text,
+    new_text: sanitizarHtmlArtigo(parsed.new_text),
     summary: parsed.summary,
   };
 }

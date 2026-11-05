@@ -9,6 +9,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // O Next resolve "server-only" internamente; nos testes vira um módulo vazio.
+      'server-only': path.resolve(__dirname, './src/test/server-only-vazio.ts'),
     },
   },
 });

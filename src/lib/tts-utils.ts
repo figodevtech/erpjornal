@@ -1,7 +1,16 @@
 /**
- * Utilitários para o Serviço de Text-to-Speech (TTS).
- * Focado em sanetizar o HTML do artigo para leitura limpa por síntese de voz.
+ * Utilitários para o Serviço de Text-to-Speech (TTS) e extração de texto.
+ *
+ * Seguro para o navegador. NÃO é sanitização de HTML para renderizar:
+ * para isso use sanitizarHtmlArtigo (src/lib/html/sanitize.ts, só servidor).
  */
+
+/** Remove blocos cujo conteúdo não é texto legível (scripts, estilos). */
+function removerConteudoNaoTextual(html: string): string {
+    return html
+        .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, "")
+        .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, "");
+}
 
 /**
  * Extrai texto plano de uma string HTML, mantendo quebras de linha básicas.
@@ -11,7 +20,7 @@
 export function extractPlainTextFromHtml(html: string): string {
     if (!html) return "";
 
-    let clean = sanitizeHtmlForRender(html);
+    let clean = removerConteudoNaoTextual(html);
 
     // 1. Substitui tags comuns de bloco por quebra de linha para manter a pausabilidade natural
     clean = clean
@@ -43,20 +52,6 @@ export function extractPlainTextFromHtml(html: string): string {
         .map(line => line.trim())
         .filter(line => line.length > 0)
         .join('\n\n');
-}
-
-export function sanitizeHtmlForRender(html: string): string {
-    if (!html) return "";
-
-    return html
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-        .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "")
-        .replace(/\son\w+="[^"]*"/gi, "")
-        .replace(/\son\w+='[^']*'/gi, "")
-        .replace(/\sstyle="[^"]*"/gi, "")
-        .replace(/\sstyle='[^']*'/gi, "")
-        .replace(/\sclass="[^"]*"/gi, "")
-        .replace(/\sclass='[^']*'/gi, "");
 }
 
 /**

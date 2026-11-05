@@ -378,3 +378,23 @@ html:not(.dark) .article-prose figcaption * {
 .erp-dialog-scrollbar::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, #f87171, #b91c1c);
 }
+
+/*
+ * Imagens do corpo das matérias (editor TipTap e portal).
+ * O editor grava data-size/data-align; classes e estilos inline são removidos
+ * pelo sanitizador, então a aparência é definida aqui.
+ */
+:is(.article-prose, .ProseMirror) img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  width: 500px;
+  margin: 1.5rem auto;
+  border-radius: 1rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+:is(.article-prose, .ProseMirror) img[data-size="small"] { width: 250px; }
+:is(.article-prose, .ProseMirror) img[data-size="large"] { width: 800px; margin-block: 2rem; }
+:is(.article-prose, .ProseMirror) img[data-size="full"] { width: 100%; margin-block: 2.5rem; }
+:is(.article-prose, .ProseMirror) img[data-align="left"] { margin-left: 0; margin-right: auto; }
+:is(.article-prose, .ProseMirror) img[data-align="right"] { margin-left: auto; margin-right: 0; }

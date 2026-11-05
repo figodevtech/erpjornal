@@ -87,8 +87,12 @@ export function SelectionCard({
 
     setLoading(true);
     try {
-      await republishOriginalWithCredits(item.id, categoriaId || undefined);
-      toast.success("Conteudo original republicado com creditos.");
+      const res = await republishOriginalWithCredits(item.id, categoriaId || undefined);
+      toast.success(
+        res.publicado
+          ? "Conteúdo original republicado com créditos."
+          : "Conteúdo enviado para revisão. Um editor fará a publicação."
+      );
       router.refresh();
     } catch (err: unknown) {
       toast.error(getErrorMessage(err));

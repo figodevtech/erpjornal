@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 
 import { exigirAlgumaPermissao, exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
 import {
   isStatusArtigo,
   resolverStatusAoSalvar,
@@ -26,7 +27,8 @@ export async function saveArticle(formData: FormData) {
   const titulo = formData.get("titulo") as string;
   const slug = formData.get("slug") as string;
   const resumo = formData.get("resumo") as string;
-  const corpoTexto = formData.get("corpoTexto") as string;
+  // Barreira contra XSS: todo HTML de matéria é sanitizado antes de ir para o banco.
+  const corpoTexto = sanitizarHtmlArtigo(formData.get("corpoTexto") as string);
   const categoriaId = formData.get("categoriaId") as string;
   const statusSolicitado = formData.get("status");
   const dataSolicitada = lerDataPublicacao(formData.get("dataPublicacao") as string | null);

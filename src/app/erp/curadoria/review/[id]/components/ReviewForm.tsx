@@ -117,7 +117,11 @@ export function ReviewForm({
         urlImagemOg: imagemCapa || undefined,
       });
       if (res.success) {
-        toast.success("Artigo publicado com sucesso.");
+        toast.success(
+          res.publicado
+            ? "Artigo publicado com sucesso."
+            : "Artigo enviado para revisão. Um editor fará a publicação."
+        );
         setConfirmarAcao(null);
         router.push("/erp/artigos");
       }
@@ -157,7 +161,11 @@ export function ReviewForm({
     try {
       const res = await republishOriginalWithCredits(item.id, categoriaId || undefined, imagemCapa || undefined);
       if (res.success) {
-        toast.success("Conteudo original republicado com creditos.");
+        toast.success(
+          res.publicado
+            ? "Conteúdo original republicado com créditos."
+            : "Conteúdo enviado para revisão. Um editor fará a publicação."
+        );
         setConfirmarAcao(null);
         router.push("/erp/artigos");
       }

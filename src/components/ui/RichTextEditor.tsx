@@ -18,28 +18,22 @@ interface RichTextEditorProps {
   placeholder?: string;
 }
 
-// Extensão Customizada de Imagem para Suportar Tamanhos
+// Extensão customizada de imagem com tamanho e alinhamento.
+// Grava data-size/data-align (aceitos pelo sanitizador); a aparência fica no CSS
+// (globals.css: `img[data-size]`). Antes gravava class/style, que eram descartados
+// no portal e não eram lidos de volta, então o tamanho se perdia ao reabrir.
 const CustomImage = Image.extend({
   addAttributes() {
     return {
       ...this.parent?.(),
       size: {
         default: 'medium',
-        renderHTML: attributes => {
-          if (attributes.size === 'small') return { class: 'w-[250px] mx-auto block rounded-2xl shadow-lg my-6' };
-          if (attributes.size === 'large') return { class: 'w-[800px] max-w-full mx-auto block rounded-2xl shadow-xl my-8' };
-          if (attributes.size === 'full') return { class: 'w-full block rounded-2xl shadow-2xl my-10' };
-          return { class: 'w-[500px] max-w-full mx-auto block rounded-2xl shadow-lg my-6' }; // medium
-        },
+        renderHTML: attributes => ({ 'data-size': attributes.size || 'medium' }),
         parseHTML: element => element.getAttribute('data-size') || 'medium',
       },
       align: {
         default: 'center',
-        renderHTML: attributes => {
-          if (attributes.align === 'left') return { style: 'margin-left: 0; margin-right: auto;' };
-          if (attributes.align === 'right') return { style: 'margin-left: auto; margin-right: 0;' };
-          return { style: 'margin-left: auto; margin-right: auto;' };
-        },
+        renderHTML: attributes => ({ 'data-align': attributes.align || 'center' }),
         parseHTML: element => element.getAttribute('data-align') || 'center',
       }
     }

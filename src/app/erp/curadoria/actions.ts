@@ -4,10 +4,11 @@ import Parser from "rss-parser";
 import { revalidatePath } from "next/cache";
 import { gunzipSync, inflateSync } from "node:zlib";
 
-import { exigirPermissao } from "@/lib/auth";
+import { exigirPermissao, temPermissao, type SessaoAplicacao } from "@/lib/auth";
 import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
-import { extractPlainTextFromHtml, sanitizeHtmlForRender } from "@/lib/tts-utils";
+import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
+import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
@@ -40,10 +41,92 @@ type OpenAIResponseBody = {
   };
 };
 
-type SessionUserWithName = {
-  name?: string | null;
-  nome?: string | null;
+type DadosArtigoCuradoria = {
+  titulo: string;
+  resumo: string;
+  corpoTexto: string;
+  categoriaId: string | null;
+  urlImagemOg: string | null;
+  urlFonte: string | null;
+  autorExterno: string | null;
 };
+
+/**
+ * Cria o artigo vindo da curadoria respeitando o fluxo editorial:
+ * - com `artigos:publicar`: publica imediatamente;
+ * - sem: o artigo vai para "revisão" e um editor publica depois.
+ * Grava versão inicial e log de auditoria na mesma transação.
+ */
+async function criarArtigoDaCuradoria(
+  sessao: SessaoAplicacao,
+  itemRssId: string,
+  dados: DadosArtigoCuradoria
+) {
+  const publicar = temPermissao(sessao, "artigos:publicar");
+  const status = publicar ? STATUS_ARTIGO.publicado : STATUS_ARTIGO.revisao;
+  const corpoTexto = sanitizarHtmlArtigo(dados.corpoTexto);
+  const slug = await createUniqueSlug(dados.titulo);
+
+  const artigo = await prisma.$transaction(async (tx) => {
+    const criado = await tx.artigo.create({
+      data: {
+        titulo: dados.titulo,
+        slug,
+        resumo: dados.resumo,
+        corpoTexto,
+        categoriaId: dados.categoriaId,
+        autorId: sessao.user.id,
+        status,
+        dataPublicacao: publicar ? new Date() : null,
+        ehPremium: false,
+        canaisPublicacao: ["portal"],
+        urlImagemOg: dados.urlImagemOg,
+        urlFonte: dados.urlFonte,
+        autorExterno: dados.autorExterno,
+        revisorHumano: sessao.user.name || "Editor",
+        itemRssId,
+      },
+    });
+
+    await tx.versaoArtigo.create({
+      data: {
+        artigoId: criado.id,
+        titulo: criado.titulo,
+        resumo: criado.resumo,
+        corpoTexto: criado.corpoTexto,
+        status: criado.status,
+        usuarioId: sessao.user.id,
+        resumoMudancas: "Criado a partir da curadoria RSS",
+      },
+    });
+
+    await tx.logAcao.create({
+      data: {
+        usuarioId: sessao.user.id,
+        acao: publicar ? "CURADORIA_PUBLICACAO" : "CURADORIA_ENVIO_REVISAO",
+        artigoId: criado.id,
+      },
+    });
+
+    // O item fica "published" nos dois casos: o artigo já existe (item_rss_id é único).
+    await tx.itemRssBruto.update({
+      where: { id: itemRssId },
+      data: { status: "published" },
+    });
+
+    return criado;
+  });
+
+  revalidatePath("/erp/curadoria/dashboard");
+  revalidatePath("/erp/artigos");
+  revalidatePath("/erp/artigos/kanban");
+  if (publicar) {
+    revalidatePath("/");
+    revalidatePath(`/noticia/${artigo.slug}`);
+  }
+
+  return { success: true, artigoId: artigo.id, publicado: publicar };
+}
 
 const curadoriaRewriteSchema = {
   type: "object",
@@ -109,7 +192,8 @@ function parseCuradoriaAIResponse(value: string): CuradoriaAIResponse {
   return {
     ai_title: parsed.ai_title,
     ai_lead: parsed.ai_lead,
-    ai_body: parsed.ai_body,
+    // A saída da IA deriva de conteúdo de terceiros (possível prompt injection).
+    ai_body: sanitizarHtmlArtigo(parsed.ai_body),
     ai_tags: parsed.ai_tags,
     word_count: parsed.word_count,
   };
@@ -490,7 +574,7 @@ function normalizeArticleHtml(html: string) {
     .replace(/<br\s*\/?>\s*(<br\s*\/?>\s*)+/gi, "<br />")
     .replace(/<p>\s*(?:&nbsp;|\s)*<\/p>/gi, "");
 
-  const sanitized = sanitizeHtmlForRender(stripped)
+  const sanitized = sanitizarHtmlArtigo(stripped)
     .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
     .replace(/<video[\s\S]*?<\/video>/gi, "")
     .replace(/<script[\s\S]*?<\/script>/gi, "")
@@ -506,8 +590,9 @@ function normalizeArticleHtml(html: string) {
     return "";
   }
 
+  // Sanitiza de novo na saída: os recortes por regex acima não podem recompor HTML perigoso.
   if (/<(p|h2|h3|blockquote|ul|ol|li|figure|img|figcaption)\b/i.test(sanitized)) {
-    return sanitized;
+    return sanitizarHtmlArtigo(sanitized);
   }
 
   const plainText = extractPlainTextFromHtml(sanitized);
@@ -677,7 +762,7 @@ export async function rewriteWithAI(itemId: string) {
     }
   }
 
-  const cleanDescription = sanitizeHtmlForRender(sourceContent)
+  const cleanDescription = sanitizarHtmlArtigo(sourceContent)
     .replace(/<img[^>]*>/gi, "")
     .replace(/<figure[\s\S]*?<\/figure>/gi, "")
     .trim();
@@ -798,7 +883,7 @@ export async function saveRSSRewriteDraft(itemId: string, draft: CuradoriaRewrit
   const alteracoesHumanas = {
     titulo: draft.titulo,
     resumo: draft.resumo,
-    corpoTexto: draft.corpoTexto,
+    corpoTexto: sanitizarHtmlArtigo(draft.corpoTexto),
     categoriaId: draft.categoriaId || null,
     urlImagemOg: draft.urlImagemOg || null,
     salvoEm: new Date().toISOString(),
@@ -857,39 +942,16 @@ export async function approveAndPublish(
     resumo: finalData.resumo,
     bodyHtml: finalData.corpoTexto,
   });
-  const slug = await createUniqueSlug(finalData.titulo);
 
-  const artigo = await prisma.artigo.create({
-    data: {
-      titulo: finalData.titulo,
-      slug,
-      resumo: finalData.resumo,
-      corpoTexto: finalData.corpoTexto,
-      categoriaId: category?.id,
-      autorId: session.user.id,
-      status: STATUS_ARTIGO.publicado,
-      dataPublicacao: new Date(),
-      ehPremium: false,
-      canaisPublicacao: ["portal"],
-      urlImagemOg: finalData.urlImagemOg || item.thumbnail,
-      urlFonte: null,
-      autorExterno: null,
-      revisorHumano:
-        (session.user as SessionUserWithName).name || (session.user as SessionUserWithName).nome || "Editor",
-      itemRssId: item.id,
-    },
+  return criarArtigoDaCuradoria(session, item.id, {
+    titulo: finalData.titulo,
+    resumo: finalData.resumo,
+    corpoTexto: finalData.corpoTexto,
+    categoriaId: category?.id ?? null,
+    urlImagemOg: finalData.urlImagemOg || item.thumbnail,
+    urlFonte: null,
+    autorExterno: null,
   });
-
-  await prisma.itemRssBruto.update({
-    where: { id: itemId },
-    data: { status: "published" },
-  });
-
-  revalidatePath("/erp/curadoria/dashboard");
-  revalidatePath("/erp/artigos");
-  revalidatePath("/");
-  revalidatePath(`/noticia/${artigo.slug}`);
-  return { success: true, artigoId: artigo.id };
 }
 
 export async function republishOriginalWithCredits(
@@ -908,7 +970,6 @@ export async function republishOriginalWithCredits(
   const category =
     (categoriaId ? await prisma.categoria.findUnique({ where: { id: categoriaId } }) : null) ||
     (await prisma.categoria.findFirst());
-  const slug = await createUniqueSlug(item.tituloOriginal);
 
   let description = item.description || "";
   let thumbnail = item.thumbnail;
@@ -958,35 +1019,13 @@ export async function republishOriginalWithCredits(
     bodyHtml: corpoTexto,
   });
 
-  const artigo = await prisma.artigo.create({
-    data: {
-      titulo: item.tituloOriginal,
-      slug,
-      resumo,
-      corpoTexto,
-      categoriaId: category?.id,
-      autorId: session.user.id,
-      status: STATUS_ARTIGO.publicado,
-      dataPublicacao: new Date(),
-      ehPremium: false,
-      canaisPublicacao: ["portal"],
-      urlImagemOg: coverImageUrl || thumbnail,
-      urlFonte: item.linkOriginal,
-      autorExterno: item.source.name,
-      revisorHumano:
-        (session.user as SessionUserWithName).name || (session.user as SessionUserWithName).nome || "Editor",
-      itemRssId: item.id,
-    },
+  return criarArtigoDaCuradoria(session, item.id, {
+    titulo: item.tituloOriginal,
+    resumo,
+    corpoTexto,
+    categoriaId: category?.id ?? null,
+    urlImagemOg: coverImageUrl || thumbnail,
+    urlFonte: item.linkOriginal,
+    autorExterno: item.source.name,
   });
-
-  await prisma.itemRssBruto.update({
-    where: { id: itemId },
-    data: { status: "published" },
-  });
-
-  revalidatePath("/erp/curadoria/dashboard");
-  revalidatePath("/erp/artigos");
-  revalidatePath("/");
-  revalidatePath(`/noticia/${artigo.slug}`);
-  return { success: true, artigoId: artigo.id };
 }

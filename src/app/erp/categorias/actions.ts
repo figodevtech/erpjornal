@@ -4,15 +4,8 @@ import { revalidatePath } from "next/cache";
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/auditoria";
-
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
-}
+import { slugify } from "@/lib/slug";
+import { revalidarCategorias } from "@/lib/cache/portal";
 
 function isPrismaError(error: unknown): error is { code: string } {
   return typeof error === "object" && error !== null && "code" in error;
@@ -58,7 +51,7 @@ export async function salvarCategoria(formData: FormData) {
   revalidatePath("/erp/categorias");
   revalidatePath("/erp/artigos/novo");
   revalidatePath("/erp/artigos/[id]/edit", "page");
-  revalidatePath("/categoria/[slug]", "page");
+  await revalidarCategorias();
 }
 
 export async function excluirCategoria(id: string) {
@@ -88,4 +81,5 @@ export async function excluirCategoria(id: string) {
   revalidatePath("/erp/categorias");
   revalidatePath("/erp/artigos/novo");
   revalidatePath("/erp/artigos/[id]/edit", "page");
+  await revalidarCategorias();
 }

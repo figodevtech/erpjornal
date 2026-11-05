@@ -6,6 +6,7 @@ import { AD_PAGE_TYPES, AD_PLACEMENTS, getAdPlacement } from "@/lib/ads";
 import { exigirPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { registrarAuditoria } from "@/lib/auditoria";
+import { revalidarPortalInteiro } from "@/lib/cache/portal";
 
 function readString(formData: FormData, key: string) {
   return (formData.get(key)?.toString() ?? "").trim();
@@ -69,9 +70,8 @@ export async function salvarAnuncio(formData: FormData) {
   }
 
   revalidatePath("/erp/anuncios");
-  revalidatePath("/", "page");
-  revalidatePath("/noticia/[slug]", "page");
-  revalidatePath("/categoria/[slug]", "page");
+  // Anúncios aparecem em todas as páginas do portal.
+  revalidarPortalInteiro();
 }
 
 export async function excluirAnuncio(id: string) {
@@ -83,7 +83,6 @@ export async function excluirAnuncio(id: string) {
   });
 
   revalidatePath("/erp/anuncios");
-  revalidatePath("/", "page");
-  revalidatePath("/noticia/[slug]", "page");
-  revalidatePath("/categoria/[slug]", "page");
+  // Anúncios aparecem em todas as páginas do portal.
+  revalidarPortalInteiro();
 }

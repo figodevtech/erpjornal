@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { TAG_CATEGORIAS } from "@/lib/cache/portal";
 import { prisma } from "@/lib/prisma";
 import { redis, redisKeys } from "@/lib/redis";
 
@@ -41,5 +42,7 @@ export const getCachedCategories = unstable_cache(
   ["public-categories"],
   {
     revalidate: 3600, // Sync com o TTL do Redis
+    // Invalidada ao salvar/excluir categoria (revalidarCategorias em src/lib/cache/portal.ts).
+    tags: [TAG_CATEGORIAS],
   }
 );

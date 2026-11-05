@@ -12,6 +12,8 @@ import { fetchExterno, lerCorpoLimitado, validarUrlExterna } from "@/lib/http/fe
 import { registrarAuditoria } from "@/lib/auditoria";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
+import { slugify } from "@/lib/slug";
+import { revalidarMateriasNoPortal } from "@/lib/cache/portal";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
@@ -133,8 +135,7 @@ async function criarArtigoDaCuradoria(
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
   if (publicar) {
-    revalidatePath("/");
-    revalidatePath(`/noticia/${artigo.slug}`);
+    revalidarMateriasNoPortal();
   }
 
   return { success: true, artigoId: artigo.id, publicado: publicar };
@@ -520,15 +521,6 @@ async function findFeedItemInSource(sourceUrl: string, guid?: string | null, lin
   return (
     feed.items.find((item) => (guid && item.guid === guid) || (link && item.link === link)) || null
   );
-}
-
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "");
 }
 
 async function createUniqueSlug(title: string) {

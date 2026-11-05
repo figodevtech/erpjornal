@@ -14,18 +14,9 @@ import {
   mensagemErroUpload,
   validarArquivoParaBucket,
 } from "@/lib/storage/buckets";
+import { slugify } from "@/lib/slug";
 
 const REVISTA_COVERS_BUCKET = STORAGE_BUCKETS.revistaCovers;
-
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)+/g, "")
-    .slice(0, 80);
-}
 
 function extensionFromMimeType(mimeType: string) {
   if (mimeType.includes("png")) return "png";
@@ -62,6 +53,7 @@ export async function saveRevista(formData: FormData) {
   revalidatePath("/erp/revistas");
   revalidatePath(`/erp/revistas/${revista.id}`);
   revalidatePath("/");
+  revalidatePath("/edicoes-anteriores");
   revalidatePath(`/revistas/${revista.id}`);
   redirect(`/erp/revistas/${revista.id}`);
 }
@@ -96,7 +88,7 @@ export async function updateRevistaCover(formData: FormData) {
 
   const supabase = criarClienteSupabaseAdmin();
   const ext = extensionFromMimeType(file.type);
-  const path = `covers/${slugify(revista.titulo) || "revista"}-${randomUUID()}.${ext}`;
+  const path = `covers/${slugify(revista.titulo, 80) || "revista"}-${randomUUID()}.${ext}`;
   const bytes = Buffer.from(await file.arrayBuffer());
 
   const { error } = await supabase.storage.from(REVISTA_COVERS_BUCKET.name).upload(path, bytes, {
@@ -118,6 +110,7 @@ export async function updateRevistaCover(formData: FormData) {
   revalidatePath("/erp/revistas");
   revalidatePath(`/erp/revistas/${revistaId}`);
   revalidatePath("/");
+  revalidatePath("/edicoes-anteriores");
   revalidatePath(`/revistas/${revistaId}`);
 
   return { url: data.publicUrl };
@@ -167,5 +160,6 @@ export async function deleteRevista(id: string) {
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
   revalidatePath("/");
+  revalidatePath("/edicoes-anteriores");
   revalidatePath(`/revistas/${id}`);
 }

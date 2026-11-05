@@ -22,6 +22,7 @@ type RedisPipelineLike = {
 export type RedisLike = {
   get<T = unknown>(key: string): Promise<T | null>;
   set(key: string, value: unknown, options?: Record<string, unknown>): Promise<unknown>;
+  del(...keys: string[]): Promise<number>;
   incr(key: string): Promise<number>;
   zincrby(key: string, increment: number, member: string): Promise<number>;
   zadd(key: string, input: { score: number; member: string }): Promise<number>;
@@ -40,6 +41,9 @@ const noopRedis: RedisLike = {
   },
   async set() {
     return null;
+  },
+  async del() {
+    return 0;
   },
   async incr() {
     return 0;
@@ -77,6 +81,9 @@ const configuredRedis: RedisLike | null = upstashRedis
       },
       async set(key: string, value: unknown, options?: Record<string, unknown>) {
         return upstashRedis.set(key, value, options as never);
+      },
+      async del(...keys: string[]) {
+        return Number(await upstashRedis.del(...keys));
       },
       async incr(key: string) {
         return Number(await upstashRedis.incr(key));

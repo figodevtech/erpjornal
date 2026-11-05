@@ -53,12 +53,6 @@ export default async function ERPDashboardPage() {
               </div>
               <h2 className="font-bold text-gray-900">Top 5 - Mais Visualizadas (Tempo Real)</h2>
             </div>
-            <Link
-              href="/erp/analytics"
-              className="flex min-h-[44px] min-w-[80px] items-center justify-center rounded-lg p-2 text-xs font-bold uppercase tracking-widest text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
-            >
-              Ver tudo
-            </Link>
           </div>
 
           <div className="flex-1">

@@ -1,86 +1,76 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+
+import { isModuleEnabled } from "@/lib/config/modules";
+import { filtroArtigoNoAr } from "@/lib/data/artigos";
 import { prisma } from "@/lib/prisma";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { getSiteUrl } from "@/lib/site-url";
+
+// Regenera a cada hora: antes o sitemap era gerado só no build e nunca incluía matérias novas.
+export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = getSiteUrl();
+  const agora = new Date();
 
-  // 1. URLs base fixas
-  const standardPgs: MetadataRoute.Sitemap = [
-    {
-      url: `${baseUrl}`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-    },
-    {
-      url: `${baseUrl}/podcasts`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/videos`,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 0.6,
-    },
+  const fixas: MetadataRoute.Sitemap = [
+    { url: baseUrl, lastModified: agora, changeFrequency: "hourly", priority: 1.0 },
+    { url: `${baseUrl}/edicoes-anteriores`, lastModified: agora, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${baseUrl}/sobre`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/contato`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/assine`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${baseUrl}/politica-de-privacidade`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
-  // 2. Busca de artigos indexáveis (Publicados)
-  const artigos = await prisma.artigo.findMany({
-    where: {
-      status: STATUS_ARTIGO.publicado,
-      dataPublicacao: { lte: new Date() },
-    },
-    select: {
-      slug: true,
-      atualizadoEm: true,
-    },
-    orderBy: {
-      dataPublicacao: "desc",
-    },
-    take: 5000, 
-  });
+  // Seções desligadas em src/lib/config/modules.ts não entram no sitemap.
+  if (isModuleEnabled("podcasts")) {
+    fixas.push({ url: `${baseUrl}/podcasts`, lastModified: agora, changeFrequency: "daily", priority: 0.7 });
+  }
+  if (isModuleEnabled("videos")) {
+    fixas.push({ url: `${baseUrl}/videos`, lastModified: agora, changeFrequency: "daily", priority: 0.6 });
+  }
 
-  const artigoPgs: MetadataRoute.Sitemap = artigos.map((art) => ({
-    url: `${baseUrl}/noticia/${art.slug}`,
-    lastModified: art.atualizadoEm,
-    changeFrequency: "weekly",
-    priority: 0.8,
-  }));
-
-  // 3. Busca de Categorias
-  const categories = await prisma.categoria.findMany({
-    select: { slug: true }
-  });
-
-  const categoryPgs: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: `${baseUrl}/categoria/${cat.slug}`,
-    lastModified: new Date(), 
-    changeFrequency: "daily",
-    priority: 0.9,
-  }));
-
-  // 4. Políticos (Perfil individual)
-  // 4. Podcast Episodes
-  const podcasts = await prisma.episodioPodcast.findMany({
-    where: { status: 'published' },
-    select: { slug: true, atualizadoEm: true }
-  });
-
-  const podcastPgs: MetadataRoute.Sitemap = podcasts.map((pod) => ({
-    url: `${baseUrl}/podcasts/${pod.slug}`,
-    lastModified: pod.atualizadoEm,
-    changeFrequency: "monthly",
-    priority: 0.7,
-  }));
+  const [artigos, categorias, revistas, podcasts] = await Promise.all([
+    prisma.artigo.findMany({
+      where: filtroArtigoNoAr(agora),
+      select: { slug: true, atualizadoEm: true },
+      orderBy: { dataPublicacao: "desc" },
+      take: 5000,
+    }),
+    prisma.categoria.findMany({ select: { slug: true } }),
+    prisma.revista.findMany({ select: { id: true, updatedAt: true } }),
+    isModuleEnabled("podcasts")
+      ? prisma.episodioPodcast.findMany({
+          where: { status: "published" },
+          select: { slug: true, atualizadoEm: true },
+        })
+      : Promise.resolve([]),
+  ]);
 
   return [
-    ...standardPgs, 
-    ...categoryPgs, 
-    ...artigoPgs,
-    ...podcastPgs
+    ...fixas,
+    ...categorias.map((categoria) => ({
+      url: `${baseUrl}/categoria/${categoria.slug}`,
+      lastModified: agora,
+      changeFrequency: "daily" as const,
+      priority: 0.9,
+    })),
+    ...artigos.map((artigo) => ({
+      url: `${baseUrl}/noticia/${artigo.slug}`,
+      lastModified: artigo.atualizadoEm,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
+    ...revistas.map((revista) => ({
+      url: `${baseUrl}/revistas/${revista.id}`,
+      lastModified: revista.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+    ...podcasts.map((podcast) => ({
+      url: `${baseUrl}/podcasts/${podcast.slug}`,
+      lastModified: podcast.atualizadoEm,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
   ];
 }

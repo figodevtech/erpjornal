@@ -1,40 +1,56 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi } from 'vitest';
-import sitemap from '../sitemap';
-import { prisma } from '@/lib/prisma';
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock('@/lib/prisma', () => ({
+import { prisma } from "@/lib/prisma";
+
+import sitemap from "../sitemap";
+
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     artigo: { findMany: vi.fn() },
-    category: { findMany: vi.fn() },
-    podcastEpisode: { findMany: vi.fn() },
+    categoria: { findMany: vi.fn() },
+    revista: { findMany: vi.fn() },
+    episodioPodcast: { findMany: vi.fn() },
   },
 }));
 
-describe('Sitemap Generator', () => {
-  it('should include fixed routes and dynamic routes', async () => {
-     
+describe("sitemap", () => {
+  beforeEach(() => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://revistagestao.com.br");
     vi.mocked(prisma.artigo.findMany).mockResolvedValue([
-      { slug: 'artigo-1', atualizadoEm: new Date() }
-    ] as any);
-    
-     
-    vi.mocked(prisma.categoria.findMany).mockResolvedValue([
-        { slug: 'politica' }
-    ] as any);
+      { slug: "artigo-1", atualizadoEm: new Date() },
+    ] as never);
+    vi.mocked(prisma.categoria.findMany).mockResolvedValue([{ slug: "economia" }] as never);
+    vi.mocked(prisma.revista.findMany).mockResolvedValue([{ id: "rev-1", updatedAt: new Date() }] as never);
+    vi.mocked(prisma.episodioPodcast.findMany).mockResolvedValue([] as never);
+  });
 
-     
-    vi.mocked(prisma.episodioPodcast.findMany).mockResolvedValue([
-        { slug: 'podcast-1', atualizadoEm: new Date() }
-    ] as any);
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
 
-    const result = await sitemap();
+  it("inclui home, institucionais, categorias, matérias e revistas com a URL do site", async () => {
+    const urls = (await sitemap()).map((item) => item.url);
 
-    const urls = result.map(u => u.url);
-    
-    expect(urls).toContain('https://revistagestao.com.br');
-    expect(urls).toContain('https://revistagestao.com.br/noticia/artigo-1');
-    expect(urls).toContain('https://revistagestao.com.br/categoria/politica');
-    expect(urls).toContain('https://revistagestao.com.br/podcasts/podcast-1');
+    expect(urls).toContain("https://revistagestao.com.br");
+    expect(urls).toContain("https://revistagestao.com.br/sobre");
+    expect(urls).toContain("https://revistagestao.com.br/politica-de-privacidade");
+    expect(urls).toContain("https://revistagestao.com.br/categoria/economia");
+    expect(urls).toContain("https://revistagestao.com.br/noticia/artigo-1");
+    expect(urls).toContain("https://revistagestao.com.br/revistas/rev-1");
+  });
+
+  it("não lista seções desligadas (podcasts e vídeos estão desativados)", async () => {
+    const urls = (await sitemap()).map((item) => item.url);
+
+    expect(urls.some((url) => url.includes("/podcasts"))).toBe(false);
+    expect(urls.some((url) => url.includes("/videos"))).toBe(false);
+    expect(prisma.episodioPodcast.findMany).not.toHaveBeenCalled();
+  });
+
+  it("só lista matérias publicadas e já no ar (agendadas ficam de fora)", async () => {
+    await sitemap();
+
+    const consulta = vi.mocked(prisma.artigo.findMany).mock.calls[0][0];
+    expect(consulta?.where).toMatchObject({ status: "publicado", dataPublicacao: { lte: expect.any(Date) } });
   });
 });

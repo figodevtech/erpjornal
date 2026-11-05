@@ -51,7 +51,6 @@ export default function Footer() {
             <nav aria-label="Links corporativos">
               <ul className="space-y-3">
                 <li><Link href="/sobre" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Sobre Nós</Link></li>
-                <li><Link href="/expediente" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Expediente</Link></li>
                 <li><Link href="/politica-de-privacidade" className="text-[15px] font-semibold text-slate-200 transition-colors hover:text-white focus-visible:text-red-300 outline-none">Política de Privacidade</Link></li>
               </ul>
             </nav>

@@ -213,7 +213,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
                     <label htmlFor="login-password" className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest">
                       Senha
                     </label>
-                    <Link href="/recuperar" className="text-[10px] font-bold text-red-600 hover:text-red-700 transition-colors uppercase">
+                    <Link href="/redefinir-senha" className="text-[10px] font-bold text-red-600 hover:text-red-700 transition-colors uppercase">
                       Esqueci
                     </Link>
                   </div>

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Globe, EyeOff } from "lucide-react";
-import { MediaKit, MediaKitStatus } from "@prisma/client";
+import type { MediaKit, MediaKitStatus } from "@/generated/prisma/browser";
 import { updateMediaKit, deleteMediaKit, publishMediaKit } from "../../actions";
 import { MediaKitTheme } from "@/types/media-kit";
 

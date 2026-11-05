@@ -1,4 +1,4 @@
-import type { StatusArtigo } from "@prisma/client";
+import type { StatusArtigo } from "@/generated/prisma/enums";
 
 export type { StatusArtigo };
 

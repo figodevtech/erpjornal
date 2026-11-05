@@ -10,8 +10,10 @@
  */
 import "dotenv/config";
 
-import { Prisma, PrismaClient, type StatusArtigo } from "@prisma/client";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+import { Prisma, type StatusArtigo } from "../src/generated/prisma/client";
+import { prisma } from "../src/lib/prisma";
 
 import { PERFIS, PERMISSOES, PERMISSOES_POR_PERFIL, type NomePerfil } from "./seed-data/acesso";
 import {
@@ -28,7 +30,6 @@ import {
 import { idEstavel } from "./seed-data/ids";
 import { ARTIGOS_EDICAO_2, REVISTA_EDICAO_2 } from "./seed-data/revista-edicao-2";
 
-const prisma = new PrismaClient();
 const HORA = 60 * 60 * 1000;
 const resumo: string[] = [];
 

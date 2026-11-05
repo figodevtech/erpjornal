@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { exigirPermissao, obterSessao } from "@/lib/auth";
-import { MediaKitStatus, Prisma } from "@prisma/client";
+import { Prisma, type MediaKitStatus } from "@/generated/prisma/client";
 import { MediaKitTheme, MediaKitSectionWithData } from "@/types/media-kit";
 import { toMediaKitSectionWithData } from "./section-mappers";
 

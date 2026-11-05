@@ -3,7 +3,7 @@ import { LayoutTemplate, Globe, FileEdit, Archive } from "lucide-react";
 
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { MediaKitStatus } from "@prisma/client";
+import type { MediaKitStatus } from "@/generated/prisma/enums";
 import { MediaKitTheme } from "@/types/media-kit";
 import NovoMediaKitDialog from "./components/NovoMediaKitDialog";
 

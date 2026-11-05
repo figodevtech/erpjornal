@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";

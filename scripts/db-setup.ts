@@ -8,9 +8,9 @@
  */
 import "dotenv/config";
 
-import { PrismaClient } from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
 
+import { prisma } from "../src/lib/prisma";
 import { STORAGE_BUCKETS } from "../src/lib/storage/buckets";
 
 function exigirEnv(nome: string) {
@@ -50,7 +50,6 @@ async function configurarBuckets() {
 }
 
 async function garantirRls() {
-  const prisma = new PrismaClient();
   try {
     const semRls = await prisma.$queryRaw<{ tabela: string }[]>`
       select c.relname as tabela

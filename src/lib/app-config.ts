@@ -1,7 +1,7 @@
 import "server-only";
 
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
 

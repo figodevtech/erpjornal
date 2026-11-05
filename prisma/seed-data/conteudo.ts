@@ -4,7 +4,7 @@
  * Os textos são fictícios e genéricos, feitos para demonstrar o sistema.
  * Não atribuem fatos, números ou falas a pessoas reais.
  */
-import type { StatusArtigo } from "@prisma/client";
+import type { StatusArtigo } from "../../src/generated/prisma/enums";
 
 import type {
   MediaKitAboutData,

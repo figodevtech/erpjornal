@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { redis, redisKeys } from "@/lib/redis";
 import { globalRateLimit, getIP } from "@/lib/ratelimit";

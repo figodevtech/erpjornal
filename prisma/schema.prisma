@@ -1,11 +1,12 @@
+// Prisma 7: client gerado dentro do projeto (src/generated, fora do git) e
+// conexões configuradas em prisma.config.ts (CLI) e src/lib/prisma.ts (app).
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // Fluxo editorial oficial (6 etapas do Kanban) + arquivado (fora do fluxo).

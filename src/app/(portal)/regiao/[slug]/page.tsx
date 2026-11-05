@@ -2,7 +2,7 @@ import PortalEmptyState from "@/components/portal/PortalEmptyState";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { prisma } from "@/lib/prisma";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { Globe, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

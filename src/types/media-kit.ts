@@ -1,4 +1,4 @@
-import { MediaKitStatus } from "@prisma/client";
+import type { MediaKitStatus } from "@/generated/prisma/enums";
 
 export type MediaKitSectionType = 
   | 'hero' 

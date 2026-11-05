@@ -3,7 +3,6 @@ import { MoveLeft } from "lucide-react";
 
 import { exigirAlgumaPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
 
 import { KanbanBoard } from "../components/KanbanBoard";
 
@@ -60,7 +59,7 @@ export default async function ArticlesKanbanPage() {
             ...a,
             autor: a.autor ? { ...a.autor, nome: a.autor.nome || "Redação" } : null,
             criadoEm: a.criadoEm,
-            status: (a.status as ArticleStatus) || ArticleStatus.pauta,
+            status: a.status,
           }))}
         />
       </div>

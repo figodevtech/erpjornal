@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { getSiteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -31,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 2. Busca de artigos indexáveis (Publicados)
   const artigos = await prisma.artigo.findMany({
     where: {
-      status: ArticleStatus.publicado,
+      status: STATUS_ARTIGO.publicado,
       dataPublicacao: { lte: new Date() },
     },
     select: {

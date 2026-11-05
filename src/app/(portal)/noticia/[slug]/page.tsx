@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
@@ -70,7 +70,7 @@ export default async function NoticiaPage({ params }: PageProps) {
   const artigo = await prisma.artigo.findFirst({
     where: {
       slug,
-      status: ArticleStatus.publicado,
+      status: STATUS_ARTIGO.publicado,
     },
     include: {
       autor: true,

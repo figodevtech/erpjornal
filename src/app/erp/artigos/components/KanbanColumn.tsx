@@ -1,25 +1,23 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import { ArticleStatus } from "@/lib/types/article-status";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { KanbanCard } from "./KanbanCard";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
-export const COLUMNS = [
-  { id: "pauta", label: "Pauta", color: "border-gray-200" },
-  { id: "apuracao", label: "Apuração", color: "border-blue-200" },
-  { id: "redacao", label: "Redação", color: "border-yellow-200" },
-  { id: "revisao", label: "Revisão", color: "border-orange-200" },
-  { id: "juridico", label: "Jurídico", color: "border-red-200" },
-  { id: "publicado", label: "Publicado", color: "border-green-200" },
-];
+import { ETAPAS_FLUXO, STATUS_INFO, type StatusArtigo } from "@/lib/editorial/status";
+
+export const COLUMNS = ETAPAS_FLUXO.map((id) => ({
+  id,
+  label: STATUS_INFO[id].label,
+  color: STATUS_INFO[id].borda,
+}));
 
 interface Article {
   id: string;
   titulo: string;
-  status: ArticleStatus;
+  status: StatusArtigo;
   autor?: { nome: string } | null;
   categoria?: { nome: string; cor?: string | null } | null;
   criadoEm: Date;

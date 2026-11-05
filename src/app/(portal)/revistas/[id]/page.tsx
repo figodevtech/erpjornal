@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 
 export const revalidate = 300;
@@ -20,7 +20,7 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
     where: { id },
     include: {
       artigos: {
-        where: { status: ArticleStatus.publicado },
+        where: { status: STATUS_ARTIGO.publicado },
         orderBy: [{ ordemNaRevista: "asc" }, { criadoEm: "asc" }],
         include: {
           autor: { select: { nome: true } },

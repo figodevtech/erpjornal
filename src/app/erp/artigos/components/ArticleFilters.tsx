@@ -3,6 +3,10 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useState, useTransition } from "react";
 
+import { ETAPAS_FLUXO, STATUS_INFO } from "@/lib/editorial/status";
+
+const OPCOES_STATUS = [...ETAPAS_FLUXO, "arquivado" as const];
+
 export default function ArticleFilters({ initialSearch, initialStatus }: { initialSearch: string; initialStatus: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -47,13 +51,11 @@ export default function ArticleFilters({ initialSearch, initialStatus }: { initi
           className="w-full border-gray-300 rounded-lg shadow-sm p-2.5 border focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow outline-none text-sm bg-white"
         >
           <option value="">Todos os status</option>
-          <option value="pauta">Pauta</option>
-          <option value="apuracao">Apuração</option>
-          <option value="redacao">Redação</option>
-          <option value="revisao">Revisão</option>
-          <option value="juridico">Jurídico</option>
-          <option value="publicado">Publicado</option>
-          <option value="arquivado">Arquivado</option>
+          {OPCOES_STATUS.map((opcao) => (
+            <option key={opcao} value={opcao}>
+              {STATUS_INFO[opcao].label}
+            </option>
+          ))}
         </select>
       </div>
       <button 

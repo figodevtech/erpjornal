@@ -5,7 +5,7 @@ import RevistaCarousel from "@/components/portal/RevistaCarousel";
 import type { RevistaCarouselItem } from "@/components/portal/RevistaCarousel";
 import { getAppConfigSnapshot } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -17,7 +17,7 @@ export default async function PortalHome() {
 
   const artigosBrutos = await prisma.artigo.findMany({
     where: {
-      status: ArticleStatus.publicado,
+      status: STATUS_ARTIGO.publicado,
       revistaId: null,
       OR: [
         { dataPublicacao: { lte: publicationCutoff } },
@@ -57,7 +57,7 @@ export default async function PortalHome() {
   const revistaBruta = await prisma.revista.findFirst({
     where: {
       artigos: {
-        some: { status: ArticleStatus.publicado },
+        some: { status: STATUS_ARTIGO.publicado },
       },
     },
     orderBy: [{ dataPublicacao: "desc" }, { createdAt: "desc" }],
@@ -74,7 +74,7 @@ export default async function PortalHome() {
         },
       },
       artigos: {
-        where: { status: ArticleStatus.publicado },
+        where: { status: STATUS_ARTIGO.publicado },
         orderBy: [{ ordemNaRevista: "asc" }, { dataPublicacao: "desc" }, { criadoEm: "desc" }],
         take: 8,
         select: {

@@ -73,6 +73,16 @@ import { rephraseArticleContent } from "../ai-actions";
 import CoverImageManager from "./CoverImageManager";
 import { useConfig } from "../../config/ErpConfigProvider";
 import DeleteArticleButton from "./DeleteArticleButton";
+import {
+  STATUS_INFO,
+  isStatusArtigo,
+  statusPermitidos,
+  type StatusArtigo,
+} from "@/lib/editorial/status";
+
+function rotuloOpcaoStatus(status: StatusArtigo) {
+  return status === "publicado" ? "Publicar oficialmente" : STATUS_INFO[status].label;
+}
 
 export default function ArticleForm({
   categories,
@@ -85,8 +95,13 @@ export default function ArticleForm({
 }: ArticleFormProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
-  // Inicia com o status do banco, ou "rascunho"
-  const [statusInput, setStatusInput] = useState(initialData?.status || "rascunho");
+  // Inicia com o status do banco, ou "pauta" para matérias novas.
+  const statusAtual = isStatusArtigo(initialData?.status) ? initialData.status : null;
+  const statusDisponiveis = statusPermitidos(canPublish);
+  // Sem permissão de publicar, artigo publicado/arquivado mantém o status (o servidor também garante).
+  const opcoesStatus =
+    statusAtual && !statusDisponiveis.includes(statusAtual) ? [statusAtual] : statusDisponiveis;
+  const [statusInput, setStatusInput] = useState<string>(statusAtual ?? "pauta");
   const [currentText, setCurrentText] = useState(initialData?.corpoTexto || "");
   const [currentTitle, setCurrentTitle] = useState(initialData?.titulo || "");
   const [currentResumo, setCurrentResumo] = useState(initialData?.resumo || "");
@@ -349,11 +364,10 @@ export default function ArticleForm({
                     name="status"
                     value={statusInput}
                     onChange={setStatusInput}
-                    options={[
-                      { value: "rascunho", label: "Salvar como Rascunho" },
-                      { value: "em_revisao", label: "Enviar para Revisão" },
-                      ...(canPublish ? [{ value: "publicado", label: "Publicar Oficialmente" }] : []),
-                    ]}
+                    options={opcoesStatus.map((status) => ({
+                      value: status,
+                      label: rotuloOpcaoStatus(status),
+                    }))}
                   />
                 </div>
                   <div>

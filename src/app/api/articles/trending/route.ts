@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 
 const CACHE_KEY = "trending:artigos:v1";
 const CACHE_TTL = 300; // 5 minutos
@@ -14,7 +14,7 @@ export async function GET() {
 
     const artigos = await prisma.artigo.findMany({
       where: {
-        status: ArticleStatus.publicado,
+        status: STATUS_ARTIGO.publicado,
         revistaId: null,
         dataPublicacao: { lte: new Date() },
         visualizacoes: { gt: 0 },

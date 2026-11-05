@@ -5,7 +5,17 @@ import { redirect } from "next/navigation";
 
 import { exigirAlgumaPermissao, exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
+import {
+  isStatusArtigo,
+  resolverStatusAoSalvar,
+  type StatusArtigo,
+} from "@/lib/editorial/status";
+
+function lerDataPublicacao(valor: string | null): Date | null {
+  if (!valor) return null;
+  const data = new Date(valor);
+  return isNaN(data.getTime()) ? null : data;
+}
 
 export async function saveArticle(formData: FormData) {
   const id = formData.get("id") as string | null;
@@ -18,8 +28,8 @@ export async function saveArticle(formData: FormData) {
   const resumo = formData.get("resumo") as string;
   const corpoTexto = formData.get("corpoTexto") as string;
   const categoriaId = formData.get("categoriaId") as string;
-  const status = formData.get("status") as string;
-  const rawDate = formData.get("dataPublicacao") as string;
+  const statusSolicitado = formData.get("status");
+  const dataSolicitada = lerDataPublicacao(formData.get("dataPublicacao") as string | null);
   const canaisPublicacao = formData.getAll("canaisPublicacao") as string[];
   const urlFonte = (formData.get("urlFonte") as string) || null;
   const autorExterno = (formData.get("autorExterno") as string) || null;
@@ -35,21 +45,8 @@ export async function saveArticle(formData: FormData) {
   const podeEditarTodos = temPermissao(session, "artigos:editar_todos");
   const observacoesLegais = podeEditar ? (formData.get("observacoesLegais") as string) || null : null;
   const statusLegal = podeEditar ? (formData.get("statusLegal") as string) || "pendente" : "pendente";
-  let finalStatus = status;
-
-  if (status === "publicado" && !podePublicar) {
-    finalStatus = "em_revisao";
-  }
-
-  let dataPublicacao: Date | null = null;
-  if (finalStatus === "publicado") {
-    if (rawDate) {
-      const parsedDate = new Date(rawDate);
-      dataPublicacao = !isNaN(parsedDate.getTime()) ? parsedDate : new Date();
-    } else {
-      dataPublicacao = null;
-    }
-  }
+  // Só quem publica pode definir a data de publicação.
+  const dataPublicacaoPermitida = podePublicar ? dataSolicitada : null;
 
   const regiao = (formData.get("regiao") as string) || "Nacional";
   const estadoRaw = (formData.get("estado") as string) || "";
@@ -60,11 +57,9 @@ export async function saveArticle(formData: FormData) {
     slug,
     resumo,
     corpoTexto,
-    status: finalStatus as ArticleStatus,
     categoriaId: categoriaId || null,
     observacoesLegais,
     statusLegal,
-    dataPublicacao,
     regiao,
     estado,
     canaisPublicacao,
@@ -104,12 +99,15 @@ export async function saveArticle(formData: FormData) {
       throw new Error("Voce nao tem permissao para editar este artigo.");
     }
 
-    let finalPublishDate = dataPublicacao;
-    if (finalStatus === "publicado" && !finalPublishDate) {
-      finalPublishDate = existing.dataPublicacao || new Date();
-    } else if (finalStatus !== "publicado") {
-      finalPublishDate = null;
-    }
+    const finalStatus = resolverStatusAoSalvar({
+      solicitado: statusSolicitado,
+      atual: existing.status,
+      podePublicar,
+    });
+    const finalPublishDate =
+      finalStatus === "publicado"
+        ? dataPublicacaoPermitida ?? existing.dataPublicacao ?? new Date()
+        : null;
 
     const revistaId = existing.revistaId;
     const ordemNaRevista = revistaId ? existing.ordemNaRevista : null;
@@ -118,6 +116,7 @@ export async function saveArticle(formData: FormData) {
       where: { id },
       data: {
         ...data,
+        status: finalStatus,
         revistaId,
         dataPublicacao: finalPublishDate,
         ordemNaRevista,
@@ -148,14 +147,20 @@ export async function saveArticle(formData: FormData) {
       },
     });
   } else {
+    const finalStatus = resolverStatusAoSalvar({
+      solicitado: statusSolicitado,
+      atual: null,
+      podePublicar,
+    });
     const revistaId = requestedRevistaId;
     const ordemNaRevista = revistaId ? (await prisma.artigo.count({ where: { revistaId } })) + 1 : null;
 
     const novoArtigo = await prisma.artigo.create({
       data: {
         ...data,
+        status: finalStatus,
         revistaId,
-        dataPublicacao: finalStatus === "publicado" ? dataPublicacao || new Date() : null,
+        dataPublicacao: finalStatus === "publicado" ? dataPublicacaoPermitida ?? new Date() : null,
         autorId: session.user.id,
         ordemNaRevista,
         checagensFato: {
@@ -195,8 +200,13 @@ export async function saveArticle(formData: FormData) {
   redirect(finalRevistaId ? `/erp/revistas/${finalRevistaId}` : "/erp/artigos");
 }
 
-export async function updateArticleStatus(id: string, newStatus: ArticleStatus) {
+export async function updateArticleStatus(id: string, newStatus: StatusArtigo) {
   const session = await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
+
+  // Server actions recebem dados do cliente: valida o status antes de usar.
+  if (!isStatusArtigo(newStatus)) {
+    throw new Error("Status de artigo invalido.");
+  }
 
   const artigo = await prisma.artigo.findUnique({
     where: { id },

@@ -2,7 +2,7 @@ import PortalEmptyState from "@/components/portal/PortalEmptyState";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { Prisma } from "@prisma/client";
 import { Newspaper } from "lucide-react";
 import Image from "next/image";
@@ -47,7 +47,7 @@ export default async function CategoriaPage(props: PageProps) {
 
   const whereClause: Prisma.ArtigoWhereInput = {
     categoriaId: category.id,
-    status: ArticleStatus.publicado,
+    status: STATUS_ARTIGO.publicado,
     revistaId: null,
     OR: [
       { dataPublicacao: { lte: publicationCutoff } },

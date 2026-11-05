@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 
 export type SearchResultType = "noticia" | "autor" | "categoria" | "politico" | "podcast" | "video";
 
@@ -113,7 +113,7 @@ export class SearchService {
   private static async searchArticles(query: string, options: SearchOptions): Promise<SearchResult[]> {
     const now = new Date();
     const where: Prisma.ArtigoWhereInput = {
-      status: ArticleStatus.publicado,
+      status: STATUS_ARTIGO.publicado,
       revistaId: null,
     };
 
@@ -333,7 +333,7 @@ export class SearchService {
 
     const suggestions = await prisma.artigo.findMany({
       where: {
-        status: ArticleStatus.publicado,
+        status: STATUS_ARTIGO.publicado,
         revistaId: null,
         titulo: { contains: query, mode: "insensitive" },
       },

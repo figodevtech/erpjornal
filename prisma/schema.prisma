@@ -8,6 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// Fluxo editorial oficial (6 etapas do Kanban) + arquivado (fora do fluxo).
 enum StatusArtigo {
   pauta
   apuracao
@@ -16,8 +17,6 @@ enum StatusArtigo {
   juridico
   publicado
   arquivado
-  rascunho
-  em_revisao
 
   @@map("status_artigo")
 }

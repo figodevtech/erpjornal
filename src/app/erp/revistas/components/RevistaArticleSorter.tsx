@@ -22,12 +22,12 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Pencil } from "lucide-react";
 
 import { updateRevistaArticleOrder } from "../actions";
-import { ArticleStatus } from "@/lib/types/artigo-status";
+import { STATUS_INFO, type StatusArtigo } from "@/lib/editorial/status";
 
 type RevistaArticle = {
   id: string;
   titulo: string;
-  status: string;
+  status: StatusArtigo;
   criadoEm: Date;
   autor: { nome: string | null } | null;
   categoria: { nome: string } | null;
@@ -86,13 +86,9 @@ function SortableArticleRow({
       </td>
       <td className="px-4 py-4">
         <span
-          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${artigo.status === ArticleStatus.publicado ? "bg-emerald-100 text-emerald-800" : ""} ${artigo.status === ArticleStatus.em_revisao ? "bg-amber-100 text-amber-800" : ""} ${artigo.status === ArticleStatus.rascunho ? "bg-gray-100 text-gray-800" : ""}`}
+          className={`rounded-full px-2.5 py-1 text-xs font-semibold ${STATUS_INFO[artigo.status].badge}`}
         >
-          {artigo.status === ArticleStatus.publicado
-            ? "Publicado"
-            : artigo.status === ArticleStatus.em_revisao
-              ? "Em Revisão"
-              : "Rascunho"}
+          {STATUS_INFO[artigo.status].label}
         </span>
       </td>
       <td className="px-4 py-4 text-sm text-gray-500">

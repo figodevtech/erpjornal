@@ -8,7 +8,7 @@ import { exigirPermissao } from "@/lib/auth";
 import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
 import { extractPlainTextFromHtml, sanitizeHtmlForRender } from "@/lib/tts-utils";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
@@ -867,7 +867,7 @@ export async function approveAndPublish(
       corpoTexto: finalData.corpoTexto,
       categoriaId: category?.id,
       autorId: session.user.id,
-      status: ArticleStatus.publicado,
+      status: STATUS_ARTIGO.publicado,
       dataPublicacao: new Date(),
       ehPremium: false,
       canaisPublicacao: ["portal"],
@@ -966,7 +966,7 @@ export async function republishOriginalWithCredits(
       corpoTexto,
       categoriaId: category?.id,
       autorId: session.user.id,
-      status: ArticleStatus.publicado,
+      status: STATUS_ARTIGO.publicado,
       dataPublicacao: new Date(),
       ehPremium: false,
       canaisPublicacao: ["portal"],

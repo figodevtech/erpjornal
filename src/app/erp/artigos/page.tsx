@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_INFO, isStatusArtigo } from "@/lib/editorial/status";
 
 import ArticleFilters from "./components/ArticleFilters";
 import ArticleActionsDropdown from "./components/ArticleActionsDropdown";
@@ -27,8 +27,8 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
   if (search) {
     whereClause.titulo = { contains: search, mode: "insensitive" };
   }
-  if (status) {
-    whereClause.status = status as ArticleStatus;
+  if (isStatusArtigo(status)) {
+    whereClause.status = status;
   }
 
   const artigos = await prisma.artigo.findMany({
@@ -98,17 +98,9 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                          art.status === ArticleStatus.publicado ? "bg-emerald-100 text-emerald-800" : ""
-                        } ${art.status === ArticleStatus.em_revisao ? "bg-amber-100 text-amber-800" : ""} ${
-                          art.status === ArticleStatus.rascunho ? "bg-gray-100 text-gray-800" : ""
-                        }`}
+                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_INFO[art.status].badge}`}
                       >
-                        {art.status === ArticleStatus.publicado
-                          ? "Publicado"
-                          : art.status === ArticleStatus.em_revisao
-                          ? "Em Revisão"
-                          : "Rascunho"}
+                        {STATUS_INFO[art.status].label}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600">{art.autor?.nome || "-"}</td>

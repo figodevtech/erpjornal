@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import type { Metadata } from "next";
 
 import EdicoesAnterioresContent, { type RevistaEdicao } from "./EdicoesAnterioresContent";
@@ -17,7 +17,7 @@ export default async function EdicoesAnterioresPage() {
     take: 60,
     include: {
       artigos: {
-        where: { status: ArticleStatus.publicado },
+        where: { status: STATUS_ARTIGO.publicado },
         orderBy: [{ ordemNaRevista: "asc" }, { criadoEm: "asc" }],
         include: {
           autor: { select: { nome: true } },

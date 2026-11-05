@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { ArticleStatus } from "@/lib/types/article-status";
+import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { redis, redisKeys } from "@/lib/redis";
 import { globalRateLimit, getIP } from "@/lib/ratelimit";
 
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 
     // Apenas listamos matérias oficiais que já chegaram no horário configurado
     const whereClause: Prisma.ArtigoWhereInput = {
-      status: ArticleStatus.publicado,
+      status: STATUS_ARTIGO.publicado,
       revistaId: null,
       dataPublicacao: {
         lte: new Date(),

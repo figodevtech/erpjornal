@@ -50,7 +50,8 @@ export const ETAPAS_FLUXO: readonly StatusArtigo[] = [
 export const STATUS_RESTRITOS: readonly StatusArtigo[] = ["publicado", "arquivado"];
 
 export function isStatusArtigo(valor: unknown): valor is StatusArtigo {
-  return typeof valor === "string" && valor in STATUS_ARTIGO;
+  // Object.hasOwn (e não `in`): "toString", "constructor" etc. não podem passar.
+  return typeof valor === "string" && Object.hasOwn(STATUS_ARTIGO, valor);
 }
 
 /**

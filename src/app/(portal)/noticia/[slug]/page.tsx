@@ -1,5 +1,3 @@
-import { prisma } from "@/lib/prisma";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
@@ -12,7 +10,8 @@ import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 import TTSPlayer from "@/components/portal/TTSPlayer";
 import { ViewCounter } from "@/components/portal/ViewCounter";
 import { getArticleViews } from "@/app/actions/analytics";
-import { sanitizeHtmlForRender } from "@/lib/tts-utils";
+import { buscarArtigoPublicado } from "@/lib/data/artigos";
+import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
 import { absoluteUrl } from "@/lib/site-url";
 
 export const revalidate = 300;
@@ -43,9 +42,8 @@ function splitArticleHtmlForAd(html: string) {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const artigo = await prisma.artigo.findUnique({
-    where: { slug }
-  });
+  // Mesmo filtro da página: rascunhos e agendadas não podem vazar título/resumo.
+  const artigo = await buscarArtigoPublicado(slug);
 
   if (!artigo) return { title: "Artigo não encontrado" };
 
@@ -66,22 +64,8 @@ export default async function NoticiaPage({ params }: PageProps) {
   const { slug } = await params;
   const session = await obterSessao();
 
-  // Busca o artigo
-  const artigo = await prisma.artigo.findFirst({
-    where: {
-      slug,
-      status: STATUS_ARTIGO.publicado,
-    },
-    include: {
-      autor: true,
-      categoria: true,
-      itemRss: {
-        include: {
-          source: true,
-        },
-      },
-    }
-  });
+  // Só matérias publicadas e já no ar (agendadas ficam ocultas até a hora marcada).
+  const artigo = await buscarArtigoPublicado(slug);
 
   if (!artigo) {
     notFound();
@@ -89,7 +73,8 @@ export default async function NoticiaPage({ params }: PageProps) {
 
   // Busca visualizações em tempo real (Redis)
   const realTimeViews = await getArticleViews(artigo.id);
-  const corpoTextoSanitizado = sanitizeHtmlForRender(artigo.corpoTexto);
+  // Defesa em profundidade: o HTML já é sanitizado ao gravar, e de novo ao exibir.
+  const corpoTextoSanitizado = sanitizarHtmlArtigo(artigo.corpoTexto);
   const { beforeAd: corpoAntesDoAnuncio, afterAd: corpoDepoisDoAnuncio } = splitArticleHtmlForAd(corpoTextoSanitizado);
 
   const isPremium = artigo.ehPremium;
@@ -279,7 +264,7 @@ export default async function NoticiaPage({ params }: PageProps) {
             </>
           ) : (
             <>
-               <div className="pointer-events-none opacity-40" dangerouslySetInnerHTML={{ __html: corpoTextoSanitizado.substring(0, 400) + "..." }} />
+               <div className="pointer-events-none opacity-40" dangerouslySetInnerHTML={{ __html: sanitizarHtmlArtigo(`${corpoTextoSanitizado.slice(0, 400)}...`) }} />
                
                {/* PAYWALL / CTA */}
                <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-gray-950 via-white/95 dark:via-gray-950/95 to-transparent flex flex-col items-center justify-end pb-10 text-center px-4">

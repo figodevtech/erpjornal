@@ -1,48 +1,65 @@
-import { describe, it, expect, vi } from 'vitest';
-import { generateMetadata } from '../page';
-import { prisma } from '@/lib/prisma';
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock do Prisma
-vi.mock('@/lib/prisma', () => ({
+import { prisma } from "@/lib/prisma";
+
+import { generateMetadata } from "../page";
+
+vi.mock("@/lib/prisma", () => ({
   prisma: {
     artigo: {
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
     },
   },
 }));
 
-vi.mock('@/lib/auth', () => ({
+vi.mock("@/lib/auth", () => ({
   obterSessao: vi.fn(),
 }));
 
-vi.mock('@/components/portal/NewsletterForm', () => ({
-  default: () => null
+vi.mock("@/components/portal/NewsletterForm", () => ({
+  default: () => null,
 }));
 
-describe('NoticiaPage Metadata', () => {
-  it('should return correct metadata for a valid artigo', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mockArticle: any = {
-      titulo: 'Notícia de Teste',
-      slug: 'noticia-de-teste',
-      resumo: 'Este é um resumo de teste.',
-      dataPublicacao: new Date('2026-03-24T12:00:00Z'),
-    };
+const params = (slug: string) => ({ params: Promise.resolve({ slug }) });
 
-    vi.mocked(prisma.artigo.findUnique).mockResolvedValue(mockArticle);
-
-    const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'noticia-de-teste' }) });
-
-    expect(metadata.title).toBe('Notícia de Teste | Revista Gestão');
-    expect(metadata.description).toBe('Este é um resumo de teste.');
-    expect(metadata.openGraph?.title).toBe('Notícia de Teste');
+describe("Metadados da notícia", () => {
+  beforeEach(() => {
+    vi.mocked(prisma.artigo.findFirst).mockReset();
   });
 
-  it('should return default title if artigo not found', async () => {
-    vi.mocked(prisma.artigo.findUnique).mockResolvedValue(null);
+  it("monta título, descrição e Open Graph de uma matéria publicada", async () => {
+    vi.mocked(prisma.artigo.findFirst).mockResolvedValue({
+      titulo: "Notícia de Teste",
+      slug: "noticia-de-teste",
+      resumo: "Este é um resumo de teste.",
+      dataPublicacao: new Date("2026-03-24T12:00:00Z"),
+    } as never);
 
-    const metadata = await generateMetadata({ params: Promise.resolve({ slug: 'not-found' }) });
+    const metadata = await generateMetadata(params("noticia-de-teste"));
 
-    expect(metadata.title).toBe('Artigo não encontrado');
+    expect(metadata.title).toBe("Notícia de Teste | Revista Gestão");
+    expect(metadata.description).toBe("Este é um resumo de teste.");
+    expect(metadata.openGraph?.title).toBe("Notícia de Teste");
+  });
+
+  it("só consulta matérias publicadas e já no ar (rascunho/agendada não vazam)", async () => {
+    vi.mocked(prisma.artigo.findFirst).mockResolvedValue(null);
+
+    await generateMetadata(params("rascunho-secreto"));
+
+    const consulta = vi.mocked(prisma.artigo.findFirst).mock.calls[0][0];
+    expect(consulta?.where).toMatchObject({
+      slug: "rascunho-secreto",
+      status: "publicado",
+      dataPublicacao: { lte: expect.any(Date) },
+    });
+  });
+
+  it("usa título padrão quando a matéria não existe ou não está no ar", async () => {
+    vi.mocked(prisma.artigo.findFirst).mockResolvedValue(null);
+
+    const metadata = await generateMetadata(params("nao-existe"));
+
+    expect(metadata.title).toBe("Artigo não encontrado");
   });
 });

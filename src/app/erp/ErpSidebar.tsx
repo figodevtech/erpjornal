@@ -41,6 +41,7 @@ type ErpSidebarProps = {
   podeVerCuradoria: boolean;
   podeGerirCuradoria: boolean;
   podeGerirUsuarios: boolean;
+  podeGerirConfiguracoes: boolean;
   usuario: {
     nome: string | null;
     email: string | null;
@@ -119,6 +120,7 @@ export default function ErpSidebar({
   podeVerCuradoria,
   podeGerirCuradoria,
   podeGerirUsuarios,
+  podeGerirConfiguracoes,
   usuario,
 }: ErpSidebarProps) {
   const pathname = usePathname();
@@ -300,7 +302,7 @@ export default function ErpSidebar({
             />
           )}
 
-          {podeGerirUsuarios && (
+          {(podeGerirUsuarios || podeGerirConfiguracoes) && (
             <>
               <div className="my-2 h-px bg-gray-800" />
               {!collapsed && (
@@ -308,30 +310,36 @@ export default function ErpSidebar({
                   Administração
                 </div>
               )}
-              <SidebarLink
-                href="/erp/usuarios"
-                label="Usuários"
-                icon={<Users className="h-4 w-4 text-red-400" />}
-                collapsed={collapsed}
-                active={isActive("/erp/usuarios")}
-                onNavigate={closeMobile}
-              />
-              <SidebarLink
-                href="/erp/permissoes"
-                label="Permissões"
-                icon={<Shield className="h-4 w-4 text-red-400" />}
-                collapsed={collapsed}
-                active={isActive("/erp/permissoes")}
-                onNavigate={closeMobile}
-              />
-              <SidebarLink
-                href="/erp/configuracoes"
-                label="Configurações"
-                icon={<Settings className="h-4 w-4 text-red-400" />}
-                collapsed={collapsed}
-                active={isActive("/erp/configuracoes")}
-                onNavigate={closeMobile}
-              />
+              {podeGerirUsuarios && (
+                <>
+                  <SidebarLink
+                    href="/erp/usuarios"
+                    label="Usuários"
+                    icon={<Users className="h-4 w-4 text-red-400" />}
+                    collapsed={collapsed}
+                    active={isActive("/erp/usuarios")}
+                    onNavigate={closeMobile}
+                  />
+                  <SidebarLink
+                    href="/erp/permissoes"
+                    label="Permissões"
+                    icon={<Shield className="h-4 w-4 text-red-400" />}
+                    collapsed={collapsed}
+                    active={isActive("/erp/permissoes")}
+                    onNavigate={closeMobile}
+                  />
+                </>
+              )}
+              {podeGerirConfiguracoes && (
+                <SidebarLink
+                  href="/erp/configuracoes"
+                  label="Configurações"
+                  icon={<Settings className="h-4 w-4 text-red-400" />}
+                  collapsed={collapsed}
+                  active={isActive("/erp/configuracoes")}
+                  onNavigate={closeMobile}
+                />
+              )}
             </>
           )}
 

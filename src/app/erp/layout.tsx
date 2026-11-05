@@ -25,6 +25,7 @@ export default async function ERPLayout({ children }: { children: React.ReactNod
   const podeVerCuradoria = temPermissao(sessao, "curadoria:ler");
   const podeGerirCuradoria = temPermissao(sessao, "curadoria:gerir");
   const podeGerirUsuarios = temPermissao(sessao, "usuarios:gerir");
+  const podeGerirConfiguracoes = temPermissao(sessao, "configuracoes:gerir");
 
   return (
     <Suspense
@@ -51,6 +52,7 @@ export default async function ERPLayout({ children }: { children: React.ReactNod
             podeVerCuradoria={podeVerCuradoria}
             podeGerirCuradoria={podeGerirCuradoria}
             podeGerirUsuarios={podeGerirUsuarios}
+            podeGerirConfiguracoes={podeGerirConfiguracoes}
             usuario={{
               nome: sessao.user.name,
               email: sessao.user.email,

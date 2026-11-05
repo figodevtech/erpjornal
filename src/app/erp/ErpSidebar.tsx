@@ -14,6 +14,7 @@ import {
   Image as ImageIcon,
   KeyRound,
   LogOut,
+  Mail,
   Menu,
   Megaphone,
   MicVocal,
@@ -47,6 +48,7 @@ type ErpSidebarProps = {
   podeGerirConfiguracoes: boolean;
   podeVerAuditoria: boolean;
   podeGerirPlantao: boolean;
+  podeGerirNewsletter: boolean;
   usuario: {
     nome: string | null;
     email: string | null;
@@ -128,6 +130,7 @@ export default function ErpSidebar({
   podeGerirConfiguracoes,
   podeVerAuditoria,
   podeGerirPlantao,
+  podeGerirNewsletter,
   usuario,
 }: ErpSidebarProps) {
   const pathname = usePathname();
@@ -235,6 +238,16 @@ export default function ErpSidebar({
               icon={<Radio className="h-4 w-4 text-red-400" />}
               collapsed={collapsed}
               active={isActive("/erp/plantao")}
+              onNavigate={closeMobile}
+            />
+          )}
+          {podeGerirNewsletter && (
+            <SidebarLink
+              href="/erp/newsletter"
+              label="Newsletter"
+              icon={<Mail className="h-4 w-4 text-red-400" />}
+              collapsed={collapsed}
+              active={isActive("/erp/newsletter")}
               onNavigate={closeMobile}
             />
           )}

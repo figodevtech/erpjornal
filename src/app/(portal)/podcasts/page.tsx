@@ -1,5 +1,6 @@
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { isModuleEnabled } from "@/lib/config/modules";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Clock, Mic, Play } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +16,7 @@ export default async function PodcastsPage() {
     notFound();
   }
 
-  const episodes = await (prisma as any).podcastEpisode.findMany({
+  const episodes = await prisma.episodioPodcast.findMany({
     where: { status: "published" },
     orderBy: { dataPub: "desc" },
   });
@@ -39,7 +40,7 @@ export default async function PodcastsPage() {
       />
 
       <div className="mt-10 space-y-6">
-        {episodes.map((ep: any, index: number) => (
+        {episodes.map((ep, index) => (
           <Link
             key={ep.id}
             href={`/podcasts/${ep.slug}`}
@@ -47,7 +48,7 @@ export default async function PodcastsPage() {
           >
             <div className="relative flex h-32 w-full shrink-0 items-center justify-center overflow-hidden bg-gray-900 shadow-lg md:w-32 md:rounded-2xl">
               {ep.urlCapa ? (
-                <img src={ep.urlCapa} alt={ep.titulo} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                <Image src={ep.urlCapa} alt={ep.titulo} fill sizes="(min-width: 768px) 128px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-110" />
               ) : (
                 <Mic className="h-10 w-10 text-white opacity-40" />
               )}

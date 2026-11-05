@@ -35,9 +35,9 @@ export async function savePodcast(formData: FormData) {
   };
 
   if (id) {
-    await (prisma as any).podcastEpisode.update({ where: { id }, data });
+    await prisma.episodioPodcast.update({ where: { id }, data });
   } else {
-    await (prisma as any).podcastEpisode.create({ data });
+    await prisma.episodioPodcast.create({ data });
   }
 
   revalidatePath("/erp/podcasts");

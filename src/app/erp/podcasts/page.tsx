@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Calendar, Clock, Mic, Plus, Tag } from "lucide-react";
+import Image from "next/image";
 
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -39,7 +40,7 @@ export default async function PodcastsERPPage() {
           >
             <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-purple-100">
               {ep.urlCapa ? (
-                <img src={ep.urlCapa} alt={ep.titulo} className="h-full w-full rounded-xl object-cover" />
+                <Image src={ep.urlCapa} alt={ep.titulo} width={64} height={64} className="h-full w-full rounded-xl object-cover" />
               ) : (
                 <Mic className="h-8 w-8 text-purple-600" />
               )}

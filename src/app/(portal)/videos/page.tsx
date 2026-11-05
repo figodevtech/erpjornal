@@ -15,7 +15,7 @@ export default async function VideosPage() {
     notFound();
   }
 
-  const videos = await (prisma as any).shortVideo.findMany({
+  const videos = await prisma.videoCurto.findMany({
     where: { status: "published" },
     orderBy: { dataPub: "desc" },
   });
@@ -55,7 +55,7 @@ export default async function VideosPage() {
 
         <div className="flex flex-col gap-16">
           <div className="flex snap-x snap-mandatory gap-8 overflow-x-auto px-4 pb-12 -mx-4 md:grid md:grid-cols-2 md:overflow-visible lg:grid-cols-4 xl:grid-cols-4">
-            {videos.map((video: any) => (
+            {videos.map((video) => (
               <div key={video.id} className="w-[85vw] grow-0 shrink-0 snap-center md:w-full">
                 <ShortVideoCard video={video} />
               </div>

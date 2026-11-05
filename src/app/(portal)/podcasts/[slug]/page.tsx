@@ -1,23 +1,26 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import PodcastPlayer from "@/components/portal/PodcastPlayer";
 import Link from "next/link";
 import { ArrowLeft, Share2 } from "lucide-react";
 import { isModuleEnabled } from "@/lib/config/modules";
 
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   if (!isModuleEnabled("podcasts")) return { title: "Página Não Encontrada" };
-  const ep = (await (prisma as any).podcastEpisode.findUnique({ where: { slug: params.slug } }));
+  const ep = await prisma.episodioPodcast.findUnique({ where: { slug } });
   if (!ep) return { title: "Episódio Não Encontrado" };
   return { title: `${ep.titulo} | Podcast RG`, description: ep.descricao };
 }
 
-export default async function EpisodePage({ params }: { params: { slug: string } }) {
+export default async function EpisodePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   if (!isModuleEnabled("podcasts")) {
     notFound();
   }
-  const ep = (await (prisma as any).podcastEpisode.findUnique({ where: { slug: params.slug } }));
+  const ep = await prisma.episodioPodcast.findUnique({ where: { slug } });
   if (!ep || ep.status !== "published") notFound();
 
 
@@ -63,8 +66,8 @@ export default async function EpisodePage({ params }: { params: { slug: string }
            <div className="flex items-center gap-4">
               <span className="text-xs font-black uppercase tracking-widest text-red-500">Ouça também em:</span>
               <div className="flex gap-4 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" className="w-6 h-6" alt="Spotify" />
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Podcasts_%28iOS%29.svg" className="w-6 h-6" alt="Apple Podcasts" />
+                 <Image src="https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg" width={24} height={24} className="w-6 h-6" alt="Spotify" />
+                 <Image src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Podcasts_%28iOS%29.svg" width={24} height={24} className="w-6 h-6" alt="Apple Podcasts" />
               </div>
            </div>
         </div>

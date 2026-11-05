@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 
+import { enviarAlertaTelegram } from "@/lib/alertas/telegram";
 import { exigirPermissao } from "@/lib/auth";
 import { registrarAuditoria } from "@/lib/auditoria";
 import {
@@ -10,8 +12,10 @@ import {
   TAMANHO_MAXIMO_TEXTO_PLANTAO,
   calcularExpiracao,
   excedentesDoLimite,
+  mensagemTelegramDoPlantao,
 } from "@/lib/plantao";
 import { prisma } from "@/lib/prisma";
+import { absoluteUrl } from "@/lib/site-url";
 
 type Resultado = { ok: true } | { ok: false; error: string };
 
@@ -48,7 +52,10 @@ export async function publicarPlantao(formData: FormData): Promise<Resultado> {
   const artigoId = dados.data.artigoId || null;
   const link = dados.data.link || null;
 
-  if (artigoId && !(await prisma.artigo.count({ where: { id: artigoId } }))) {
+  const artigo = artigoId
+    ? await prisma.artigo.findUnique({ where: { id: artigoId }, select: { slug: true } })
+    : null;
+  if (artigoId && !artigo) {
     return { ok: false, error: "A matéria escolhida não existe mais." };
   }
 
@@ -81,6 +88,12 @@ export async function publicarPlantao(formData: FormData): Promise<Resultado> {
   });
 
   atualizarPortal();
+
+  // Alerta para o canal da redação no Telegram (se configurado), sem atrasar a resposta.
+  const destino = artigo ? absoluteUrl(`/noticia/${artigo.slug}`) : link;
+  const autor = sessao.user.name || sessao.user.email || "Redação";
+  after(() => enviarAlertaTelegram(mensagemTelegramDoPlantao({ texto, link: destino, autor })));
+
   return { ok: true };
 }
 

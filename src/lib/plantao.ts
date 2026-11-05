@@ -37,3 +37,16 @@ export function destinoDoPlantao(
   if (plantao.link && /^https:\/\//i.test(plantao.link)) return plantao.link;
   return null;
 }
+
+/** Escapa texto para o modo HTML do Telegram (&, < e >). */
+export function escaparHtmlTelegram(texto: string) {
+  return texto.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Mensagem do alerta de plantão para o canal da redação no Telegram. */
+export function mensagemTelegramDoPlantao({ texto, link, autor }: { texto: string; link: string | null; autor: string }) {
+  const linhas = [`🚨 <b>PLANTÃO</b>`, escaparHtmlTelegram(texto)];
+  if (link) linhas.push(`<a href="${escaparHtmlTelegram(link).replace(/"/g, "&quot;")}">Abrir</a>`);
+  linhas.push(`<i>por ${escaparHtmlTelegram(autor)}</i>`);
+  return linhas.join("\n");
+}

@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { calcularExpiracao, destinoDoPlantao, excedentesDoLimite, rotuloPrazo } from "@/lib/plantao";
+import {
+  calcularExpiracao,
+  destinoDoPlantao,
+  excedentesDoLimite,
+  mensagemTelegramDoPlantao,
+  rotuloPrazo,
+} from "@/lib/plantao";
 
 describe("excedentesDoLimite", () => {
   it("encerra os mais antigos além do limite", () => {
@@ -41,5 +47,22 @@ describe("destinoDoPlantao", () => {
   it("só aceita link externo https", () => {
     expect(destinoDoPlantao({ link: "javascript:alert(1)", artigo: null })).toBeNull();
     expect(destinoDoPlantao({ link: "http://inseguro.com", artigo: null })).toBeNull();
+  });
+});
+
+describe("mensagemTelegramDoPlantao", () => {
+  it("escapa o texto (modo HTML do Telegram) e inclui link e autor", () => {
+    const mensagem = mensagemTelegramDoPlantao({
+      texto: "STF <decide> & vota",
+      link: 'https://site.com/noticia/x?a=1&b="2"',
+      autor: "Ana <editora>",
+    });
+    expect(mensagem).toContain("STF &lt;decide&gt; &amp; vota");
+    expect(mensagem).toContain('<a href="https://site.com/noticia/x?a=1&amp;b=&quot;2&quot;">Abrir</a>');
+    expect(mensagem).toContain("por Ana &lt;editora&gt;");
+  });
+
+  it("sem link, sem âncora", () => {
+    expect(mensagemTelegramDoPlantao({ texto: "Aviso", link: null, autor: "Ana" })).not.toContain("<a ");
   });
 });

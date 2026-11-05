@@ -10,6 +10,7 @@ import {
   mensagemErroUpload,
   validarArquivoParaBucket,
 } from "@/lib/storage/buckets";
+import { fetchExterno, lerCorpoLimitado } from "@/lib/http/fetch-externo";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 
 const ARTICLE_IMAGES_BUCKET = STORAGE_BUCKETS.articleImages;
@@ -286,20 +287,23 @@ export async function recreateArticleCoverImage(input: ImageActionInput) {
     throw new Error("Nao ha imagem original do RSS para recriar.");
   }
 
-  const sourceResponse = await fetch(input.referenceImageUrl, {
+  // A URL vem do feed/cliente: busca protegida contra SSRF e com limite de tamanho.
+  const sourceResponse = await fetchExterno(input.referenceImageUrl, {
     headers: {
       "user-agent": "Mozilla/5.0 (compatible; RevistaGestaoBot/1.0)",
-      accept: "image/avif,image/webp,image/png,image/jpeg,image/*,*/*",
+      accept: "image/avif,image/webp,image/png,image/jpeg,image/*",
     },
-    cache: "no-store",
   });
 
   if (!sourceResponse.ok) {
     throw new Error("Nao foi possivel baixar a imagem original do RSS.");
   }
 
-  const mimeType = sourceResponse.headers.get("content-type") || "image/jpeg";
-  const sourceBytes = await sourceResponse.arrayBuffer();
+  const mimeType = (sourceResponse.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
+  if (!mimeType.startsWith("image/")) {
+    throw new Error("A URL de referência não aponta para uma imagem.");
+  }
+  const sourceBytes = new Uint8Array(await lerCorpoLimitado(sourceResponse, ARTICLE_IMAGES_BUCKET.fileSizeLimit));
   const config = await getAppConfigSnapshot();
   const formData = new FormData();
   formData.append("model", config.imageGenerationModel);

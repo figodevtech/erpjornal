@@ -8,6 +8,7 @@ import { exigirPermissao, temPermissao, type SessaoAplicacao } from "@/lib/auth"
 import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
+import { fetchExterno, lerCorpoLimitado } from "@/lib/http/fetch-externo";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
 
@@ -389,29 +390,32 @@ function extractImage(item: RssItem) {
   return isUsableImageUrl(htmlImage) ? htmlImage : null;
 }
 
+// Limites para conteúdo de terceiros (evita respostas gigantes e "zip bombs").
+const LIMITE_FEED = 5 * 1024 * 1024; // 5 MB baixados
+const LIMITE_FEED_DESCOMPACTADO = 20 * 1024 * 1024; // 20 MB após descompactar
+const LIMITE_HTML_PAGINA = 3 * 1024 * 1024; // 3 MB
+
 async function downloadFeedXml(url: string) {
-  const response = await fetch(url, {
+  // fetchExterno bloqueia SSRF (redes internas, metadados de nuvem, redirecionamentos).
+  const response = await fetchExterno(url, {
     headers: {
-      "user-agent": "Mozilla/5.0 (compatible; RevistaGestaoBot/1.0; +https://revistagestao.local)",
+      "user-agent": "Mozilla/5.0 (compatible; RevistaGestaoBot/1.0)",
       accept: "application/rss+xml, application/xml, text/xml, application/atom+xml, */*",
-      "accept-encoding": "gzip, deflate, br",
       "cache-control": "no-cache",
     },
-    next: { revalidate: 0 },
   });
 
   if (!response.ok) {
     throw new Error(`Feed respondeu com status ${response.status}.`);
   }
 
-  const arrayBuffer = await response.arrayBuffer();
-  let buffer = Buffer.from(arrayBuffer);
+  let buffer = await lerCorpoLimitado(response, LIMITE_FEED);
 
   if (buffer.length >= 2 && buffer[0] === 0x1f && buffer[1] === 0x8b) {
-    buffer = gunzipSync(buffer);
+    buffer = gunzipSync(buffer, { maxOutputLength: LIMITE_FEED_DESCOMPACTADO });
   } else if (buffer.length >= 2 && buffer[0] === 0x78) {
     try {
-      buffer = inflateSync(buffer);
+      buffer = inflateSync(buffer, { maxOutputLength: LIMITE_FEED_DESCOMPACTADO });
     } catch {
       // keep original buffer when payload is not deflate
     }
@@ -427,18 +431,22 @@ async function downloadFeedXml(url: string) {
 }
 
 async function fetchOriginalPageImage(url: string) {
-  const response = await fetch(url, {
-    headers: {
-      "user-agent": "Mozilla/5.0 (compatible; RevistaGestaoBot/1.0; +https://revistagestao.local)",
-      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "cache-control": "no-cache",
-    },
-    next: { revalidate: 0 },
-  });
+  // O link vem do feed (terceiros): busca protegida contra SSRF e com limite de tamanho.
+  let html: string;
+  try {
+    const response = await fetchExterno(url, {
+      headers: {
+        "user-agent": "Mozilla/5.0 (compatible; RevistaGestaoBot/1.0)",
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "cache-control": "no-cache",
+      },
+    });
+    if (!response.ok) return null;
+    html = (await lerCorpoLimitado(response, LIMITE_HTML_PAGINA)).toString("utf-8");
+  } catch {
+    return null;
+  }
 
-  if (!response.ok) return null;
-
-  const html = await response.text();
   const patterns = [
     /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i,
     /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i,

@@ -8,6 +8,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+// ISR por caminho: gerado na primeira visita e revalidado a cada 5 minutos.
+export const revalidate = 300;
+
+export async function generateStaticParams() {
+  return [];
+}
+
 const stateNames: Record<string, string> = {
   ac: "Acre",
   al: "Alagoas",

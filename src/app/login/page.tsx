@@ -6,11 +6,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, LogIn, Mail, UserCircle } from "lucide-react";
 import { criarClienteSupabaseBrowser } from "@/lib/supabase/browser";
 import { traduzirErroLoginSupabase } from "@/lib/supabase/auth-error";
+import { destinoInternoSeguro } from "@/lib/http/redirecionamento";
 
 function LoginForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const callbackUrl = searchParams.get("callbackUrl");
+  // Só caminhos internos: "//site.com" passava pela checagem antiga (open redirect).
+  const callbackUrl = destinoInternoSeguro(searchParams.get("callbackUrl"));
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +38,7 @@ function LoginForm() {
       const data = response.ok ? await response.json() : null;
       const permissoes = (data?.sessao?.user?.permissoes ?? []) as string[];
 
-      if (callbackUrl && callbackUrl.startsWith("/")) {
+      if (callbackUrl) {
         router.push(callbackUrl);
       } else if (permissoes.some((permissao) => !permissao.startsWith("portal:"))) {
         router.push("/erp");

@@ -11,6 +11,11 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 export const revalidate = 60;
+// ISR por caminho: cada página é gerada na primeira visita e reaproveitada até a
+// próxima revalidação (sem isto a rota renderiza a cada requisição).
+export async function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;

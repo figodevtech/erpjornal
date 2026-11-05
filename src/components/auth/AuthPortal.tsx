@@ -11,29 +11,17 @@ import {
   Mail,
   UserCircle,
 } from "lucide-react";
+import { carregarSessaoPortal, useSessaoPortal } from "@/components/auth/useSessaoPortal";
 import { criarClienteSupabaseBrowser } from "@/lib/supabase/browser";
 import { traduzirErroLoginSupabase } from "@/lib/supabase/auth-error";
 
-interface AuthPortalProps {
-  session: {
-    user?: {
-      id: string;
-      name: string | null;
-      email: string | null;
-      role: string;
-      permissoes?: string[];
-    };
-  } | null;
-}
-
-async function buscarSessaoAtualizada() {
-  const response = await fetch("/api/auth/me", { cache: "no-store" });
-  if (!response.ok) return null;
-  const data = await response.json();
-  return data.sessao as AuthPortalProps["session"];
-}
-
-export default function AuthPortal({ session }: AuthPortalProps) {
+/**
+ * Login/menu do leitor no Header do portal.
+ * A sessão é carregada no navegador (useSessaoPortal) para que as páginas do
+ * portal continuem estáticas; o servidor não lê cookies para desenhar o Header.
+ */
+export default function AuthPortal() {
+  const session = useSessaoPortal();
   const [isOpen, setIsOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -75,7 +63,7 @@ export default function AuthPortal({ session }: AuthPortalProps) {
       setIsOpen(false);
       router.refresh();
 
-      const sessaoAtualizada = await buscarSessaoAtualizada();
+      const sessaoAtualizada = await carregarSessaoPortal(true);
       const permissoes = sessaoAtualizada?.user?.permissoes ?? [];
 
       if (permissoes.some((permissao) => !permissao.startsWith("portal:"))) {
@@ -100,6 +88,11 @@ export default function AuthPortal({ session }: AuthPortalProps) {
   }
 
   const user = session?.user;
+
+  // Enquanto a sessão carrega, um espaço neutro evita piscar "LOGIN" para quem já entrou.
+  if (session === undefined) {
+    return <div className="h-6 w-20 animate-pulse rounded bg-white/10" aria-hidden />;
+  }
 
   return (
     <div className="relative" ref={menuRef}>

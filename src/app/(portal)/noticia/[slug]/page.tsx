@@ -2,42 +2,30 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Metadata } from "next";
 import Image from "next/image";
-import { obterSessao } from "@/lib/auth";
 
-import { Lock, Crown } from "lucide-react";
+import { Crown } from "lucide-react";
 import NewsletterForm from "@/components/portal/NewsletterForm";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
+import CorpoPremium from "@/components/portal/CorpoPremium";
 import TTSPlayer from "@/components/portal/TTSPlayer";
 import { ViewCounter } from "@/components/portal/ViewCounter";
 import { obterVisualizacoes } from "@/lib/analytics/visualizacoes";
 import { buscarArtigoPublicado } from "@/lib/data/artigos";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
+import { dividirParaAnuncio, trechoInicial } from "@/lib/html/trechos";
 import { absoluteUrl } from "@/lib/site-url";
 
+// Página estática regenerada a cada 5 min (ISR). Nada aqui lê cookies/sessão:
+// o acesso a matérias exclusivas é resolvido no navegador (CorpoPremium).
 export const revalidate = 300;
+// ISR por caminho: cada página é gerada na primeira visita e reaproveitada até a
+// próxima revalidação (sem isto a rota renderiza a cada requisição).
+export async function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-}
-
-function splitArticleHtmlForAd(html: string) {
-  const blocks = html.match(/<p\b[^>]*>[\s\S]*?<\/p>/gi);
-
-  if (!blocks || blocks.length < 4) {
-    return { beforeAd: html, afterAd: "" };
-  }
-
-  const middle = Math.max(2, Math.ceil(blocks.length / 2));
-  const beforeBlocks = blocks.slice(0, middle).join("");
-  const afterBlocks = blocks.slice(middle).join("");
-  const firstBlockIndex = html.indexOf(blocks[0]);
-  const lastBlock = blocks[blocks.length - 1];
-  const lastBlockEnd = html.lastIndexOf(lastBlock) + lastBlock.length;
-
-  return {
-    beforeAd: `${html.slice(0, firstBlockIndex)}${beforeBlocks}`,
-    afterAd: `${afterBlocks}${html.slice(lastBlockEnd)}`,
-  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -62,7 +50,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function NoticiaPage({ params }: PageProps) {
   const { slug } = await params;
-  const session = await obterSessao();
 
   // Só matérias publicadas e já no ar (agendadas ficam ocultas até a hora marcada).
   const artigo = await buscarArtigoPublicado(slug);
@@ -71,15 +58,14 @@ export default async function NoticiaPage({ params }: PageProps) {
     notFound();
   }
 
-  // Busca visualizações em tempo real (Redis)
+  // Contagem de leituras (atualizada a cada regeneração da página).
   const realTimeViews = await obterVisualizacoes(artigo.id);
   // Defesa em profundidade: o HTML já é sanitizado ao gravar, e de novo ao exibir.
   const corpoTextoSanitizado = sanitizarHtmlArtigo(artigo.corpoTexto);
-  const { beforeAd: corpoAntesDoAnuncio, afterAd: corpoDepoisDoAnuncio } = splitArticleHtmlForAd(corpoTextoSanitizado);
 
   const isPremium = artigo.ehPremium;
-  const isAuthed = !!session;
-  const canAccess = !isPremium || isAuthed;
+  // Matéria exclusiva: o HTML estático leva só o trecho inicial, nunca o corpo completo.
+  const corpoPublico = isPremium ? null : dividirParaAnuncio(corpoTextoSanitizado);
   const adPageType = artigo.revistaId ? "revista" : "noticia";
   const isRevistaArticle = Boolean(artigo.revistaId);
   const hasLateralAds = await hasActiveAds(adPageType, "lateral");
@@ -204,7 +190,7 @@ export default async function NoticiaPage({ params }: PageProps) {
         </header>
 
         {/* TTS Player (M1-PLUS-T1-ST2) */}
-        {canAccess && (
+        {corpoPublico && (
           <div className="max-w-[760px] mx-auto font-sans">
             <TTSPlayer htmlContent={corpoTextoSanitizado} title={artigo.titulo} />
           </div>
@@ -243,7 +229,7 @@ export default async function NoticiaPage({ params }: PageProps) {
         <div className={`
           article-prose
           w-full max-w-[760px] mx-auto 
-          prose prose-gray dark:prose-invert prose-lg md:prose-xl max-w-none
+          prose prose-gray dark:prose-invert prose-lg md:prose-xl
           prose-p:text-gray-950 dark:prose-p:text-gray-100 prose-p:leading-[1.8] prose-p:mb-7
           prose-li:text-gray-950 dark:prose-li:text-gray-100
           prose-strong:text-gray-950 dark:prose-strong:text-gray-50
@@ -252,47 +238,22 @@ export default async function NoticiaPage({ params }: PageProps) {
           prose-blockquote:border-red-700 prose-blockquote:italic prose-blockquote:text-gray-800 dark:prose-blockquote:text-gray-200
           prose-a:text-red-700 prose-a:no-underline hover:prose-a:underline
           ${isRevistaArticle ? "[&_p]:text-justify [&_p]:hyphens-auto [&_p]:leading-[1.9] [&_p]:tracking-normal" : ""}
-          ${!canAccess ? 'max-h-[300px] overflow-hidden relative mask-fade-to-bottom' : ''}
         `}>
-          {canAccess ? (
+          {corpoPublico ? (
             <>
-              <div dangerouslySetInnerHTML={{ __html: corpoAntesDoAnuncio }} />
+              <div dangerouslySetInnerHTML={{ __html: corpoPublico.antes }} />
               <div className="not-prose my-12 font-sans">
                 <AdSlot pagina={adPageType} posicao="meio" />
               </div>
-              {corpoDepoisDoAnuncio && <div dangerouslySetInnerHTML={{ __html: corpoDepoisDoAnuncio }} />}
+              {corpoPublico.depois && <div dangerouslySetInnerHTML={{ __html: corpoPublico.depois }} />}
             </>
           ) : (
-            <>
-               <div className="pointer-events-none opacity-40" dangerouslySetInnerHTML={{ __html: sanitizarHtmlArtigo(`${corpoTextoSanitizado.slice(0, 400)}...`) }} />
-               
-               {/* PAYWALL / CTA */}
-               <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-gray-950 via-white/95 dark:via-gray-950/95 to-transparent flex flex-col items-center justify-end pb-10 text-center px-4">
-                  <div className="p-8 bg-gray-900 rounded-3xl shadow-2xl max-w-sm border-2 border-red-700/30 transform sm:scale-110">
-                    <div className="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-gray-900 -mt-14 shadow-xl">
-                      <Lock className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-white text-xl font-black uppercase tracking-tight mb-2">Conteúdo Exclusivo</h3>
-                    <p className="text-gray-400 text-sm font-medium mb-6">
-                      Esta matéria é reservada para assinantes da <span className="text-white font-bold">Revista Gestão</span>.
-                    </p>
-                    <div className="space-y-3">
-                      <Link 
-                        href="/login" 
-                        className="block w-full bg-red-700 hover:bg-red-600 text-white font-black uppercase text-xs py-4 rounded-xl transition-all shadow-lg"
-                      >
-                        Já sou assinante / Entrar
-                      </Link>
-                      <Link 
-                        href="/assine" 
-                        className="block w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-black uppercase text-xs py-4 rounded-xl transition-all"
-                      >
-                        Quero assinar
-                      </Link>
-                    </div>
-                  </div>
-               </div>
-            </>
+            <CorpoPremium
+              slug={artigo.slug}
+              titulo={artigo.titulo}
+              trechoHtml={trechoInicial(corpoTextoSanitizado)}
+              anuncioMeio={<AdSlot pagina={adPageType} posicao="meio" />}
+            />
           )}
         </div>
 

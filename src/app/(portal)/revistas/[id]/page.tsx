@@ -8,6 +8,11 @@ import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 
 export const revalidate = 300;
+// ISR por caminho: cada página é gerada na primeira visita e reaproveitada até a
+// próxima revalidação (sem isto a rota renderiza a cada requisição).
+export async function generateStaticParams() {
+  return [];
+}
 
 type RevistaPageProps = {
   params: Promise<{ id: string }>;

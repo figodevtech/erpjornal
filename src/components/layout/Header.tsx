@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getCachedCategories } from "@/lib/data/categories";
-import { obterSessao } from "@/lib/auth";
+
 
 import AuthPortal from "@/components/auth/AuthPortal";
 import ThemeToggle from "./ThemeToggle";
@@ -10,7 +10,7 @@ import { isModuleEnabled } from "@/lib/config/modules";
 
 
 export default async function Header() {
-  const session = await obterSessao();
+
   const categories = await getCachedCategories();
 
   const podcastsEnabled = isModuleEnabled("podcasts");
@@ -25,7 +25,7 @@ export default async function Header() {
           <Link href="/sobre" className="text-slate-300 hover:text-white transition-colors hover:underline underline-offset-4">Institucional</Link>
           <Link href="/contato" className="text-slate-300 hover:text-white transition-colors hover:underline underline-offset-4">Fale Conosco</Link>
           <ThemeToggle />
-          <AuthPortal session={session} />
+          <AuthPortal />
         </div>
       </div>
 
@@ -79,7 +79,7 @@ export default async function Header() {
             <SearchBar />
             <div className="md:hidden flex items-center gap-2">
               <ThemeToggle />
-              <AuthPortal session={session} />
+              <AuthPortal />
             </div>
           </div>
 

@@ -8,6 +8,8 @@ const MEDIA_KIT_SECTION_TYPES = [
   "features",
   "stats",
   "testimonials",
+  "advertising",
+  "free_canvas",
   "contact",
 ] as const satisfies readonly MediaKitSectionType[];
 

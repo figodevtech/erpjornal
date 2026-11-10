@@ -93,6 +93,26 @@ export function statusDoDisparo(destinatarios: number, enviados: number) {
   return enviados === 0 ? "falhou" : "parcial";
 }
 
+/**
+ * Sem gravar progresso por esse tempo, um envio "enviando" é considerado
+ * interrompido (a função estourou o tempo ou caiu) e o cron o retoma.
+ * Cada lote leva segundos; 10 minutos parado não é envio em andamento.
+ */
+export const ENVIO_PARADO_MS = 10 * 60 * 1000;
+
+export function envioInterrompido(envio: { status: string; atualizadoEm: Date }, agora = new Date()) {
+  return envio.status === "enviando" && agora.getTime() - envio.atualizadoEm.getTime() > ENVIO_PARADO_MS;
+}
+
+/**
+ * Chave de idempotência de um lote, derivada do primeiro inscrito: ao retomar um
+ * envio, o mesmo lote gera a mesma chave e o Resend não manda o e-mail de novo.
+ * (Uma chave por posição — "lote-0" — repetiria a chave para outro conteúdo.)
+ */
+export function chaveIdempotenciaDoLote(base: string, primeiroInscritoId: string) {
+  return `${base}-${primeiroInscritoId}`;
+}
+
 /** O link de confirmação vale por 7 dias; depois disso a pessoa se inscreve de novo. */
 export const PRAZO_CONFIRMACAO_MS = 7 * 24 * 60 * 60 * 1000;
 

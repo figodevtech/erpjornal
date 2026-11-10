@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getArticleVersions } from "../actions";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatarDataHora } from "@/lib/datas";
 import { History, ChevronDown, ChevronUp, FileDiff, X } from "lucide-react";
 import * as diff from "diff";
 
@@ -98,7 +97,7 @@ export function ArticleHistory({ artigoId, currentContent }: { artigoId: string,
                   >
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] uppercase font-bold tracking-widest text-[#002045]">
-                        {format(new Date(version.criadoEm), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                        {formatarDataHora(version.criadoEm)}
                       </span>
                       <span className="text-xs font-medium text-gray-600 truncate">
                         {version.resumoMudancas || "Alteração genérica"}

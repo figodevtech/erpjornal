@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import Link from "next/link";
 import { Prisma } from "@/generated/prisma/client";
 
@@ -128,7 +129,7 @@ export default async function ArtigosPage({ searchParams }: PageProps) {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-gray-600">{art.autor?.nome || "-"}</td>
-                    <td className="px-6 py-4 text-gray-600">{art.criadoEm.toLocaleDateString("pt-BR")}</td>
+                    <td className="px-6 py-4 text-gray-600">{formatarData(art.criadoEm)}</td>
                     <td className="px-6 py-4">
                       <ArticleActionsDropdown articleId={art.id} title={art.titulo} canEdit={podeEditarFluxo} />
                     </td>

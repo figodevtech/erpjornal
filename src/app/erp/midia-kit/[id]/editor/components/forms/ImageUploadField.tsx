@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { UploadCloud, Loader2, X } from "lucide-react";
 import Image from "next/image";
 
+import { reduzirImagemParaUpload } from "@/lib/imagens/reduzir";
+
 interface Props {
   mediaKitId: string;
   value?: string;
@@ -23,7 +25,8 @@ export default function ImageUploadField({ mediaKitId, value, onChange, label = 
     startTransition(async () => {
       try {
         const formData = new FormData();
-        formData.append("file", file);
+        // Reduz no navegador: a Vercel recusa envios acima de 4,5 MB.
+        formData.append("file", await reduzirImagemParaUpload(file));
         formData.append("mediaKitId", mediaKitId);
         formData.append("tipo", "image");
 
@@ -32,8 +35,8 @@ export default function ImageUploadField({ mediaKitId, value, onChange, label = 
           body: formData,
         });
 
-        const data = await res.json();
-        
+        const data = await res.json().catch(() => ({ error: `Erro no upload (HTTP ${res.status}).` }));
+
         if (!res.ok) {
           throw new Error(data.error || "Erro no upload");
         }

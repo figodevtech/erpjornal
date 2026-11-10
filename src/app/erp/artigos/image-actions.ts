@@ -13,10 +13,13 @@ import {
 import { fetchExterno, lerCorpoLimitado } from "@/lib/http/fetch-externo";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 import { slugify } from "@/lib/slug";
+import { comoResultado } from "@/lib/acao";
 
 const ARTICLE_IMAGES_BUCKET = STORAGE_BUCKETS.articleImages;
 const OPENAI_IMAGE_GENERATIONS_URL = "https://api.openai.com/v1/images/generations";
 const OPENAI_IMAGE_EDITS_URL = "https://api.openai.com/v1/images/edits";
+/** Geração de imagem leva de segundos a ~2 min; acima disso, desiste (a cota é devolvida). */
+const TEMPO_LIMITE_IA_MS = 150_000;
 
 type ImageActionInput = {
   title: string;
@@ -215,7 +218,7 @@ async function parseOpenAIImageResponse(response: Response) {
   return Buffer.from(image.b64_json, "base64");
 }
 
-export async function uploadArticleCoverImage(formData: FormData) {
+async function enviarCapaDaMateria(formData: FormData) {
   await exigirAlgumaPermissao(["artigos:criar", "artigos:editar", "artigos:publicar", "curadoria:aprovar"]);
 
   const file = formData.get("file");
@@ -236,7 +239,7 @@ export async function uploadArticleCoverImage(formData: FormData) {
   };
 }
 
-export async function generateArticleCoverImage(input: ImageActionInput) {
+async function gerarCapaComIa(input: ImageActionInput) {
   await exigirAlgumaPermissao(["artigos:criar", "artigos:editar", "artigos:publicar", "curadoria:aprovar"]);
 
   if (!input.title?.trim()) {
@@ -258,6 +261,7 @@ export async function generateArticleCoverImage(input: ImageActionInput) {
         size: config.imageGenerationSize,
         quality: config.imageGenerationQuality,
       }),
+      signal: AbortSignal.timeout(TEMPO_LIMITE_IA_MS),
     });
 
     const imageBytes = await parseOpenAIImageResponse(response);
@@ -267,7 +271,7 @@ export async function generateArticleCoverImage(input: ImageActionInput) {
   });
 }
 
-export async function recreateArticleCoverImage(input: ImageActionInput) {
+async function recriarCapaComIa(input: ImageActionInput) {
   await exigirAlgumaPermissao(["artigos:criar", "artigos:editar", "artigos:publicar", "curadoria:aprovar"]);
 
   if (!input.title?.trim()) {
@@ -310,6 +314,7 @@ export async function recreateArticleCoverImage(input: ImageActionInput) {
         Authorization: `Bearer ${getOpenAIApiKey()}`,
       },
       body: formData,
+      signal: AbortSignal.timeout(TEMPO_LIMITE_IA_MS),
     });
 
     const imageBytes = await parseOpenAIImageResponse(response);
@@ -317,4 +322,18 @@ export async function recreateArticleCoverImage(input: ImageActionInput) {
       url: await uploadArticleImage(imageBytes, "image/png", input.title),
     };
   });
+}
+
+// Ações expostas ao cliente: devolvem { ok, error } (o Next esconde mensagens de erros lançados em produção).
+
+export async function uploadArticleCoverImage(formData: FormData) {
+  return comoResultado(() => enviarCapaDaMateria(formData), "Não foi possível enviar a imagem.");
+}
+
+export async function generateArticleCoverImage(input: ImageActionInput) {
+  return comoResultado(() => gerarCapaComIa(input), "Não foi possível gerar a capa com IA.");
+}
+
+export async function recreateArticleCoverImage(input: ImageActionInput) {
+  return comoResultado(() => recriarCapaComIa(input), "Não foi possível recriar a capa com IA.");
 }

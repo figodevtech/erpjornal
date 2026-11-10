@@ -1,6 +1,11 @@
+import { formatarData } from "@/lib/datas";
 import SearchFilters from "@/components/search/SearchFilters";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
+import { filtroArtigoNoAr } from "@/lib/data/artigos";
 import { prisma } from "@/lib/prisma";
+import { ipDosCabecalhos, paginaBuscaRateLimit } from "@/lib/ratelimit";
+import { escaparRegex } from "@/lib/regex";
+import { headers } from "next/headers";
 import type { SearchOptions } from "@/lib/services/search-service";
 import { SearchService } from "@/lib/services/search-service";
 import Image from "next/image";
@@ -22,12 +27,25 @@ interface SearchPageProps {
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   const params = await searchParams;
-  const { q: query, category, author, sortBy = "relevance", dateRange = "all" } = params;
+  const { category, author, sortBy = "relevance", dateRange = "all" } = params;
+  const query = params.q?.trim().slice(0, 200) || undefined;
+
+  // A página consulta o banco a cada acesso: limita por IP como a API de busca.
+  const { success: dentroDoLimite } = await paginaBuscaRateLimit.limit(ipDosCabecalhos(await headers()));
+  if (!dentroDoLimite) {
+    return (
+      <main className="min-h-[60vh] w-full bg-white px-4 py-32 text-center text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+        <h1 className="text-2xl font-black">Muitas buscas em pouco tempo</h1>
+        <p className="mt-3 text-gray-600 dark:text-gray-400">Aguarde um minuto e tente de novo.</p>
+      </main>
+    );
+  }
 
   const [categories, authors] = await Promise.all([
     prisma.categoria.findMany({ select: { id: true, nome: true, slug: true }, orderBy: { nome: "asc" } }),
     prisma.usuario.findMany({
-      where: { artigosAutor: { some: {} } },
+      // Só quem já tem matéria no ar (não expõe nomes de quem só tem rascunho).
+      where: { artigosAutor: { some: { ...filtroArtigoNoAr(), excluidoEm: null } } },
       select: { id: true, nome: true },
       orderBy: { nome: "asc" },
     }),
@@ -66,7 +84,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   const highlight = (text: string) => {
     if (!query) return text;
-    const parts = text.split(new RegExp(`(${query})`, "gi"));
+    // Texto do leitor entra literal: sem escapar, ")" ou "+" lançam SyntaxError.
+    const parts = text.split(new RegExp(`(${escaparRegex(query)})`, "gi"));
     return (
       <>
         {parts.map((part, i) =>
@@ -210,7 +229,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                       <div className="mb-4 flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400 sm:gap-4">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="h-3 w-3 text-red-700" />
-                          {art.date ? new Date(art.date).toLocaleDateString("pt-BR") : "Data indisponivel"}
+                          {art.date ? formatarData(new Date(art.date)) : "Data indisponivel"}
                         </div>
                         <div className="flex items-center gap-1.5">
                           <User className="h-3 w-3 text-red-700" />

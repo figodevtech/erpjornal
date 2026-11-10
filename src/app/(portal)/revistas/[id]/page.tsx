@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { filtroArtigoNoAr } from "@/lib/data/artigos";
@@ -71,7 +72,7 @@ export default async function RevistaPage({ params }: RevistaPageProps) {
                 Edição {revista.edicao}
               </span>
               <span className="text-sm font-bold text-gray-400">
-                {revista.dataPublicacao ? revista.dataPublicacao.toLocaleDateString("pt-BR") : "Sem data"}
+                {revista.dataPublicacao ? formatarData(revista.dataPublicacao) : "Sem data"}
               </span>
             </div>
             <h1 className="mt-5 max-w-4xl text-4xl font-black leading-none tracking-tight md:text-6xl">{revista.titulo}</h1>

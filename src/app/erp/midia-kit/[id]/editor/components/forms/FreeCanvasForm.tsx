@@ -2,6 +2,9 @@
 
 import { Square, Type, Image as ImageIcon, Layers, Trash2, Maximize, RotateCw, Palette, Type as TypeIcon } from "lucide-react";
 import { useState, useRef, useTransition } from "react";
+import { toast } from "sonner";
+
+import { reduzirImagemParaUpload } from "@/lib/imagens/reduzir";
 import ImageUploadField from "./ImageUploadField";
 import CanvasEditor from "./canvas/CanvasEditor";
 import { CanvasElement, MediaKitFreeCanvasData } from "@/types/media-kit";
@@ -55,7 +58,8 @@ export default function FreeCanvasForm({ mediaKitId, data, onChange }: Props) {
     startTransition(async () => {
       try {
         const formData = new FormData();
-        formData.append("file", file);
+        // Reduz no navegador: a Vercel recusa envios acima de 4,5 MB.
+        formData.append("file", await reduzirImagemParaUpload(file));
         formData.append("mediaKitId", mediaKitId);
         formData.append("tipo", "image");
 
@@ -64,12 +68,13 @@ export default function FreeCanvasForm({ mediaKitId, data, onChange }: Props) {
           body: formData,
         });
 
-        const uploadData = await res.json();
-        if (res.ok) {
-          addElement('image', { imageUrl: uploadData.url });
-        }
+        const uploadData = await res.json().catch(() => ({ error: `Erro no upload (HTTP ${res.status}).` }));
+        if (!res.ok) throw new Error(uploadData.error || "Erro no upload.");
+        addElement('image', { imageUrl: uploadData.url });
       } catch (err) {
         console.error("Erro no upload:", err);
+        // Antes a falha era silenciosa: o usuário não sabia por que a imagem não entrou.
+        toast.error(err instanceof Error ? err.message : "Erro no upload.");
       }
     });
   }

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarData } from "@/lib/datas";
 import PortalEmptyState from "@/components/portal/PortalEmptyState";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { BookOpen } from "lucide-react";
@@ -30,7 +31,7 @@ type EdicoesAnterioresContentProps = {
 };
 
 function formatDate(value: string | null) {
-  return value ? new Date(value).toLocaleDateString("pt-BR") : "Sem data de publicação";
+  return value ? formatarData(new Date(value)) : "Sem data de publicação";
 }
 
 export default function EdicoesAnterioresContent({ revistas }: EdicoesAnterioresContentProps) {

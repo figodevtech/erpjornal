@@ -1,7 +1,8 @@
+import { formatarData } from "@/lib/datas";
 import PortalEmptyState from "@/components/portal/PortalEmptyState";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { prisma } from "@/lib/prisma";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
+import { LIMITE_MATERIAS_LISTAGEM, filtroArtigoNoAr } from "@/lib/data/artigos";
 import { Prisma } from "@/generated/prisma/client";
 import { Globe, MapPin } from "lucide-react";
 import Image from "next/image";
@@ -66,8 +67,9 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
 
   let title = "Notícias regionais";
   let description = "Acompanhe as notícias políticas da sua região.";
+  // Só matérias no ar: agendadas não podem vazar título e resumo antes da hora.
   const whereClause: Prisma.ArtigoWhereInput = {
-    status: STATUS_ARTIGO.publicado,
+    ...filtroArtigoNoAr(),
     revistaId: null,
   };
 
@@ -97,7 +99,8 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
 
   const artigos = (await prisma.artigo.findMany({
     where: whereClause,
-    orderBy: { criadoEm: "desc" },
+    orderBy: [{ dataPublicacao: "desc" }, { criadoEm: "desc" }],
+    take: LIMITE_MATERIAS_LISTAGEM,
     include: { categoria: true, autor: { select: { nome: true } } },
   })) as unknown as ArticleWithExtras[];
 
@@ -157,7 +160,7 @@ export default async function RegionalPage({ params }: { params: Promise<{ slug:
             )}
 
             <div className="portal-card-meta mt-auto flex w-full items-center gap-3 pt-2 text-[11px] font-black uppercase tracking-widest">
-              <time>{(artigo.dataPublicacao ?? artigo.criadoEm).toLocaleDateString("pt-BR")}</time>
+              <time>{formatarData((artigo.dataPublicacao ?? artigo.criadoEm))}</time>
               <span className="hidden h-1 w-1 bg-gray-300 sm:block" />
               <span className="hidden truncate sm:inline-block">Por {artigo.autor.nome || "Redação"}</span>
             </div>

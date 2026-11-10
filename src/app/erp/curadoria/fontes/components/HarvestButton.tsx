@@ -13,6 +13,7 @@ export function HarvestButton({ sourceId }: { sourceId: string }) {
     setLoading(true);
     try {
       const res = await harvestFeed(sourceId, limit);
+      if (!res.ok) throw new Error(res.error);
       if (res.count > 0) {
         toast.success(`${res.count} novos itens coletados. (Limite: ${limit})`);
       } else {

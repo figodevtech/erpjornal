@@ -1,6 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { aplicarExclusaoLogica } from "@/lib/db/exclusao-logica";
+import { aplicarExclusaoLogica, motivoOperacaoProibida } from "@/lib/db/exclusao-logica";
+
+describe("motivoOperacaoProibida", () => {
+  it("recusa exclusão física nos models com soft-delete", () => {
+    expect(motivoOperacaoProibida("Artigo", "delete")).toMatch(/exclusão lógica/);
+    expect(motivoOperacaoProibida("Revista", "deleteMany")).toMatch(/exclusão lógica/);
+  });
+
+  it("libera as demais operações e os demais models", () => {
+    expect(motivoOperacaoProibida("Artigo", "update")).toBeNull();
+    expect(motivoOperacaoProibida("Artigo", "findMany")).toBeNull();
+    expect(motivoOperacaoProibida("InscricaoNewsletter", "delete")).toBeNull();
+    expect(motivoOperacaoProibida("ArtigoTag", "deleteMany")).toBeNull();
+    expect(motivoOperacaoProibida(undefined, "delete")).toBeNull();
+  });
+});
 
 describe("aplicarExclusaoLogica", () => {
   it("esconde excluídos nas leituras dos models com soft-delete", () => {

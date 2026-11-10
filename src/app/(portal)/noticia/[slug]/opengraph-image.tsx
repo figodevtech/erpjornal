@@ -1,6 +1,6 @@
 ﻿import { ImageResponse } from "next/og";
 
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
+import { filtroArtigoNoAr } from "@/lib/data/artigos";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -38,8 +38,7 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   const artigo = await prisma.artigo.findFirst({
     where: {
       slug,
-      status: STATUS_ARTIGO.publicado,
-      dataPublicacao: { lte: new Date() },
+      ...filtroArtigoNoAr(),
     },
     select: {
       titulo: true,

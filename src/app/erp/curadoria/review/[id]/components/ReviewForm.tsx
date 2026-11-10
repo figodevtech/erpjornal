@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarData, formatarHora } from "@/lib/datas";
 import ConfirmationDialog from "@/components/ui/ConfirmationDialog";
 import CoverImageManager from "@/app/erp/artigos/components/CoverImageManager";
 import RichTextEditor from "@/components/ui/RichTextEditor";
@@ -87,6 +88,7 @@ export function ReviewForm({
     setLoadingIA(true);
     try {
       const res = await rewriteWithAI(item.id);
+      if (!res.ok) throw new Error(res.error);
       if (res.success) {
         await refreshConfig();
         setTitulo(res.aiResponse.ai_title);
@@ -116,6 +118,7 @@ export function ReviewForm({
         categoriaId: categoriaId || undefined,
         urlImagemOg: imagemCapa || undefined,
       });
+      if (!res.ok) throw new Error(res.error);
       if (res.success) {
         toast.success(
           res.publicado
@@ -135,13 +138,14 @@ export function ReviewForm({
   async function handleSaveDraft() {
     setSavingDraft(true);
     try {
-      await saveRSSRewriteDraft(item.id, {
+      const res = await saveRSSRewriteDraft(item.id, {
         titulo,
         resumo,
         corpoTexto: corpo,
         categoriaId: categoriaId || undefined,
         urlImagemOg: imagemCapa || undefined,
       });
+      if (!res.ok) throw new Error(res.error);
       toast.success("Rascunho salvo.");
       router.refresh();
     } catch (err) {
@@ -160,6 +164,7 @@ export function ReviewForm({
     setActionLoading(true);
     try {
       const res = await republishOriginalWithCredits(item.id, categoriaId || undefined, imagemCapa || undefined);
+      if (!res.ok) throw new Error(res.error);
       if (res.success) {
         toast.success(
           res.publicado
@@ -179,7 +184,8 @@ export function ReviewForm({
   async function handleReject() {
     setActionLoading(true);
     try {
-      await rejectRSSItem(item.id);
+      const res = await rejectRSSItem(item.id);
+      if (!res.ok) throw new Error(res.error);
       toast.info("Item rejeitado.");
       setConfirmarAcao(null);
       router.push("/erp/curadoria/dashboard");
@@ -373,8 +379,8 @@ export function ReviewForm({
         </p>
         <p>
           Publicado originalmente em{" "}
-          {new Date(item.dataPublicacao).toLocaleDateString("pt-BR")} as{" "}
-          {new Date(item.dataPublicacao).toLocaleTimeString("pt-BR", {
+          {formatarData(new Date(item.dataPublicacao))} as{" "}
+          {formatarHora(new Date(item.dataPublicacao), {
             hour: "2-digit",
             minute: "2-digit",
           })}

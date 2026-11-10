@@ -15,6 +15,7 @@ import {
   validarArquivoParaBucket,
 } from "@/lib/storage/buckets";
 import { slugify } from "@/lib/slug";
+import { comoResultado } from "@/lib/acao";
 
 const REVISTA_COVERS_BUCKET = STORAGE_BUCKETS.revistaCovers;
 
@@ -58,8 +59,13 @@ export async function saveRevista(formData: FormData) {
   redirect(`/erp/revistas/${revista.id}`);
 }
 
+/** Devolve { ok, url } ou { ok: false, error } (o Next esconde mensagens de erros lançados em produção). */
 export async function updateRevistaCover(formData: FormData) {
-  await exigirPermissao("revistas:editar");
+  return comoResultado(() => enviarCapaDaRevista(formData), "Não foi possível enviar a capa.");
+}
+
+async function enviarCapaDaRevista(formData: FormData) {
+  const sessao = await exigirPermissao("revistas:editar");
 
   const revistaId = formData.get("revistaId") as string;
   const file = formData.get("file");
@@ -79,7 +85,7 @@ export async function updateRevistaCover(formData: FormData) {
 
   const revista = await prisma.revista.findUnique({
     where: { id: revistaId },
-    select: { id: true, titulo: true },
+    select: { id: true, titulo: true, capaUrl: true },
   });
 
   if (!revista) {
@@ -105,6 +111,14 @@ export async function updateRevistaCover(formData: FormData) {
   await prisma.revista.update({
     where: { id: revistaId },
     data: { capaUrl: data.publicUrl },
+  });
+  await registrarAuditoria({
+    usuarioId: sessao.user.id,
+    acao: "EDICAO",
+    entidade: "revista",
+    entidadeId: revistaId,
+    antes: { capaUrl: revista.capaUrl },
+    depois: { capaUrl: data.publicUrl },
   });
 
   revalidatePath("/erp/revistas");

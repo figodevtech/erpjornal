@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 
+import { formatarData, paraDataHoraLocal } from "@/lib/datas";
 import { useMemo, useState, useTransition } from "react";
 import { Eye, Megaphone, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -25,8 +26,9 @@ type AnuncioItem = {
   dataFim: string | null;
 };
 
+/** Dia (AAAA-MM-DD) no horário de Brasília: o ISO em UTC pode cair no dia seguinte. */
 function formatDateInput(value: string | null) {
-  return value ? value.slice(0, 10) : "";
+  return paraDataHoraLocal(value).slice(0, 10);
 }
 
 function readFormDraft(form: HTMLFormElement, fallbackId: string): AnuncioItem {
@@ -413,7 +415,8 @@ export default function AnunciosManager({
   function submit(formData: FormData) {
     startTransition(async () => {
       try {
-        await salvarAnuncio(formData);
+        const resultado = await salvarAnuncio(formData);
+        if (!resultado.ok) throw new Error(resultado.error);
         toast.success(selected.id ? "Anúncio atualizado." : "Anúncio cadastrado.");
         setSelectedId("");
         setDialogAberto(false);
@@ -426,7 +429,8 @@ export default function AnunciosManager({
   function remove(id: string) {
     startTransition(async () => {
       try {
-        await excluirAnuncio(id);
+        const resultado = await excluirAnuncio(id);
+        if (!resultado.ok) throw new Error(resultado.error);
         toast.success("Anúncio excluído.");
         setSelectedId("");
       } catch (error: unknown) {
@@ -501,7 +505,7 @@ export default function AnunciosManager({
 
                     <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-xs text-gray-500">
-                        Exibe até: {anuncio.dataFim ? new Date(anuncio.dataFim).toLocaleDateString("pt-BR") : "sem vencimento"}
+                        Exibe até: {anuncio.dataFim ? formatarData(new Date(anuncio.dataFim)) : "sem vencimento"}
                       </p>
                       {podeEditar && (
                         <div className="flex gap-2">

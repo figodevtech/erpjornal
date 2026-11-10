@@ -11,6 +11,7 @@ import TTSPlayer from "@/components/portal/TTSPlayer";
 import { ViewCounter } from "@/components/portal/ViewCounter";
 import { obterVisualizacoes } from "@/lib/analytics/visualizacoes";
 import { buscarArtigoPublicado, buscarSlugAtual } from "@/lib/data/artigos";
+import { formatarData, formatarHora } from "@/lib/datas";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
 import { dividirParaAnuncio, trechoInicial } from "@/lib/html/trechos";
 import { absoluteUrl } from "@/lib/site-url";
@@ -156,25 +157,22 @@ export default async function NoticiaPage({ params }: PageProps) {
                 <p className="article-meta text-[15px] font-bold uppercase tracking-widest">
                   Por <span className="text-red-700">{artigo.autor?.nome || "Redação"}</span>
                 </p>
-                <time className="article-meta text-[13px] font-black uppercase tracking-widest flex items-center gap-2 mt-1">
-                  {artigo.dataPublicacao?.toLocaleDateString("pt-BR", { 
-                    day: "2-digit", month: "long", year: "numeric"
-                  })} às {artigo.dataPublicacao?.toLocaleTimeString("pt-BR", { 
-                    hour: "2-digit", minute: "2-digit"
-                  })}
-                </time>
-                {artigo.autorExterno && (
-                  <p
-                    className="mt-2 flex items-center gap-2 text-[13px] font-bold uppercase tracking-tight text-black dark:text-gray-100"
-                    style={{ color: "#000000" }}
+                {artigo.dataPublicacao && (
+                  <time
+                    dateTime={artigo.dataPublicacao.toISOString()}
+                    className="article-meta text-[13px] font-black uppercase tracking-widest flex items-center gap-2 mt-1"
                   >
-                    <span
-                      className="rounded bg-gray-200 px-2 py-0.5 text-[11px] text-black dark:bg-gray-900 dark:text-gray-100"
-                      style={{ color: "#000000", backgroundColor: "#e5e7eb" }}
-                    >
+                    {/* Horário de Brasília: o servidor (Vercel) roda em UTC. */}
+                    {formatarData(artigo.dataPublicacao, { day: "2-digit", month: "long", year: "numeric" })} às{" "}
+                    {formatarHora(artigo.dataPublicacao)}
+                  </time>
+                )}
+                {artigo.autorExterno && (
+                  <p className="mt-2 flex items-center gap-2 text-[13px] font-bold uppercase tracking-tight text-black dark:text-gray-100">
+                    <span className="rounded bg-gray-200 px-2 py-0.5 text-[11px] text-black dark:bg-gray-800 dark:text-gray-100">
                       Fonte Original:
                     </span>
-                    <span className="font-black text-black dark:text-white" style={{ color: "#000000" }}>
+                    <span className="font-black text-black dark:text-white">
                       {artigo.autorExterno}
                     </span>
                     {artigo.urlFonte && (

@@ -31,11 +31,24 @@ export function revalidarPaginasPortal(...paginas: PaginaPortal[]) {
   for (const pagina of paginas) revalidatePath(PADROES_PORTAL[pagina], "page");
 }
 
-/** Matérias mudaram (publicação, edição, exclusão): home, listas e páginas que as mostram. */
-export function revalidarMateriasNoPortal() {
+/**
+ * Matérias mudaram (publicação, edição, exclusão): home, listas e páginas que as mostram.
+ *
+ * Com `slugs`, invalida só as páginas dessas matérias (uma página de notícia não
+ * mostra as outras); sem, invalida todas as notícias. As listagens (categoria,
+ * tag, região...) são sempre invalidadas.
+ */
+export function revalidarMateriasNoPortal(slugs?: readonly (string | null | undefined)[]) {
   revalidatePath("/");
   revalidatePath("/edicoes-anteriores");
-  revalidarPaginasPortal("noticia", "categoria", "regiao", "tag", "politico", "revista");
+  revalidarPaginasPortal("categoria", "regiao", "tag", "politico", "revista");
+
+  const unicos = new Set((slugs ?? []).filter((slug): slug is string => Boolean(slug)));
+  if (slugs === undefined) {
+    revalidarPaginasPortal("noticia");
+  } else {
+    for (const slug of unicos) revalidatePath(`/noticia/${slug}`);
+  }
 }
 
 /** Mudança visível em todas as páginas do portal (anúncios, menu de categorias). */

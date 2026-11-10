@@ -16,6 +16,9 @@ export function filtroArtigoNoAr(agora = new Date()) {
   };
 }
 
+/** Máximo de matérias nas listagens do portal (categoria, região): a página não cresce com o acervo. */
+export const LIMITE_MATERIAS_LISTAGEM = 60;
+
 /**
  * Busca uma matéria visível no portal pelo slug.
  * Deduplicada por requisição (React cache): metadata e página compartilham a consulta.

@@ -18,10 +18,11 @@ function autorizado(cabecalho: string | null) {
 }
 
 /**
- * Envia a newsletter das matérias agendadas que já entraram no ar.
- * Chame a cada 10–15 min com `Authorization: Bearer <CRON_SECRET>` (a Vercel Cron
- * manda esse cabeçalho sozinha quando CRON_SECRET está definida). Sem a variável,
- * a rota fica desligada.
+ * Envia a newsletter das matérias agendadas que já entraram no ar e retoma
+ * envios interrompidos no meio (função que estourou o tempo).
+ * Agendada a cada 10 min no vercel.json; a Vercel Cron manda
+ * `Authorization: Bearer <CRON_SECRET>` sozinha quando a variável está definida.
+ * Sem a variável, a rota fica desligada.
  */
 export async function GET(request: Request) {
   if (!process.env.CRON_SECRET?.trim()) {

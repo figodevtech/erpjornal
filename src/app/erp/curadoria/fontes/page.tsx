@@ -1,6 +1,7 @@
 import { Globe, Link as LinkIcon, MapPin, RefreshCcw } from "lucide-react";
 
 import { exigirPermissao } from "@/lib/auth";
+import { formatarDataHora } from "@/lib/datas";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 
@@ -103,7 +104,7 @@ export default async function FontesCuradoriaPage() {
                     <span className="max-w-[150px] truncate">
                       Ultima:{" "}
                       {fonte.lastHarvest
-                        ? new Date(fonte.lastHarvest).toLocaleString("pt-BR", {
+                        ? formatarDataHora(fonte.lastHarvest, {
                             day: "2-digit",
                             month: "2-digit",
                             hour: "2-digit",

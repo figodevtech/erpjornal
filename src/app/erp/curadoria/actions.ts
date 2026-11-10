@@ -1,5 +1,6 @@
 "use server";
 
+import { formatarData, formatarHora } from "@/lib/datas";
 import Parser from "rss-parser";
 import { revalidatePath } from "next/cache";
 import { gunzipSync, inflateSync } from "node:zlib";
@@ -10,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
 import { fetchExterno, lerCorpoLimitado, validarUrlExterna } from "@/lib/http/fetch-externo";
 import { registrarAuditoria } from "@/lib/auditoria";
+import { comoResultado } from "@/lib/acao";
 import { extractPlainTextFromHtml } from "@/lib/tts-utils";
 import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import { slugify } from "@/lib/slug";
@@ -136,7 +138,7 @@ async function criarArtigoDaCuradoria(
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
   if (publicar) {
-    revalidarMateriasNoPortal();
+    revalidarMateriasNoPortal([artigo.slug]);
     agendarDisparoNewsletter();
   }
 
@@ -252,7 +254,7 @@ type RssItem = {
   "media:thumbnail"?: Array<{ $?: { url?: string }; url?: string }> | { $?: { url?: string }; url?: string };
 };
 
-export async function saveRSSSource(formData: FormData) {
+async function saveRSSSourceInterno(formData: FormData) {
   const sessao = await exigirPermissao("curadoria:gerir");
 
   try {
@@ -314,7 +316,7 @@ export async function saveRSSSource(formData: FormData) {
   }
 }
 
-export async function deleteRSSSource(id: string) {
+async function deleteRSSSourceInterno(id: string) {
   const sessao = await exigirPermissao("curadoria:gerir");
 
   // Exclusão lógica: os itens já coletados e os artigos gerados continuam íntegros.
@@ -326,7 +328,7 @@ export async function deleteRSSSource(id: string) {
   return { success: true };
 }
 
-export async function toggleRSSSourceStatus(id: string, currentStatus: boolean) {
+async function toggleRSSSourceStatusInterno(id: string, currentStatus: boolean) {
   await exigirPermissao("curadoria:gerir");
 
   await prisma.fonteRss.update({
@@ -650,7 +652,7 @@ function buildOriginalContentHtml(item: {
     <hr />
     <p><strong>Credito da fonte:</strong> ${escapeHtml(item.source.name)}</p>
     <p><strong>Link original:</strong> <a href="${escapeHtml(item.linkOriginal)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.linkOriginal)}</a></p>
-    <p><strong>Data da publicacao original:</strong> ${item.dataPublicacao.toLocaleDateString("pt-BR")} as ${item.dataPublicacao.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</p>`;
+    <p><strong>Data da publicacao original:</strong> ${formatarData(item.dataPublicacao)} as ${formatarHora(item.dataPublicacao, { hour: "2-digit", minute: "2-digit" })}</p>`;
 }
 
 function validateRepublishableArticle(input: {
@@ -675,7 +677,7 @@ function validateRepublishableArticle(input: {
   }
 }
 
-export async function harvestFeed(sourceId: string, limit: number = 10) {
+async function harvestFeedInterno(sourceId: string, limit: number = 10) {
   await exigirPermissao("curadoria:gerir");
 
   try {
@@ -737,7 +739,7 @@ export async function harvestFeed(sourceId: string, limit: number = 10) {
   }
 }
 
-export async function selectRSSItem(id: string) {
+async function selectRSSItemInterno(id: string) {
   await exigirPermissao("curadoria:aprovar");
 
   await prisma.itemRssBruto.update({
@@ -749,7 +751,7 @@ export async function selectRSSItem(id: string) {
   return { success: true };
 }
 
-export async function rejectRSSItem(id: string) {
+async function rejectRSSItemInterno(id: string) {
   await exigirPermissao("curadoria:aprovar");
 
   await prisma.itemRssBruto.update({
@@ -761,7 +763,7 @@ export async function rejectRSSItem(id: string) {
   return { success: true };
 }
 
-export async function rewriteWithAI(itemId: string) {
+async function rewriteWithAIInterno(itemId: string) {
   await exigirPermissao("curadoria:aprovar");
 
   const item = await prisma.itemRssBruto.findUnique({
@@ -838,6 +840,7 @@ export async function rewriteWithAI(itemId: string) {
     const parsed = await withAppQuota("articleRewrite", async () => {
       const response = await fetch(OPENAI_RESPONSES_URL, {
         method: "POST",
+        signal: AbortSignal.timeout(90_000),
         headers: {
           Authorization: `Bearer ${getOpenAIApiKey()}`,
           "Content-Type": "application/json",
@@ -904,7 +907,7 @@ export async function rewriteWithAI(itemId: string) {
   }
 }
 
-export async function saveRSSRewriteDraft(itemId: string, draft: CuradoriaRewriteDraft) {
+async function saveRSSRewriteDraftInterno(itemId: string, draft: CuradoriaRewriteDraft) {
   await exigirPermissao("curadoria:aprovar");
 
   const item = await prisma.itemRssBruto.findUnique({ where: { id: itemId } });
@@ -950,7 +953,26 @@ export async function saveRSSRewriteDraft(itemId: string, draft: CuradoriaRewrit
   return { success: true };
 }
 
-export async function approveAndPublish(
+/** Categoria escolhida na revisão (obrigatória: antes caía na primeira categoria do banco). */
+async function exigirCategoria(categoriaId: string | null | undefined) {
+  if (!categoriaId) throw new Error("Escolha a categoria da matéria antes de publicar.");
+  const categoria = await prisma.categoria.findUnique({ where: { id: categoriaId } });
+  if (!categoria) throw new Error("A categoria escolhida não existe mais. Escolha outra.");
+  return categoria;
+}
+
+/** URL de imagem vinda do cliente: só http(s) vira src no portal. */
+function urlHttpOuNulo(valor: string | null | undefined) {
+  if (!valor) return null;
+  try {
+    const url = new URL(valor);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+async function approveAndPublishInterno(
   itemId: string,
   finalData: {
     titulo: string;
@@ -968,10 +990,8 @@ export async function approveAndPublish(
   });
   if (!item) throw new Error("Item nao encontrado");
 
-  const category =
-    (finalData.categoriaId
-      ? await prisma.categoria.findUnique({ where: { id: finalData.categoriaId } })
-      : null) || (await prisma.categoria.findFirst());
+  const category = await exigirCategoria(finalData.categoriaId);
+  const urlImagemOg = urlHttpOuNulo(finalData.urlImagemOg);
   validateRepublishableArticle({
     title: finalData.titulo,
     resumo: finalData.resumo,
@@ -982,15 +1002,15 @@ export async function approveAndPublish(
     titulo: finalData.titulo,
     resumo: finalData.resumo,
     corpoTexto: finalData.corpoTexto,
-    categoriaId: category?.id ?? null,
-    urlImagemOg: finalData.urlImagemOg || item.thumbnail,
+    categoriaId: category.id,
+    urlImagemOg: urlImagemOg || item.thumbnail,
     urlFonte: null,
     autorExterno: null,
     linkOriginal: item.linkOriginal,
   });
 }
 
-export async function republishOriginalWithCredits(
+async function republishOriginalWithCreditsInterno(
   itemId: string,
   categoriaId?: string | null,
   coverImageUrl?: string | null
@@ -1003,9 +1023,7 @@ export async function republishOriginalWithCredits(
   });
   if (!item) throw new Error("Item nao encontrado");
 
-  const category =
-    (categoriaId ? await prisma.categoria.findUnique({ where: { id: categoriaId } }) : null) ||
-    (await prisma.categoria.findFirst());
+  const category = await exigirCategoria(categoriaId);
 
   let description = item.description || "";
   let thumbnail = item.thumbnail;
@@ -1059,10 +1077,66 @@ export async function republishOriginalWithCredits(
     titulo: item.tituloOriginal,
     resumo,
     corpoTexto,
-    categoriaId: category?.id ?? null,
-    urlImagemOg: coverImageUrl || thumbnail,
+    categoriaId: category.id,
+    urlImagemOg: urlHttpOuNulo(coverImageUrl) || thumbnail,
     urlFonte: item.linkOriginal,
     autorExterno: item.source.name,
     linkOriginal: item.linkOriginal,
   });
+}
+
+// Ações expostas ao cliente: devolvem { ok, error } em vez de lançar (o Next esconde
+// a mensagem de erros lançados em produção, e o usuário veria só um erro genérico).
+
+export async function saveRSSSource(formData: FormData) {
+  return comoResultado(() => saveRSSSourceInterno(formData));
+}
+
+export async function deleteRSSSource(id: string) {
+  return comoResultado(() => deleteRSSSourceInterno(id));
+}
+
+export async function toggleRSSSourceStatus(id: string, currentStatus: boolean) {
+  return comoResultado(() => toggleRSSSourceStatusInterno(id, currentStatus));
+}
+
+export async function harvestFeed(sourceId: string, limit: number = 10) {
+  return comoResultado(() => harvestFeedInterno(sourceId, limit));
+}
+
+export async function selectRSSItem(id: string) {
+  return comoResultado(() => selectRSSItemInterno(id));
+}
+
+export async function rejectRSSItem(id: string) {
+  return comoResultado(() => rejectRSSItemInterno(id));
+}
+
+export async function rewriteWithAI(itemId: string) {
+  return comoResultado(() => rewriteWithAIInterno(itemId));
+}
+
+export async function saveRSSRewriteDraft(itemId: string, draft: CuradoriaRewriteDraft) {
+  return comoResultado(() => saveRSSRewriteDraftInterno(itemId, draft));
+}
+
+export async function approveAndPublish(
+  itemId: string,
+  finalData: {
+    titulo: string;
+    resumo: string;
+    corpoTexto: string;
+    categoriaId?: string | null;
+    urlImagemOg?: string | null;
+  }
+) {
+  return comoResultado(() => approveAndPublishInterno(itemId, finalData));
+}
+
+export async function republishOriginalWithCredits(
+  itemId: string,
+  categoriaId?: string | null,
+  coverImageUrl?: string | null
+) {
+  return comoResultado(() => republishOriginalWithCreditsInterno(itemId, categoriaId, coverImageUrl));
 }

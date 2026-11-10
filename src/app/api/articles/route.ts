@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
+import { filtroArtigoNoAr } from "@/lib/data/artigos";
 import { redis, redisKeys } from "@/lib/redis";
 import { globalRateLimit, getIP } from "@/lib/ratelimit";
 import { inteiroLimitado, isSlugValido } from "@/lib/http/parametros";
@@ -29,11 +29,8 @@ export async function GET(request: Request) {
 
     // Apenas listamos matérias oficiais que já chegaram no horário configurado
     const whereClause: Prisma.ArtigoWhereInput = {
-      status: STATUS_ARTIGO.publicado,
+      ...filtroArtigoNoAr(),
       revistaId: null,
-      dataPublicacao: {
-        lte: new Date(),
-      },
     };
 
     // --- CAMADA DE CACHE REDIS ---

@@ -54,3 +54,18 @@ describe("padrões de revalidação do portal", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/(portal)", "layout");
   });
 });
+
+describe("invalidação por matéria", () => {
+  it("com slugs, invalida só as páginas dessas matérias (e todas as listagens)", () => {
+    vi.mocked(revalidatePath).mockClear();
+    revalidarMateriasNoPortal(["nova-materia", "slug-antigo", null, "nova-materia"]);
+    const chamadas = vi.mocked(revalidatePath).mock.calls;
+    expect(chamadas).toContainEqual(["/noticia/nova-materia"]);
+    expect(chamadas).toContainEqual(["/noticia/slug-antigo"]);
+    expect(chamadas.filter(([caminho]) => caminho === "/noticia/nova-materia")).toHaveLength(1);
+    expect(chamadas).not.toContainEqual([PADROES_PORTAL.noticia, "page"]);
+    for (const pagina of ["categoria", "regiao", "tag", "politico", "revista"] as const) {
+      expect(chamadas).toContainEqual([PADROES_PORTAL[pagina], "page"]);
+    }
+  });
+});

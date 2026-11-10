@@ -5,6 +5,8 @@ import { ImageIcon, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { reduzirImagemParaUpload } from "@/lib/imagens/reduzir";
+
 import { updateRevistaCover } from "../actions";
 
 type RevistaCoverUploaderProps = {
@@ -31,8 +33,10 @@ export default function RevistaCoverUploader({
     try {
       const formData = new FormData();
       formData.append("revistaId", revistaId);
-      formData.append("file", file);
+      // Reduz no navegador: a Vercel recusa envios acima de 4,5 MB.
+      formData.append("file", await reduzirImagemParaUpload(file));
       const result = await updateRevistaCover(formData);
+      if (!result.ok) throw new Error(result.error);
       setCoverUrl(result.url);
       toast.success("Capa da revista atualizada.");
     } catch (error) {

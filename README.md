@@ -110,7 +110,7 @@ npm run db:deploy
 - **Celular perdido:** outro administrador usa *Usuários → Ações → Redefinir MFA*. Se for o único admin, remova o fator no painel do Supabase (*Authentication → Users → usuário → MFA*).
 
 ### Exclusão lógica e auditoria
-- **Nada é apagado de verdade:** artigos, revistas, categorias, políticos, anúncios, feeds e mídia kits recebem `excluido_em`. Uma extensão do Prisma (`src/lib/db/exclusao-logica.ts`) esconde os excluídos nas leituras; para incluí-los, passe `excluidoEm` no `where` (ex.: `excluidoEm: undefined`). Relações em `include` não são filtradas automaticamente.
+- **Nada é apagado de verdade:** artigos, revistas, categorias, políticos, anúncios, feeds e mídia kits recebem `excluido_em`. Uma extensão do Prisma (`src/lib/db/exclusao-logica.ts`) esconde os excluídos nas leituras e recusa `delete`/`deleteMany` nesses models; para incluir excluídos numa leitura, passe `excluidoEm` no `where` (ex.: `excluidoEm: undefined`). Relações em `include` não são filtradas automaticamente.
 - **Trilha de auditoria:** toda action de escrita chama `registrarAuditoria()` (`src/lib/auditoria.ts`), que grava quem, o quê, antes/depois, IP e user-agent. Senhas e tokens nunca entram no log. A consulta e a exportação CSV ficam em `/erp/auditoria` (permissão `auditoria:ler`).
 - **Matéria publicada:** cada edição guarda a versão anterior; o slug só muda com `artigos:publicar`, e o endereço antigo redireciona para o novo.
 - **Checagem obrigatória:** categorias marcadas com "exige checagem" não publicam matéria sem ao menos uma checagem de fato.
@@ -118,20 +118,33 @@ npm run db:deploy
 ### Newsletter, plantão e alertas
 - **Inscrição com dupla confirmação (LGPD):** o formulário grava a inscrição como *pendente* e envia um link (vale 7 dias). Só quem confirma recebe. Confirmar e sair da lista acontecem por botão (POST), porque filtros de e-mail abrem os links sozinhos. Todo envio traz o link de descadastro e o cabeçalho de descadastro de um clique (`List-Unsubscribe-Post`).
 - **Envio:** matéria publicada com o canal *Newsletter* sai para os confirmados uma única vez, até 48h depois de entrar no ar, em lotes de 100 pelo Resend (`src/lib/newsletter/`). O disparo roda depois da publicação (`after`).
-- **Matérias agendadas:** a rota `/api/cron/newsletter` envia as que entraram no ar. Agende a cada 10–15 min com `Authorization: Bearer $CRON_SECRET` (Vercel Cron no plano Pro, ou um agendador externo). Sem cron, elas saem junto com a próxima publicação.
+- **Envio retomável:** cada lote grava o progresso (cursor do último inscrito). Um envio parado há mais de 10 min em "enviando" é retomado pelo cron de onde parou; a chave de idempotência sai do conteúdo do lote, então quem já recebeu não recebe de novo.
+- **Cron:** `/api/cron/newsletter` envia as matérias agendadas que entraram no ar e retoma envios interrompidos. Já está agendada a cada 10 min no `vercel.json` (a Vercel manda `Authorization: Bearer $CRON_SECRET` sozinha). Sem cron, as agendadas saem junto com a próxima publicação.
 - **ERP:** `/erp/newsletter` (permissão `newsletter:gerir`) mostra inscritos e envios, exporta CSV e apaga dados a pedido do titular. Essa é a única exclusão física do sistema, e fica na auditoria sem o e-mail.
 - **Plantão:** avisos na faixa do topo do portal (`/erp/plantao`, permissão `plantao:gerir`). Com `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`, cada aviso também vai para o canal da redação.
 
 ### Cache do portal
 As páginas ficam no route group `(portal)`. Para invalidar páginas dinâmicas, use os helpers de `src/lib/cache/portal.ts`: `revalidatePath("/noticia/[slug]", "page")` sem o grupo não invalida nada.
 
+- **Só o que mudou no ar:** salvar um rascunho que nunca foi publicado não invalida nada no portal (`afetaPortal` em `src/lib/editorial/status.ts`). Mudanças em matérias publicadas invalidam as listagens e só a página daquela matéria (`revalidarMateriasNoPortal([slug])`).
+
 ### Fluxo editorial
-`pauta → apuração → redação → revisão → jurídico → publicado`, além de `arquivado`. A fonte única dos status e das regras é `src/lib/editorial/status.ts`. Matérias publicadas com data futura ficam agendadas e só aparecem no portal na hora marcada (`filtroArtigoNoAr` em `src/lib/data/artigos.ts`).
+`pauta → apuração → redação → revisão → jurídico → publicado`, além de `arquivado`. A fonte única dos status e das regras é `src/lib/editorial/status.ts`. Matérias publicadas com data futura ficam agendadas e só aparecem no portal na hora marcada.
+
+- **Toda consulta pública usa `filtroArtigoNoAr()`** (`src/lib/data/artigos.ts`), nunca só `status: publicado`: filtrar só o status vaza matéria agendada (título e resumo) antes da hora. Um teste (`src/lib/data/__tests__/filtro-no-ar.test.ts`) falha se alguém filtrar à mão no código do portal, da API ou da busca.
+
+### Datas e fuso horário
+O servidor de produção (Vercel) roda em **UTC**. Sem fuso explícito, o `datetime-local` "14:00" vira 14h UTC (11h em Brasília) e `toLocaleDateString` mostra o dia de Londres. Use sempre `src/lib/datas.ts`:
+- `lerDataHoraLocal(valor)` para ler `datetime-local`/`date` vindos de formulário;
+- `paraDataHoraLocal(data)` para preencher esses campos;
+- `formatarData`, `formatarHora` e `formatarDataHora` para exibir (servem para server e client components).
 
 ### Segurança
 - **HTML de matérias:** é sempre sanitizado com `sanitizarHtmlArtigo` (`src/lib/html/sanitize.ts`, allowlist), tanto ao gravar quanto ao exibir.
 - **URLs externas** (RSS, scraping, imagens): passam por `fetchExterno` (`src/lib/http/fetch-externo.ts`), que bloqueia redes internas (SSRF).
-- **Server actions:** retornam `{ ok, error }` em vez de lançar erro, porque o Next esconde a mensagem de erros lançados em produção.
+- **Server actions:** retornam `{ ok, error }` em vez de lançar erro, porque o Next esconde a mensagem de erros lançados em produção. Para actions que lançam internamente (IA, upload, curadoria, anúncios), use `comoResultado()` de `src/lib/acao.ts`, que mantém os redirecionamentos de permissão e não mostra detalhes do banco.
+- **Fontes confidenciais:** ver, editar e anotar exige `fontes:confidencial`; nível desconhecido conta como confidencial, e a auditoria não guarda o nome de fonte confidencial (`src/lib/fontes/sigilo.ts`).
+- **Cabeçalhos:** `next.config.ts` envia `frame-ancestors 'self'`/`X-Frame-Options` (nenhum site externo abre o ERP num iframe), `nosniff`, `Referrer-Policy`, `Permissions-Policy` e HSTS.
 - **Entradas:** são validadas com `zod`.
 
 ### Portal e cache
@@ -154,3 +167,13 @@ src/lib/             regras de negócio, acesso a dados, segurança, integraçõ
 ## CI
 
 `.github/workflows/ci.yml` roda typecheck, lint e testes a cada push e PR. Não precisa de variáveis de ambiente. O build de produção fica fora do CI porque consulta o banco.
+
+## Deploy na Vercel
+
+1. **Plano:** o plano Hobby é só para uso não comercial e aceita cron apenas uma vez por dia (o deploy falha com o `*/10` do `vercel.json`). Um portal com anúncios precisa do **Pro**.
+2. **Região:** o `vercel.json` fixa as funções em `pdx1` (Oregon), ao lado do banco no Supabase `us-west-2`. Se o banco mudar de região, ajuste (São Paulo = `gru1` com Supabase `sa-east-1`).
+3. **Variáveis** (Project Settings → Environment Variables, em Production e Preview): todas as obrigatórias do `.env.example`, mais `UPSTASH_REDIS_REST_URL`/`TOKEN` (obrigatórias em produção), `CRON_SECRET`, `RESEND_API_KEY` e `EMAIL_FROM` (domínio verificado no Resend). `NEXT_PUBLIC_SITE_URL` é o domínio final, com `https://`. As `SEED_*` não vão para a Vercel. As `NEXT_PUBLIC_*` entram no build: mudou, faça novo deploy.
+4. **Banco antes do código:** rode `npm run db:deploy` (e `npm run db:setup` na primeira vez) apontando para o banco de produção **antes** de publicar uma versão que traga migration nova. O build não aplica migrations.
+5. **Supabase Auth:** em *URL Configuration*, troque o *Site URL* pelo domínio de produção e adicione `https://SEU-DOMINIO/redefinir-senha` nas *Redirect URLs*.
+6. **Uploads:** a Vercel recusa requisições acima de 4,5 MB. O navegador reduz as imagens antes do envio (`src/lib/imagens/reduzir.ts`); GIF/AVIF acima de 3,5 MB precisam ser reduzidos antes.
+7. **Build:** consulta o banco (sitemap e páginas do portal), então `DATABASE_URL` precisa valer também no ambiente de build.

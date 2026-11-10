@@ -2,7 +2,8 @@ import { Prisma } from "@/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { redis } from "@/lib/redis";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
+import { filtroArtigoNoAr } from "@/lib/data/artigos";
+import { inicioDoDiaEmBrasilia } from "@/lib/datas";
 
 export type SearchResultType = "noticia" | "autor" | "categoria" | "politico" | "podcast" | "video";
 
@@ -112,8 +113,9 @@ export class SearchService {
 
   private static async searchArticles(query: string, options: SearchOptions): Promise<SearchResult[]> {
     const now = new Date();
+    // Só matérias no ar: agendadas não podem aparecer na busca antes da hora.
     const where: Prisma.ArtigoWhereInput = {
-      status: STATUS_ARTIGO.publicado,
+      ...filtroArtigoNoAr(now),
       revistaId: null,
     };
 
@@ -143,7 +145,8 @@ export class SearchService {
 
     if (options.dateRange && options.dateRange !== "all") {
       if (options.dateRange === "today") {
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        // "Hoje" no horário de Brasília (o servidor roda em UTC).
+        startDate = inicioDoDiaEmBrasilia(now);
       } else if (options.dateRange === "week") {
         startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       } else if (options.dateRange === "month") {
@@ -152,9 +155,9 @@ export class SearchService {
     }
 
     if (startDate || options.endDate) {
-      where.dataPublicacao = {};
-      if (startDate) where.dataPublicacao.gte = startDate;
-      if (options.endDate) where.dataPublicacao.lte = options.endDate;
+      // Mantém o teto "já no ar" (lte: agora) junto com o período pedido.
+      const fim = options.endDate && options.endDate < now ? options.endDate : now;
+      where.dataPublicacao = { lte: fim, ...(startDate ? { gte: startDate } : {}) };
     }
 
     // Ordenação no banco para garantir que pegamos os Corretos no 'take'
@@ -246,7 +249,8 @@ export class SearchService {
     const authors = await prisma.usuario.findMany({
       where: {
         nome: { contains: query, mode: "insensitive" },
-        artigosAutor: { some: {} } // Somente quem tem artigos
+        // Só quem já tem matéria no ar (não expõe nomes de quem só tem rascunho).
+        artigosAutor: { some: { ...filtroArtigoNoAr(), excluidoEm: null } },
       },
       take: 5,
     });
@@ -262,7 +266,8 @@ export class SearchService {
 
   private static async searchPoliticians(query: string): Promise<SearchResult[]> {
     const politicians = await prisma.politico.findMany({
-      where: { nome: { contains: query, mode: "insensitive" } },
+      // Só entidades com perfil público (/politico/<slug>).
+      where: { nome: { contains: query, mode: "insensitive" }, slug: { not: null } },
       take: 5,
     });
 
@@ -270,7 +275,7 @@ export class SearchService {
       id: p.id,
       type: "politico",
       title: p.nome || "Entidade sem nome",
-      slug: p.id,
+      slug: p.slug ?? p.id,
       image: p.urlFoto || undefined,
       metadata: {
         partido: p.partido || undefined,
@@ -333,7 +338,7 @@ export class SearchService {
 
     const suggestions = await prisma.artigo.findMany({
       where: {
-        status: STATUS_ARTIGO.publicado,
+        ...filtroArtigoNoAr(),
         revistaId: null,
         titulo: { contains: query, mode: "insensitive" },
       },

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   ETAPAS_FLUXO,
+  afetaPortal,
   STATUS_INFO,
   isStatusArtigo,
   resolverStatusAoSalvar,
@@ -66,5 +67,22 @@ describe("resolverStatusAoSalvar", () => {
     expect(resolverStatusAoSalvar({ solicitado: "publicado", atual: "revisao", podePublicar: true })).toBe("publicado");
     expect(resolverStatusAoSalvar({ solicitado: "revisao", atual: "publicado", podePublicar: true })).toBe("revisao");
     expect(resolverStatusAoSalvar({ solicitado: "arquivado", atual: "publicado", podePublicar: true })).toBe("arquivado");
+  });
+});
+
+describe("afetaPortal", () => {
+  it("rascunho que nunca esteve no ar não mexe no portal", () => {
+    expect(afetaPortal("pauta", "redacao")).toBe(false);
+    expect(afetaPortal(null, "pauta")).toBe(false);
+    expect(afetaPortal("arquivado", "pauta")).toBe(false);
+    expect(afetaPortal("revisao", null)).toBe(false);
+  });
+
+  it("publicar, editar publicada, despublicar ou excluir publicada mexe", () => {
+    expect(afetaPortal("revisao", "publicado")).toBe(true);
+    expect(afetaPortal(null, "publicado")).toBe(true);
+    expect(afetaPortal("publicado", "publicado")).toBe(true);
+    expect(afetaPortal("publicado", "arquivado")).toBe(true);
+    expect(afetaPortal("publicado", null)).toBe(true);
   });
 });

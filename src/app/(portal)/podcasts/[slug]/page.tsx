@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Image from "next/image";
@@ -39,7 +40,7 @@ export default async function EpisodePage({ params }: { params: Promise<{ slug: 
           {ep.titulo}
         </h1>
         <div className="flex items-center gap-4 text-[11px] font-bold text-gray-400 tracking-widest uppercase">
-           <span>Publicado: {new Date(ep.dataPub).toLocaleDateString("pt-BR", { day:'numeric', month:'long', year:'numeric' })}</span>
+           <span>Publicado: {formatarData(new Date(ep.dataPub), { day:'numeric', month:'long', year:'numeric' })}</span>
            <span className="text-gray-200">|</span>
            <span>Revista Gestão Oficial</span>
         </div>

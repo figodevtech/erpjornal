@@ -29,7 +29,8 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     try {
-      await saveRSSSource(formData);
+      const res = await saveRSSSource(formData);
+      if (!res.ok) throw new Error(res.error);
       toast.success("Fonte salva com sucesso!");
       setIsOpen(false);
     } catch (error: unknown) {
@@ -136,7 +137,11 @@ export function RSSSourceForm({ source }: RSSSourceFormProps) {
                 type="button"
                 onClick={async () => {
                   if(confirm("Deletar esta fonte?")) {
-                    await deleteRSSSource(source.id);
+                    const res = await deleteRSSSource(source.id);
+                    if (!res.ok) {
+                      toast.error(res.error);
+                      return;
+                    }
                     toast.success("Deletada");
                     setIsOpen(false);
                   }

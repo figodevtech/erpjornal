@@ -12,7 +12,8 @@ export function StatusToggle({ id, isActive }: { id: string, isActive: boolean }
     setLoading(true);
     const safeStatus = isActive ?? true; 
     try {
-      await toggleRSSSourceStatus(id, safeStatus);
+      const res = await toggleRSSSourceStatus(id, safeStatus);
+      if (!res.ok) throw new Error(res.error);
       toast.success(isActive ? "Coleta Automática Desativada" : "Coleta Automática Ativada");
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Erro ao alterar o status.");

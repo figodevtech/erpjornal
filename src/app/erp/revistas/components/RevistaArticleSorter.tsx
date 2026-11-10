@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarData } from "@/lib/datas";
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import {
@@ -92,7 +93,7 @@ function SortableArticleRow({
         </span>
       </td>
       <td className="px-4 py-4 text-sm text-gray-500">
-        {new Date(artigo.criadoEm).toLocaleDateString("pt-BR")}
+        {formatarData(new Date(artigo.criadoEm))}
       </td>
       <td className="px-4 py-4 text-right">
         {podeEditar && (

@@ -1,8 +1,9 @@
+import { formatarData } from "@/lib/datas";
 import PortalEmptyState from "@/components/portal/PortalEmptyState";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 import { prisma } from "@/lib/prisma";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
+import { LIMITE_MATERIAS_LISTAGEM, filtroArtigoNoAr } from "@/lib/data/artigos";
 import { Prisma } from "@/generated/prisma/client";
 import { Newspaper } from "lucide-react";
 import Image from "next/image";
@@ -47,22 +48,18 @@ export default async function CategoriaPage(props: PageProps) {
     notFound();
   }
 
-  const publicationCutoff = new Date();
-  publicationCutoff.setMinutes(publicationCutoff.getMinutes() + 1);
-
+  // Só matérias no ar (agendadas ficam ocultas), das mais recentes; com limite para a
+  // página não crescer sem fim junto com o acervo.
   const whereClause: Prisma.ArtigoWhereInput = {
+    ...filtroArtigoNoAr(),
     categoriaId: category.id,
-    status: STATUS_ARTIGO.publicado,
     revistaId: null,
-    OR: [
-      { dataPublicacao: { lte: publicationCutoff } },
-      { dataPublicacao: null },
-    ],
   };
 
   const artigosBrutos = await prisma.artigo.findMany({
     where: whereClause,
-    orderBy: { criadoEm: "desc" },
+    orderBy: [{ dataPublicacao: "desc" }, { criadoEm: "desc" }],
+    take: LIMITE_MATERIAS_LISTAGEM,
     select: {
       id: true,
       titulo: true,
@@ -149,7 +146,7 @@ export default async function CategoriaPage(props: PageProps) {
 
                     <div className="portal-card-meta mt-auto flex w-full items-center gap-3 pt-2 text-[11px] font-black uppercase tracking-widest">
                       <time>
-                        {art.dataExibicao.toLocaleDateString("pt-BR", {
+                        {formatarData(art.dataExibicao, {
                           day: "2-digit",
                           month: "short",
                           year: "numeric",

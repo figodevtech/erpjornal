@@ -2,8 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatarData } from "@/lib/datas";
 import { User, Calendar, Tag } from "lucide-react";
 
 interface Article {
@@ -71,7 +70,7 @@ export function KanbanCard({ artigo }: KanbanCardProps) {
           </div>
           <div className="flex items-center text-[11px] text-gray-500">
             <Calendar className="w-3 h-3 mr-1" />
-            {format(new Date(artigo.criadoEm), "dd/MM/yyyy", { locale: ptBR })}
+            {formatarData(artigo.criadoEm)}
           </div>
         </div>
       </div>

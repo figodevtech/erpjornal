@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  ENVIO_PARADO_MS,
   acaoAoInscrever,
+  chaveIdempotenciaDoLote,
   confirmacaoExpirada,
+  envioInterrompido,
   dividirEmLotes,
   isTokenValido,
   linksDaInscricao,
@@ -90,5 +93,27 @@ describe("lotes, links e status", () => {
     expect(isTokenValido("curto")).toBe(false);
     expect(isTokenValido("' OR 1=1 --aaaaaaaaaaaaaaaa")).toBe(false);
     expect(isTokenValido(undefined)).toBe(false);
+  });
+});
+
+describe("retomada de envio interrompido", () => {
+  const agora = new Date("2026-11-10T12:00:00Z");
+
+  it("envio sem progresso há mais de 10 minutos está interrompido", () => {
+    const parado = new Date(agora.getTime() - ENVIO_PARADO_MS - 1);
+    expect(envioInterrompido({ status: "enviando", atualizadoEm: parado }, agora)).toBe(true);
+  });
+
+  it("envio com progresso recente ou já concluído não é retomado", () => {
+    const recente = new Date(agora.getTime() - 60_000);
+    const antigo = new Date(agora.getTime() - ENVIO_PARADO_MS * 10);
+    expect(envioInterrompido({ status: "enviando", atualizadoEm: recente }, agora)).toBe(false);
+    expect(envioInterrompido({ status: "enviado", atualizadoEm: antigo }, agora)).toBe(false);
+    expect(envioInterrompido({ status: "parcial", atualizadoEm: antigo }, agora)).toBe(false);
+  });
+
+  it("a chave do lote depende do conteúdo, não da posição", () => {
+    expect(chaveIdempotenciaDoLote("newsletter-a1", "id-x")).toBe("newsletter-a1-id-x");
+    expect(chaveIdempotenciaDoLote("newsletter-a1", "id-x")).not.toBe(chaveIdempotenciaDoLote("newsletter-a1", "id-y"));
   });
 });

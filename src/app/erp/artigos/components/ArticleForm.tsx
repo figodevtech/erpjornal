@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarHora, paraDataHoraLocal } from "@/lib/datas";
 import React, { useEffect, useRef, useTransition, useState } from "react";
 import { saveArticle, salvarRascunhoAutomatico } from "../actions";
 
@@ -165,9 +166,8 @@ export default function ArticleForm({
     return val.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
   };
 
-  const formatedDate = initialData?.dataPublicacao 
-    ? new Date(initialData.dataPublicacao.getTime() - initialData.dataPublicacao.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
-    : "";
+  // Valor do datetime-local no horário de Brasília (igual no servidor e no navegador).
+  const formatedDate = paraDataHoraLocal(initialData?.dataPublicacao);
 
   const handleAiRefactor = async () => {
     if (!currentTitle || !currentText) {
@@ -178,6 +178,7 @@ export default function ArticleForm({
     setIsAiLoading(true);
     try {
       const result = await rephraseArticleContent(currentTitle, currentText);
+      if (!result.ok) throw new Error(result.error);
       await refreshConfig();
       
       if (result.new_title) setCurrentTitle(result.new_title);
@@ -305,7 +306,7 @@ export default function ArticleForm({
             {salvamento.estado === "ocioso" && "Salvamento automático ligado"}
             {salvamento.estado === "salvando" && "Salvando rascunho…"}
             {salvamento.estado === "salvo" &&
-              `Rascunho salvo às ${new Date(salvamento.em).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+              `Rascunho salvo às ${formatarHora(new Date(salvamento.em), { hour: "2-digit", minute: "2-digit" })}`}
             {salvamento.estado === "erro" && `Rascunho não salvo: ${salvamento.mensagem}`}
           </span>
         )}
@@ -461,7 +462,7 @@ export default function ArticleForm({
 
                 {statusInput === "publicado" && canPublish && (
                   <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Agendamento (Opcional)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Agendamento (opcional, horário de Brasília)</label>
                     <input 
                       type="datetime-local" 
                       name="dataPublicacao" 

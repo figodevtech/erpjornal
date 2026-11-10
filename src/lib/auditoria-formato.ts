@@ -61,6 +61,7 @@ export const ROTULOS_ACAO: Record<string, string> = {
   EXPORTACAO: "Exportação",
   ENCERRAMENTO: "Encerramento",
   EXCLUSAO_DADOS_PESSOAIS: "Exclusão de dados pessoais",
+  ANOTACAO: "Anotação",
 };
 
 export function rotuloAcao(acao: string) {

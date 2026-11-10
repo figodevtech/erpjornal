@@ -25,6 +25,16 @@ const OPERACOES_DE_LEITURA: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ * Exclusão física num model com soft-delete: devolve a mensagem de erro (ou null).
+ * Nada é apagado de verdade (PRD); use update com `excluidoEm: new Date()`.
+ */
+export function motivoOperacaoProibida(model: string | undefined, operacao: string): string | null {
+  if (!model || !MODELOS_COM_EXCLUSAO_LOGICA.has(model)) return null;
+  if (operacao !== "delete" && operacao !== "deleteMany") return null;
+  return `${model}.${operacao} bloqueado: ${model} usa exclusão lógica (grave excluidoEm em vez de apagar).`;
+}
+
+/**
  * Devolve os argumentos da consulta com `excluidoEm: null` no where quando o
  * model tem soft-delete e a operação é de leitura. Se o where já menciona
  * `excluidoEm` (inclusive `undefined`, para trazer tudo), nada muda.

@@ -16,10 +16,12 @@ import {
   podeEditarArtigo,
 } from "@/lib/editorial/permissoes-artigo";
 import {
+  afetaPortal,
   isStatusArtigo,
   resolverStatusAoSalvar,
   type StatusArtigo,
 } from "@/lib/editorial/status";
+import { lerDataHoraLocal } from "@/lib/datas";
 import { revalidarMateriasNoPortal } from "@/lib/cache/portal";
 import { agendarDisparoNewsletter } from "@/lib/newsletter/disparo";
 
@@ -42,10 +44,9 @@ function resumoParaAuditoria(artigo: {
   };
 }
 
-function lerDataPublicacao(valor: string | null): Date | null {
-  if (!valor) return null;
-  const data = new Date(valor);
-  return isNaN(data.getTime()) ? null : data;
+/** O campo datetime-local chega sem fuso: é horário de Brasília (o servidor roda em UTC). */
+function lerDataPublicacao(valor: FormDataEntryValue | null): Date | null {
+  return typeof valor === "string" ? lerDataHoraLocal(valor) : null;
 }
 
 // Links e imagens viram href/src no portal: só http(s) (nada de javascript:).
@@ -126,7 +127,7 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
   // Barreira contra XSS: todo HTML de matéria é sanitizado antes de ir para o banco.
   const corpoTexto = sanitizarHtmlArtigo(texto(formData, "corpoTexto"));
   const statusSolicitado = formData.get("status");
-  const dataSolicitada = lerDataPublicacao(formData.get("dataPublicacao") as string | null);
+  const dataSolicitada = lerDataPublicacao(formData.get("dataPublicacao"));
   const urlFonte = campos.data.urlFonte || null;
   const autorExterno = autorExternoBruto || null;
   const requestedRevistaId = campos.data.revistaId || null;
@@ -187,6 +188,10 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
     papel: ((formData.get(`entidadePapel_${politicoId}`) as string) || "").trim() || null,
   }));
   let previousRevistaId: string | null = null;
+  // Para decidir o que invalidar no portal depois de salvar.
+  let statusAnterior: StatusArtigo | null = null;
+  let statusFinal: StatusArtigo = "pauta";
+  let slugAnterior: string | null = null;
 
   const slugEmUso = await prisma.artigo.findFirst({
     // excluidoEm: undefined inclui artigos excluídos: o slug deles continua reservado (único no banco).
@@ -198,19 +203,20 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
   }
 
   if (id) {
+    // Retorno (e não throw): o Next esconde a mensagem de erros lançados em produção.
     if (!podeEditar && !podePublicar) {
-      throw new Error("Voce nao tem permissao para editar este artigo.");
+      return { ok: false, error: "Você não tem permissão para editar este artigo." };
     }
 
     const existing = await prisma.artigo.findUnique({
       where: { id },
       include: { tags: { select: { tag: { select: { nome: true } } } } },
     });
-    if (!existing) throw new Error("Artigo nao encontrado");
+    if (!existing) return { ok: false, error: "Artigo não encontrado. Ele pode ter sido excluído." };
     previousRevistaId = existing.revistaId;
 
     if (!podeEditarArtigo(session, existing)) {
-      throw new Error("Voce nao tem permissao para editar este artigo.");
+      return { ok: false, error: "Você não tem permissão para editar este artigo." };
     }
 
     const finalStatus = resolverStatusAoSalvar({
@@ -218,6 +224,9 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
       atual: existing.status,
       podePublicar,
     });
+    statusAnterior = existing.status;
+    statusFinal = finalStatus;
+    slugAnterior = existing.slug;
     const finalPublishDate =
       finalStatus === "publicado"
         ? dataPublicacaoPermitida ?? existing.dataPublicacao ?? new Date()
@@ -312,6 +321,7 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
       atual: null,
       podePublicar,
     });
+    statusFinal = finalStatus;
     const revistaId = requestedRevistaId;
     const ordemNaRevista = revistaId ? (await prisma.artigo.count({ where: { revistaId } })) + 1 : null;
 
@@ -368,9 +378,12 @@ export async function saveArticle(formData: FormData): Promise<{ ok: false; erro
   if (previousRevistaId && previousRevistaId !== finalRevistaId) {
     revalidatePath(`/erp/revistas/${previousRevistaId}`);
   }
-  revalidarMateriasNoPortal();
+  // Rascunho que nunca esteve no ar não muda nada no portal: não invalida o cache.
+  if (afetaPortal(statusAnterior, statusFinal)) {
+    revalidarMateriasNoPortal([slug, slugAnterior]);
+  }
   // Matéria no ar com o canal "newsletter": envia depois da resposta (só uma vez por matéria).
-  agendarDisparoNewsletter();
+  if (statusFinal === "publicado") agendarDisparoNewsletter();
   redirect(finalRevistaId ? `/erp/revistas/${finalRevistaId}` : "/erp/artigos");
 }
 
@@ -531,7 +544,7 @@ export async function updateArticleStatus(id: string, newStatus: StatusArtigo): 
 
   revalidatePath("/erp/artigos");
   revalidatePath("/erp/artigos/kanban");
-  revalidarMateriasNoPortal();
+  if (afetaPortal(artigo.status, newStatus)) revalidarMateriasNoPortal([artigo.slug]);
   if (newStatus === "publicado") agendarDisparoNewsletter();
   return { ok: true };
 }
@@ -583,7 +596,7 @@ export async function deleteArticle(
   if (artigo.revistaId) {
     revalidatePath(`/erp/revistas/${artigo.revistaId}`);
   }
-  revalidarMateriasNoPortal();
+  if (afetaPortal(artigo.status, null)) revalidarMateriasNoPortal([artigo.slug]);
 
   return { ok: true, revistaId: artigo.revistaId };
 }
@@ -594,7 +607,7 @@ export async function updateArticleAuthor(artigoId: string, newAuthorId: string)
 
   const [novoAutor, artigo] = await Promise.all([
     prisma.usuario.findUnique({ where: { id: newAuthorId }, select: { id: true, status: true } }),
-    prisma.artigo.findUnique({ where: { id: artigoId }, select: { autorId: true } }),
+    prisma.artigo.findUnique({ where: { id: artigoId }, select: { autorId: true, status: true, slug: true } }),
   ]);
   if (!novoAutor || novoAutor.status !== "ativo") {
     return { ok: false, error: "Autor inválido ou inativo." };
@@ -617,6 +630,8 @@ export async function updateArticleAuthor(artigoId: string, newAuthorId: string)
   });
 
   revalidatePath("/erp/artigos/kanban");
+  // O nome do autor aparece na página da matéria publicada.
+  if (afetaPortal(artigo.status, artigo.status)) revalidarMateriasNoPortal([artigo.slug]);
   return { ok: true };
 }
 

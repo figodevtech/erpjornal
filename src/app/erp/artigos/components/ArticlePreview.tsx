@@ -2,8 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { formatarData, formatarHora } from "@/lib/datas";
 import { User, Calendar, Tag, Share2, Printer, Bookmark } from "lucide-react";
 
 interface ArticlePreviewProps {
@@ -95,7 +94,7 @@ export function ArticlePreview({
             <div className="flex items-center gap-2 text-gray-500">
               <Calendar size={16} />
               <span className="text-xs font-medium">
-                {format(publishedDate, "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                {formatarData(publishedDate, { day: "2-digit", month: "long", year: "numeric" })} às {formatarHora(publishedDate)}
               </span>
             </div>
           </div>

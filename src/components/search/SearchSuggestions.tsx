@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarData } from "@/lib/datas";
 import { SearchResult } from "@/lib/services/search-service";
 import Image from "next/image";
 import Link from "next/link";
@@ -109,7 +110,7 @@ export default function SearchSuggestions({ results, isLoading, onSelect, query 
                          <span className="text-[9px] font-bold uppercase tracking-wider text-red-700 dark:text-red-500">{res.metadata.categoria}</span>
                        )}
                        {res.date && (
-                         <span className="text-[9px] font-bold text-gray-400 uppercase">{new Date(res.date).toLocaleDateString("pt-BR")}</span>
+                         <span className="text-[9px] font-bold text-gray-400 uppercase">{formatarData(new Date(res.date))}</span>
                        )}
                     </div>
                   </div>

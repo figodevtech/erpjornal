@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import PortalSectionHeader from "@/components/portal/PortalSectionHeader";
 import { isModuleEnabled } from "@/lib/config/modules";
 import Image from "next/image";
@@ -68,7 +69,7 @@ export default async function PodcastsPage() {
                 </span>
                 <span className="text-gray-300">•</span>
                 <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                  {new Date(ep.dataPub).toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}
+                  {formatarData(new Date(ep.dataPub), { day: "numeric", month: "long" })}
                 </span>
               </div>
 

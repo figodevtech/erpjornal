@@ -55,6 +55,15 @@ export function isStatusArtigo(valor: unknown): valor is StatusArtigo {
 }
 
 /**
+ * A mudança aparece no portal? Só se a matéria estava ou ficou publicada.
+ * Rascunhos (pauta → redação etc.) não invalidam o cache das páginas públicas.
+ * `null` = matéria nova (antes) ou excluída (depois).
+ */
+export function afetaPortal(antes: StatusArtigo | null, depois: StatusArtigo | null) {
+  return antes === "publicado" || depois === "publicado";
+}
+
+/**
  * Status que o usuário pode escolher no formulário.
  * Sem `artigos:publicar`, só as etapas anteriores à publicação.
  */

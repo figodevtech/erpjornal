@@ -3,6 +3,7 @@ import { Eye, Lock, Shield, UserCheck } from "lucide-react";
 
 import { exigirPermissao, temPermissao } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { NIVEIS_SEM_RESTRICAO, nivelSigiloSeguro } from "@/lib/fontes/sigilo";
 import NovaFonteDialog from "./components/NovaFonteDialog";
 
 const sigiloBadge = {
@@ -24,7 +25,8 @@ export default async function FontesPage() {
   const podeCriar = temPermissao(session, "fontes:criar");
 
   const fontes = await prisma.fonte.findMany({
-    where: podeVerConfidenciais ? {} : { nivelSigilo: { not: "confidencial" } },
+    // Lista positiva: um nível fora do padrão fica oculto, como se fosse confidencial.
+    where: podeVerConfidenciais ? {} : { nivelSigilo: { in: [...NIVEIS_SEM_RESTRICAO] } },
     orderBy: { criadoEm: "desc" },
     include: {
       criador: { select: { nome: true } },
@@ -57,7 +59,7 @@ export default async function FontesPage() {
       ) : (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {fontes.map((fonte) => {
-            const sigilo = fonte.nivelSigilo as "publico" | "reservado" | "confidencial";
+            const sigilo = nivelSigiloSeguro(fonte.nivelSigilo);
             const IconSigilo = sigiloIcon[sigilo];
 
             return (

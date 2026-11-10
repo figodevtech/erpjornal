@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, Plus } from "lucide-react";
@@ -52,7 +53,7 @@ export default async function RevistaDetalhePage({ params }: { params: Promise<{
             <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-700">Edição {revista.edicao}</span>
             <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-500">
               <Calendar className="h-3.5 w-3.5" />
-              {revista.dataPublicacao ? revista.dataPublicacao.toLocaleDateString("pt-BR") : "Sem data de publicação"}
+              {revista.dataPublicacao ? formatarData(revista.dataPublicacao) : "Sem data de publicação"}
             </span>
           </div>
           <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900">{revista.titulo}</h1>

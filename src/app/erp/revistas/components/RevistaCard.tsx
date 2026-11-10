@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarData } from "@/lib/datas";
 import { Calendar, FileText, Pencil, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -61,7 +62,7 @@ export default function RevistaCard({ revista, podeEditar }: RevistaCardProps) {
               </span>
               <span className="inline-flex items-center gap-1 text-xs text-gray-500">
                 <Calendar className="h-3.5 w-3.5" />
-                {revista.dataPublicacao ? revista.dataPublicacao.toLocaleDateString("pt-BR") : "Sem data"}
+                {revista.dataPublicacao ? formatarData(revista.dataPublicacao) : "Sem data"}
               </span>
             </div>
             <div>

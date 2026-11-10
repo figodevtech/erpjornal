@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarData } from "@/lib/datas";
 import Link from "next/link";
 import { useState } from "react";
 import { KeyRound, ShieldCheck, Smartphone } from "lucide-react";
@@ -231,7 +232,7 @@ export default function GerenciadorMfa({ email, estado, destino, fatoresVerifica
               <li key={fator.id} className="rounded-xl border border-gray-800 bg-gray-900 px-4 py-3 text-sm">
                 <div className="font-bold">{fator.nome}</div>
                 <div className="text-xs text-gray-500">
-                  Cadastrado em {new Date(fator.criadoEm).toLocaleDateString("pt-BR")}
+                  Cadastrado em {formatarData(new Date(fator.criadoEm))}
                 </div>
               </li>
             ))}

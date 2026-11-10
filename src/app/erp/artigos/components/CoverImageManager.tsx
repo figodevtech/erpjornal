@@ -11,6 +11,7 @@ import {
   uploadArticleCoverImage,
 } from "../image-actions";
 import { useConfig } from "../../config/ErpConfigProvider";
+import { reduzirImagemParaUpload } from "@/lib/imagens/reduzir";
 
 type CoverImageManagerProps = {
   value: string;
@@ -71,9 +72,11 @@ export default function CoverImageManager({
     setPendingAction("upload");
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      // Reduz no navegador: a Vercel recusa envios acima de 4,5 MB.
+      formData.append("file", await reduzirImagemParaUpload(file));
       formData.append("title", title || "materia");
       const result = await uploadArticleCoverImage(formData);
+      if (!result.ok) throw new Error(result.error);
       onChange(result.url);
       toast.success("Imagem de capa enviada.");
     } catch (error) {
@@ -90,6 +93,7 @@ export default function CoverImageManager({
     setPendingAction("generate");
     try {
       const result = await generateArticleCoverImage(actionContext);
+      if (!result.ok) throw new Error(result.error);
       await refreshConfig();
       onChange(result.url);
       toast.success("Imagem de capa gerada com IA.");
@@ -106,6 +110,7 @@ export default function CoverImageManager({
     setPendingAction("recreate");
     try {
       const result = await recreateArticleCoverImage(actionContext);
+      if (!result.ok) throw new Error(result.error);
       await refreshConfig();
       onChange(result.url);
       toast.success("Imagem do RSS recriada em alta qualidade.");

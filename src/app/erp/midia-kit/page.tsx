@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import Link from "next/link";
 import { LayoutTemplate, Globe, FileEdit, Archive } from "lucide-react";
 
@@ -93,13 +94,13 @@ export default async function MidiaKitPage() {
 
                   {kit.publicadoEm && (
                     <p className="text-[11px] text-gray-400">
-                      Publicado em {new Date(kit.publicadoEm).toLocaleDateString("pt-BR")}
+                      Publicado em {formatarData(new Date(kit.publicadoEm))}
                     </p>
                   )}
 
                   <div className="mt-auto flex items-center justify-between border-t border-gray-100 pt-3">
                     <span className="text-[10px] text-gray-400">
-                      Atualizado {new Date(kit.atualizadoEm).toLocaleDateString("pt-BR")}
+                      Atualizado {formatarData(new Date(kit.atualizadoEm))}
                     </span>
                     {podeEditar && (
                       <Link

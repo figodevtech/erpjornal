@@ -1,5 +1,6 @@
 "use client";
 
+import { formatarData } from "@/lib/datas";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -56,7 +57,8 @@ export function SelectionCard({
   async function handleSelect() {
     setLoading(true);
     try {
-      await selectRSSItem(item.id);
+      const res = await selectRSSItem(item.id);
+      if (!res.ok) throw new Error(res.error);
       toast.success("Notícia selecionada!");
       router.push(`/erp/curadoria/review/${item.id}`);
     } catch (err: unknown) {
@@ -69,7 +71,8 @@ export function SelectionCard({
   async function handleReject() {
     setLoading(true);
     try {
-      await rejectRSSItem(item.id);
+      const res = await rejectRSSItem(item.id);
+      if (!res.ok) throw new Error(res.error);
       toast.info("Notícia descartada");
       router.refresh();
     } catch (err: unknown) {
@@ -88,6 +91,7 @@ export function SelectionCard({
     setLoading(true);
     try {
       const res = await republishOriginalWithCredits(item.id, categoriaId || undefined);
+      if (!res.ok) throw new Error(res.error);
       toast.success(
         res.publicado
           ? "Conteúdo original republicado com créditos."
@@ -139,7 +143,7 @@ export function SelectionCard({
           <div className="mb-3 flex flex-wrap items-center gap-3 text-[10px] font-black uppercase tracking-widest text-gray-400">
             <span className="flex items-center gap-1 whitespace-nowrap">
               <Clock className="h-3 w-3" />
-              {new Date(item.dataPublicacao).toLocaleDateString("pt-BR")}
+              {formatarData(new Date(item.dataPublicacao))}
             </span>
             <span className="line-clamp-1 flex min-w-0 items-center gap-1">
               <User className="h-3 w-3 text-gray-300" />

@@ -219,7 +219,7 @@ export default async function CuradoriaDashboardPage({
                     <td className="px-6 py-4 text-xs font-medium text-gray-500">{artigo.autorExterno}</td>
                     <td className="px-6 py-4 text-xs font-medium italic text-gray-500">{artigo.revisorHumano}</td>
                     <td className="px-6 py-4 text-xs font-medium text-gray-400">
-                      {artigo.criadoEm.toLocaleDateString("pt-BR")}
+                      {formatarData(artigo.criadoEm)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <Link

@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import Link from "next/link";
 import { Calendar, Clock, Mic, Plus, Tag } from "lucide-react";
 import Image from "next/image";
@@ -59,7 +60,7 @@ export default async function PodcastsERPPage() {
                 </span>
                 <span className="text-gray-300">·</span>
                 <span className="flex items-center gap-1 text-[10px] text-gray-400">
-                  <Calendar className="h-3 w-3" /> {new Date(ep.dataPub).toLocaleDateString("pt-BR")}
+                  <Calendar className="h-3 w-3" /> {formatarData(new Date(ep.dataPub))}
                 </span>
               </div>
               <h3 className="truncate font-bold text-gray-900 transition-colors group-hover:text-purple-600">

@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import Image from "next/image";
 import Link from "next/link";
 import { AlertTriangle, FileText, Film, ImageIcon, Plus, Upload } from "lucide-react";
@@ -133,13 +134,13 @@ export default async function MidiaPage() {
                   {expiraEmBreve && (
                     <div className="flex items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-bold text-amber-700">
                       <AlertTriangle className="h-3.5 w-3.5" />
-                      Expira em: {new Date(media.dataExpiracao!).toLocaleDateString("pt-BR")}
+                      Expira em: {formatarData(new Date(media.dataExpiracao!))}
                     </div>
                   )}
 
                   <div className="flex items-center justify-between border-t border-gray-100 pt-3">
                     <span className="text-[10px] text-gray-400">
-                      {new Date(media.criadoEm).toLocaleDateString("pt-BR")}
+                      {formatarData(new Date(media.criadoEm))}
                     </span>
                     {podeEditar && (
                       <Link

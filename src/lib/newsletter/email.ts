@@ -6,7 +6,7 @@ import { Resend } from "resend";
 import { ConfirmacaoNewsletterTemplate, NewsletterTemplate } from "@/components/emails/NewsletterTemplate";
 import { absoluteUrl, getSiteUrl } from "@/lib/site-url";
 
-import { dividirEmLotes, linksDaInscricao } from "./regras";
+import { chaveIdempotenciaDoLote, dividirEmLotes, linksDaInscricao } from "./regras";
 
 function remetente() {
   return process.env.EMAIL_FROM?.trim() || "Revista Gestão <contato@revistagestao.com.br>";
@@ -58,15 +58,23 @@ export type MateriaNewsletter = {
   urlImagemOg: string | null;
 };
 
+export type InscritoParaEnvio = { id: string; email: string; token: string };
+
+/** Resultado de cada lote, para quem chama gravar o progresso (e poder retomar). */
+export type ProgressoLote = { lote: InscritoParaEnvio[]; enviado: boolean; erro?: string };
+
 /**
  * Envia a matéria aos inscritos em lotes de 100 (API de lote do Resend), cada um
  * com o próprio link de descadastro e o cabeçalho de descadastro em um clique.
- * A chave de idempotência por lote evita e-mail duplicado se o envio for repetido.
+ * A chave de idempotência por lote (derivada do primeiro inscrito) evita e-mail
+ * duplicado se o envio for repetido ou retomado. `aoConcluirLote` roda depois de
+ * cada lote, antes do próximo.
  */
 export async function enviarMateriaParaInscritos(
   materia: MateriaNewsletter,
-  inscritos: { email: string; token: string }[],
-  chaveIdempotencia: string
+  inscritos: InscritoParaEnvio[],
+  chaveIdempotencia: string,
+  aoConcluirLote?: (progresso: ProgressoLote) => Promise<void>
 ): Promise<{ enviados: number; erro?: string }> {
   const resend = clienteResend();
   if (!resend) return { enviados: 0, erro: "RESEND_API_KEY ausente" };
@@ -77,7 +85,7 @@ export async function enviarMateriaParaInscritos(
   let enviados = 0;
   let ultimoErro: string | undefined;
 
-  for (const [indice, lote] of dividirEmLotes(inscritos).entries()) {
+  for (const lote of dividirEmLotes(inscritos)) {
     const mensagens = lote.map(({ email, token }) => {
       const links = linksDaInscricao(site, token);
       return {
@@ -97,18 +105,22 @@ export async function enviarMateriaParaInscritos(
         },
       };
     });
+    const chave = chaveIdempotenciaDoLote(chaveIdempotencia, lote[0].id);
+    let erroDoLote: string | undefined;
     try {
-      const { error } = await resend.batch.send(mensagens, { idempotencyKey: `${chaveIdempotencia}-lote-${indice}` });
-      if (error) {
-        ultimoErro = error.message;
-        console.error(`[newsletter] lote ${indice} falhou:`, error.message);
-        continue;
-      }
-      enviados += lote.length;
+      const { error } = await resend.batch.send(mensagens, { idempotencyKey: chave });
+      if (error) erroDoLote = error.message;
     } catch (erro) {
-      ultimoErro = erro instanceof Error ? erro.message : String(erro);
-      console.error(`[newsletter] lote ${indice} falhou:`, erro);
+      erroDoLote = erro instanceof Error ? erro.message : String(erro);
     }
+
+    if (erroDoLote) {
+      ultimoErro = erroDoLote;
+      console.error(`[newsletter] lote ${chave} falhou:`, erroDoLote);
+    } else {
+      enviados += lote.length;
+    }
+    await aoConcluirLote?.({ lote, enviado: !erroDoLote, erro: erroDoLote });
   }
 
   return { enviados, erro: ultimoErro };

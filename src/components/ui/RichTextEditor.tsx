@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
 import { useEditor, EditorContent, Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -9,8 +10,11 @@ import Underline from '@tiptap/extension-underline';
 import { 
   Bold, Italic, List, ListOrdered, Quote, 
   Image as ImageIcon, Undo, Redo, Heading1, Heading2,
-  Underline as UnderlineIcon, AlignCenter
+  Underline as UnderlineIcon, AlignCenter, Loader2
 } from 'lucide-react';
+
+import { uploadArticleCoverImage } from '@/app/erp/artigos/image-actions';
+import { reduzirImagemParaUpload } from '@/lib/imagens/reduzir';
 
 interface RichTextEditorProps {
   content: string;
@@ -41,7 +45,26 @@ const CustomImage = Image.extend({
 });
 
 const MenuBar = ({ editor }: { editor: Editor | null }) => {
+  const [enviandoImagem, setEnviandoImagem] = useState(false);
   if (!editor) return null;
+
+  // A imagem vai para o Storage e entra no texto pela URL pública. Antes entrava
+  // como data: (base64), que o sanitizador remove ao salvar: a imagem sumia.
+  const inserirImagem = async (file: File) => {
+    setEnviandoImagem(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", await reduzirImagemParaUpload(file));
+      formData.append("title", "imagem-materia");
+      const resultado = await uploadArticleCoverImage(formData);
+      if (!resultado.ok) throw new Error(resultado.error);
+      editor.chain().focus().setImage({ src: resultado.url }).run();
+    } catch (erro) {
+      toast.error(erro instanceof Error ? erro.message : "Não foi possível enviar a imagem.");
+    } finally {
+      setEnviandoImagem(false);
+    }
+  };
 
   const updateImageSize = (size: 'small' | 'medium' | 'large' | 'full') => {
     editor.chain().focus().updateAttributes('image', { size }).run();
@@ -130,24 +153,19 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
           <button
             type="button"
             className="p-2 rounded-lg transition-all text-gray-500 hover:text-gray-900"
-            title="Inserir Imagem / Redimensionar"
+            title={enviandoImagem ? "Enviando imagem..." : "Inserir Imagem / Redimensionar"}
           >
-            <ImageIcon size={16} />
+            {enviandoImagem ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
           </button>
-          <input 
-            type="file" 
-            accept="image/*"
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            disabled={enviandoImagem}
             className="absolute inset-0 opacity-0 cursor-pointer"
             onChange={(e) => {
               const file = e.target.files?.[0];
-              if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                  const src = event.target?.result as string;
-                  editor.chain().focus().setImage({ src }).run();
-                };
-                reader.readAsDataURL(file);
-              }
+              e.target.value = "";
+              if (file) void inserirImagem(file);
             }}
           />
         </div>

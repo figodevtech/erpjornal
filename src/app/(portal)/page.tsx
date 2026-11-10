@@ -1,3 +1,4 @@
+import { formatarData } from "@/lib/datas";
 import NewsletterForm from "@/components/portal/NewsletterForm";
 import AdSlot, { hasActiveAds } from "@/components/portal/AdSlot";
 import { filtroArtigoNoAr } from "@/lib/data/artigos";
@@ -6,26 +7,16 @@ import RevistaCarousel from "@/components/portal/RevistaCarousel";
 import type { RevistaCarouselItem } from "@/components/portal/RevistaCarousel";
 import { getAppConfigSnapshot } from "@/lib/app-config";
 import { prisma } from "@/lib/prisma";
-import { STATUS_ARTIGO } from "@/lib/editorial/status";
 import Image from "next/image";
 import Link from "next/link";
 
 export const revalidate = 60;
 
 export default async function PortalHome() {
-  const publicationCutoff = new Date();
-  publicationCutoff.setTime(publicationCutoff.getTime() + 60000);
-
+  // Só matérias no ar (agendadas ficam ocultas), das mais recentemente publicadas.
   const artigosBrutos = await prisma.artigo.findMany({
-    where: {
-      status: STATUS_ARTIGO.publicado,
-      revistaId: null,
-      OR: [
-        { dataPublicacao: { lte: publicationCutoff } },
-        { dataPublicacao: null },
-      ],
-    },
-    orderBy: { criadoEm: "desc" },
+    where: { ...filtroArtigoNoAr(), revistaId: null },
+    orderBy: [{ dataPublicacao: "desc" }, { criadoEm: "desc" }],
     take: 30,
     select: {
       id: true,
@@ -174,7 +165,7 @@ export default async function PortalHome() {
                 )}
 
                 <div className="mt-auto text-[13px] font-bold uppercase tracking-widest text-gray-800 dark:text-gray-400">
-                  Por {featured[0].autor?.nome || "Redação"} • {featured[0].dataExibicao.toLocaleDateString("pt-BR")}
+                  Por {featured[0].autor?.nome || "Redação"} • {formatarData(featured[0].dataExibicao)}
                 </div>
               </Link>
             </div>
@@ -215,7 +206,7 @@ export default async function PortalHome() {
                   </div>
 
                   <div className="mt-auto text-[11px] font-bold uppercase tracking-widest text-gray-800 dark:text-gray-500">
-                    {art.dataExibicao.toLocaleDateString("pt-BR")}
+                    {formatarData(art.dataExibicao)}
                   </div>
                 </Link>
               ))}
@@ -286,7 +277,7 @@ export default async function PortalHome() {
                 )}
 
                 <div className="mt-auto text-[11px] font-bold uppercase tracking-widest text-gray-800 dark:text-gray-400">
-                  {art.dataExibicao.toLocaleDateString("pt-BR", {
+                  {formatarData(art.dataExibicao, {
                     day: "2-digit",
                     month: "long",
                     year: "numeric",

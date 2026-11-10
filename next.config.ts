@@ -12,11 +12,33 @@ const supabaseHostname = (() => {
   }
 })();
 
+/**
+ * Cabeçalhos de segurança em todas as respostas.
+ * - frame-ancestors / X-Frame-Options: nenhum outro site carrega o portal ou o ERP
+ *   num iframe (clickjacking no botão Publicar, por exemplo).
+ * - Sem CSP de scripts por enquanto: Next, Sentry e Vercel Analytics usam scripts
+ *   inline; uma política de script-src precisa de nonce e testes próprios.
+ */
+const CABECALHOS_SEGURANCA = [
+  { key: "Content-Security-Policy", value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+  { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+];
+
 const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
-      bodySizeLimit: "10mb",
+      // A Vercel recusa corpos acima de 4,5 MB (erro 413) antes de chegar ao Next.
+      // O mesmo limite aqui faz o desenvolvimento local falhar igual à produção;
+      // as imagens são reduzidas no navegador antes do envio (src/lib/imagens/reduzir.ts).
+      bodySizeLimit: "4mb",
     },
+  },
+  async headers() {
+    return [{ source: "/:path*", headers: CABECALHOS_SEGURANCA }];
   },
   images: {
     unoptimized: true,

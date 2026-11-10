@@ -1,5 +1,6 @@
 "use server";
 
+import { comoResultado } from "@/lib/acao";
 import { exigirAlgumaPermissao } from "@/lib/auth";
 import { getAppConfigSnapshot, withAppQuota } from "@/lib/app-config";
 import { sanitizarHtmlArtigo } from "@/lib/html/sanitize";
@@ -31,6 +32,9 @@ type OpenAIResponseBody = {
 };
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
+const TEMPO_LIMITE_IA_MS = 90_000;
+const LIMITE_TEXTO_IA = 200_000;
+const TONS_PERMITIDOS = new Set(["jornalistico", "formal", "didatico", "analitico"]);
 
 const articleRewriteSchema = {
   type: "object",
@@ -113,12 +117,18 @@ function mapOpenAIError(status: number, message?: string) {
   return new Error(message || "Erro ao comunicar com a OpenAI.");
 }
 
-export async function rephraseArticleContent(
-  title: string,
-  text: string,
-  tone: string = "jornalistico"
-): Promise<RephrasedArticle> {
+/** Devolve { ok, error }: em produção o Next esconderia a mensagem (ex.: limite mensal atingido). */
+export async function rephraseArticleContent(title: string, text: string, tone: string = "jornalistico") {
+  return comoResultado(() => reescreverComIa(title, text, tone), "Não foi possível reescrever o texto com IA.");
+}
+
+async function reescreverComIa(title: string, text: string, tone: string): Promise<RephrasedArticle> {
   await exigirAlgumaPermissao(["artigos:editar", "artigos:publicar"]);
+  if (text.length > LIMITE_TEXTO_IA) {
+    throw new Error("O texto é grande demais para a reescrita com IA (máximo de 200 mil caracteres).");
+  }
+  // O tom vem do cliente e entra no prompt: só os valores conhecidos.
+  const tom = TONS_PERMITIDOS.has(tone) ? tone : "jornalistico";
 
   const apiKey = getOpenAIApiKey();
   const config = await getAppConfigSnapshot();
@@ -145,7 +155,7 @@ export async function rephraseArticleContent(
               "Reestruture o texto abaixo para um nivel premium de jornalismo.",
               "",
               "Diretrizes:",
-              `- Tom solicitado: ${tone}.`,
+              `- Tom solicitado: ${tom}.`,
               "- Preserve integralmente as tags HTML existentes e use apenas estrutura HTML editorial basica quando necessario: <h2>, <p>, <strong>, <ul>, <li>, <blockquote>.",
               "- Melhore fluxo, coesao e impacto editorial.",
               "- Mantenha fatos, dados, nomes, numeros e rigor tecnico.",
@@ -166,6 +176,7 @@ export async function rephraseArticleContent(
           },
         },
       }),
+      signal: AbortSignal.timeout(TEMPO_LIMITE_IA_MS),
     });
 
     const body = (await response.json()) as OpenAIResponseBody;

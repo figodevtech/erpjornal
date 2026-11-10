@@ -1,5 +1,6 @@
 ﻿"use client";
 
+import { formatarData } from "@/lib/datas";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,7 +36,7 @@ const CARD_WIDTH = 216;
 
 function formatDate(date: string | null) {
   if (!date) return "Sem data";
-  return new Date(date).toLocaleDateString("pt-BR", {
+  return formatarData(new Date(date), {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",

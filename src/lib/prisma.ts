@@ -2,7 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "@/generated/prisma/client";
 import { SUPABASE_ROOT_CA_2021 } from "@/lib/db/supabase-ca";
-import { aplicarExclusaoLogica } from "@/lib/db/exclusao-logica";
+import { aplicarExclusaoLogica, motivoOperacaoProibida } from "@/lib/db/exclusao-logica";
 
 /**
  * TLS da conexão com o banco, sempre com verificação de certificado:
@@ -48,9 +48,11 @@ export function criarPrismaClient(connectionString = process.env.DATABASE_URL) {
   return comExclusaoLogica(new PrismaClient({ adapter }));
 }
 
-/** Models com soft-delete (coluna excluido_em): exclusões viram `excluidoEm = agora`. */
 /**
- * Leituras dos models com soft-delete ignoram registros excluídos automaticamente.
+ * Exclusão lógica nos models com coluna excluido_em (lista em src/lib/db/exclusao-logica.ts):
+ * - Para excluir, grave `excluidoEm: new Date()` com update; `delete`/`deleteMany`
+ *   nesses models são recusados aqui (apagariam de verdade, contra o PRD).
+ * - Leituras ignoram registros excluídos automaticamente.
  * Para incluí-los, passe `excluidoEm` explicitamente no where
  * (ex.: `excluidoEm: undefined` para todos, `{ not: null }` só os excluídos).
  *
@@ -63,6 +65,8 @@ function comExclusaoLogica(cliente: PrismaClient) {
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
+          const proibida = motivoOperacaoProibida(model, operation);
+          if (proibida) throw new Error(proibida);
           return query(aplicarExclusaoLogica(model, operation, args));
         },
       },

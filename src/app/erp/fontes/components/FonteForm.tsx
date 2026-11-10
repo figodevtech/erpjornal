@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import CustomSelect from "@/components/ui/CustomSelect";
 
@@ -13,15 +13,26 @@ type FonteFormProps = {
 
 export default function FonteForm({ onCancel }: FonteFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [erro, setErro] = useState("");
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
-    startTransition(() => saveSource(formData));
+    setErro("");
+    startTransition(async () => {
+      // Em caso de sucesso a action redireciona; erros de validação voltam como resultado.
+      const resultado = await saveSource(formData);
+      if (resultado && !resultado.ok) setErro(resultado.error);
+    });
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {erro && (
+        <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-700">
+          {erro}
+        </p>
+      )}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div className="md:col-span-2">
           <label className="mb-1.5 block text-xs font-bold uppercase tracking-widest text-gray-500">

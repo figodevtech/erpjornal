@@ -119,7 +119,7 @@ npm run db:deploy
 - **Inscrição com dupla confirmação (LGPD):** o formulário grava a inscrição como *pendente* e envia um link (vale 7 dias). Só quem confirma recebe. Confirmar e sair da lista acontecem por botão (POST), porque filtros de e-mail abrem os links sozinhos. Todo envio traz o link de descadastro e o cabeçalho de descadastro de um clique (`List-Unsubscribe-Post`).
 - **Envio:** matéria publicada com o canal *Newsletter* sai para os confirmados uma única vez, até 48h depois de entrar no ar, em lotes de 100 pelo Resend (`src/lib/newsletter/`). O disparo roda depois da publicação (`after`).
 - **Envio retomável:** cada lote grava o progresso (cursor do último inscrito). Um envio parado há mais de 10 min em "enviando" é retomado pelo cron de onde parou; a chave de idempotência sai do conteúdo do lote, então quem já recebeu não recebe de novo.
-- **Cron:** `/api/cron/newsletter` envia as matérias agendadas que entraram no ar e retoma envios interrompidos. Já está agendada a cada 10 min no `vercel.json` (a Vercel manda `Authorization: Bearer $CRON_SECRET` sozinha). Sem cron, as agendadas saem junto com a próxima publicação.
+- **Cron:** `/api/cron/newsletter` envia as matérias agendadas que entraram no ar e retoma envios interrompidos. Está agendada uma vez por dia no `vercel.json` (`0 10 * * *` = 7h de Brasília, limite do plano Hobby), e a Vercel manda `Authorization: Bearer $CRON_SECRET` sozinha. Uma matéria agendada sai na próxima publicação de qualquer matéria ou no cron do dia seguinte, o que vier primeiro (a janela de envio é de 48h). No Pro, troque para `*/10 * * * *`.
 - **ERP:** `/erp/newsletter` (permissão `newsletter:gerir`) mostra inscritos e envios, exporta CSV e apaga dados a pedido do titular. Essa é a única exclusão física do sistema, e fica na auditoria sem o e-mail.
 - **Plantão:** avisos na faixa do topo do portal (`/erp/plantao`, permissão `plantao:gerir`). Com `TELEGRAM_BOT_TOKEN` e `TELEGRAM_CHAT_ID`, cada aviso também vai para o canal da redação.
 
@@ -170,7 +170,7 @@ src/lib/             regras de negócio, acesso a dados, segurança, integraçõ
 
 ## Deploy na Vercel
 
-1. **Plano:** o plano Hobby é só para uso não comercial e aceita cron apenas uma vez por dia (o deploy falha com o `*/10` do `vercel.json`). Um portal com anúncios precisa do **Pro**.
+1. **Plano:** o `vercel.json` está configurado para o Hobby (cron uma vez por dia; a Vercel roda em algum momento dentro da hora marcada). O Hobby é só para uso não comercial: com anúncios no ar, o portal precisa do **Pro**, e aí o cron pode voltar para `*/10 * * * *`.
 2. **Região:** o `vercel.json` fixa as funções em `pdx1` (Oregon), ao lado do banco no Supabase `us-west-2`. Se o banco mudar de região, ajuste (São Paulo = `gru1` com Supabase `sa-east-1`).
 3. **Variáveis** (Project Settings → Environment Variables, em Production e Preview): todas as obrigatórias do `.env.example`, mais `UPSTASH_REDIS_REST_URL`/`TOKEN` (obrigatórias em produção), `CRON_SECRET`, `RESEND_API_KEY` e `EMAIL_FROM` (domínio verificado no Resend). `NEXT_PUBLIC_SITE_URL` é o domínio final, com `https://`. As `SEED_*` não vão para a Vercel. As `NEXT_PUBLIC_*` entram no build: mudou, faça novo deploy.
 4. **Banco antes do código:** rode `npm run db:deploy` (e `npm run db:setup` na primeira vez) apontando para o banco de produção **antes** de publicar uma versão que traga migration nova. O build não aplica migrations.
